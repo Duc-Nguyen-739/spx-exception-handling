@@ -257,6 +257,20 @@ function dataUrlToBlob_(dataUrl, name) {
   }
 }
 
+function shareFile_(f) {
+  try {
+    f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return 'link';
+  } catch (e1) {
+    try {
+      f.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
+      return 'domain';
+    } catch (e2) {
+      throw new Error('Không mở share ảnh được — nhờ ADMIN kiểm tra quyền share Drive.');
+    }
+  }
+}
+
 function monthFolder_() {
   var rootId = String(PropertiesService.getScriptProperties().getProperty(PROP_FOLDER) || '').trim();
   if (!rootId) throw new Error('Thiếu FOLDER_ID trong Script Properties (nơi lưu ảnh).');
@@ -301,11 +315,7 @@ function create_(kind, p) {
 
     for (var s = 0; s < photos.length; s++) {
       var f = folder.createFile(dataUrlToBlob_(photos[s], code + '.' + slots[s] + '.jpg'));
-      try {
-        f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-      } catch (e) {
-        throw new Error('Không mở share ảnh được — Drive công ty có thể chặn share ngoài, nhờ ADMIN kiểm tra.');
-      }
+      shareFile_(f);
       ids[slots[s]] = f.getId();
     }
     var outerId = ids['ngoai_quan'] || '', productId = ids['san_pham'] || '';
@@ -424,16 +434,16 @@ function fixPhotoSharing() {
       if (ia) ids[ia] = true;
       if (ib) ids[ib] = true;
     }
-    var shared = 0, failed = [];
+    var shared = 0, domainOnly = false, failed = [];
     for (var fid in ids) {
       try {
-        DriveApp.getFileById(fid).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        if (shareFile_(DriveApp.getFileById(fid)) === 'domain') domainOnly = true;
         shared++;
       } catch (e) {
         failed.push(fid);
       }
     }
-    return ok({ total: Object.keys(ids).length, shared: shared, failed: failed });
+    return ok({ total: Object.keys(ids).length, shared: shared, failed: failed, domainOnly: domainOnly });
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 

@@ -181,6 +181,10 @@ header{flex-wrap:wrap}
 .camSlot{width:100%;padding:24px 12px;border:1.5px dashed #ffd0c0;border-radius:13px;background:var(--tint);display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#d4573a}
 .camSlot .big{font-size:30px}
 .billrow{display:flex;gap:8px}.billrow input{flex:1}.billrow button{flex:none;width:auto;white-space:nowrap}
+.createrow{display:flex;justify-content:flex-end;margin:2px 0 10px}
+#btnCreate{font-size:14px;padding:12px 22px;border-radius:12px}
+#btnCreateTop{display:none}
+@media(min-width:900px){#btnCreateTop{display:block}.createrow{display:none}}
 
 /* ===== print 4x6 ===== */
 #printArea{display:none}
@@ -195,7 +199,7 @@ header{flex-wrap:wrap}
 <div id="whoChip" title="Tài khoản đăng nhập"><i id="whoIni">?</i><span id="whoTxt"></span></div>
 <div id="hdrSummary"></div>
 <button id="btnTheme" type="button">☾ Tối</button>
-<button id="btnCreate" class="primary">＋ Create</button>
+<button id="btnCreateTop" class="primary">＋ Create</button>
 </header>
 
 <nav class="bnav">
@@ -206,11 +210,12 @@ header{flex-wrap:wrap}
 
 <main id="viewMain">
 <div class="scanbar">
-<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></svg>
-<input id="scanMain" placeholder="Quét mã hoặc nhập tay…" inputmode="text">
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+<input id="scanMain" placeholder="Nhập mã để tìm kiếm…" inputmode="text">
 <button id="camMain">📷 Quét</button>
 </div>
 <div id="reader" style="display:none"></div>
+<div class="createrow"><button id="btnCreate" class="primary">＋ Create</button></div>
 <div class="pills" id="pillsRow"></div>
 <div class="msg" id="msgMain"></div>
 <div id="grid"></div>
@@ -623,7 +628,8 @@ try{
 var r=await gs('fixPhotoSharing',[]);
 if(!r.ok)throw new Error(r.error);
 var f=r.data.failed&&r.data.failed.length?(' Lỗi '+r.data.failed.length+' file.'):'';
-msg('msgAccess','Đã share '+r.data.shared+'/'+r.data.total+' ảnh.'+f+' Mở lại Danh sách để kiểm tra.',true);
+var via=r.data.domainOnly?' (share nội bộ — xem bằng email công ty).':'';
+msg('msgAccess','Đã share '+r.data.shared+'/'+r.data.total+' ảnh.'+via+f+' Mở lại Danh sách để kiểm tra.',true);
 await loadGrid();
 }catch(e){msg('msgAccess',e.message||'Lỗi sửa share');}
 }
@@ -668,6 +674,7 @@ document.getElementById('btnTheme').onclick=function(){
 applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 };
 document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();};
+document.getElementById('btnCreateTop').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();};
 function showCreateStep(n){
 state.createStep=n;
 document.getElementById('stepTask').style.display=n===1?'block':'none';
