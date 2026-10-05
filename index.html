@@ -368,7 +368,8 @@ renderGrid();renderSummary();msg('msgMain','',true);
 function renderSummary(){
 var open=state.items.filter(function(it){return it.status==='chua_xu_ly';});
 var late=open.filter(function(it){return +it.days>3;}).length;
-var s=document.getElementById('hdrSummary');if(s)s.textContent=state.items.length+' đơn đang mở · '+late+' quá 3 ngày';
+var me=(state.me&&state.me.email)?String(state.me.email).split('@')[0]:'';
+var s=document.getElementById('hdrSummary');if(s)s.textContent=me;
 var p=document.getElementById('pillsRow');
 if(p)p.innerHTML=['<span>Tất cả '+state.items.length+'</span>','<span>Lưu kho '+open.length+'</span>','<span>Resolve '+state.items.filter(function(i){return i.status==='da_tim_bill';}).length+'</span>','<span>Thanh lý '+state.items.filter(function(i){return i.status==='thanh_ly';}).length+'</span>'].join('');
 }
@@ -678,6 +679,7 @@ chip.style.display='';
 document.getElementById('navAccess').style.display=(e.role==='ADMIN')?'':'none';
 document.getElementById('whoIni').textContent=String(e.email).charAt(0).toUpperCase();
 document.getElementById('whoTxt').textContent=String(e.email).split('@')[0]+' · '+(e.role||'STAFF');
+try{renderSummary();}catch(err){}
 }
 async function loadUsers(){
 msg('msgAccess','Đang tải…',true);
