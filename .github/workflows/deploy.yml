@@ -1,0 +1,81 @@
+name: Deploy to GAS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# FIX-25 smoothness: 2 push sát nhau không race version
+# Tách khỏi Test (2026-08-31): Deploy chạy song song, không chờ Test — giảm ~4-5 phút
+concurrency:
+  group: deploy-gas
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Setup Node + clasp
+        run: |
+          npm install -g @google/clasp
+
+      - name: Create .clasp.json (from secrets)
+        run: |
+          cat > .clasp.json << EOF
+          {"scriptId":"${{ secrets.GAS_SCRIPT_ID }}","rootDir":"./"}
+          EOF
+
+      - name: Restore .clasprc.json (auth)
+        run: |
+          cat > ~/.clasprc.json << 'CLASPRC_EOF'
+          ${{ secrets.CLASPRC_JSON }}
+          CLASPRC_EOF
+
+      - name: Push to GAS
+        run: clasp push -f
+
+      - name: Deploy new version to production (/exec)
+        # /exec (deployment versioned) KHONG tu cap nhat theo push — can tao version moi
+        # + redeploy vao deployment production hien co (bug 2026-08-11: user thay /exec
+        # van chay ban cu, khong thay nut quet camera).
+        # FIX-26: bỏ continue-on-error — deploy fail phải đỏ workflow để phát hiện ngay
+        run: |
+          set -e
+          VERSION=$(clasp version "auto $(git rev-parse --short HEAD)" | grep -oE '[0-9]+' | tail -1)
+          if [ -z "$VERSION" ]; then
+            echo "Khong tao duoc version — bo qua deploy"
+            exit 0
+          fi
+          # clasp deployments --json: field la versionNumber (HEAD -> undefined), KHONG phai 'version'
+          DEPLOY_ID=$(clasp deployments --json | node -e "
+            let s = '';
+            process.stdin.on('data', function (d) { s += d; });
+            process.stdin.on('end', function () {
+              try {
+                var arr = JSON.parse(s);
+                var prod = arr.filter(function (d) {
+                  return d.deploymentId && d.versionNumber;
+                }).sort(function (a, b) {
+                  return (b.versionNumber || 0) - (a.versionNumber || 0);
+                })[0];
+                process.stdout.write(prod ? prod.deploymentId : '');
+              } catch (e) { process.stdout.write(''); }
+            });
+          ")
+          if [ -z "$DEPLOY_ID" ]; then
+            echo "Khong tim thay deployment versioned — bo qua deploy"
+            exit 0
+          fi
+          clasp redeploy "$DEPLOY_ID" --versionNumber "$VERSION" --description "auto $(git rev-parse --short HEAD)"
+          echo "REDEPLOYED version $VERSION to deployment $DEPLOY_ID"

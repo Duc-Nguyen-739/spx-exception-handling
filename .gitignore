@@ -1,0 +1,21 @@
+# Credentials — TUYỆT ĐỐI không commit
+.clasp.json
+.clasprc.json
+*.clasprc.json
+.env
+
+# Node
+node_modules/
+dist/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+index.local.html

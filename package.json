@@ -1,0 +1,16 @@
+{
+  "name": "spx-exception-handling",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SPX Exception Handling — GAS WebApp (khung ban đầu)",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:py": "python3 -m unittest discover -s api -p 'test_*.py'",
+    "test:chrome": "node scripts/test-local-mock.js",
+    "build:local": "node scripts/build-local.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
