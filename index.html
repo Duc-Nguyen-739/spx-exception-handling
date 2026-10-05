@@ -1,101 +1,194 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SPX Exception Handling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-:root{--spx:#ee4d2d;--bg:#f5f5f5;--card:#fff;--mut:#757575}
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,Roboto,Arial;background:var(--bg);color:#222}
-header{position:sticky;top:0;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;padding:10px 12px;z-index:5}
-header h1{font-size:17px;margin:0;flex:1}
-button{cursor:pointer;border:1px solid #ddd;background:#fff;border-radius:8px;padding:9px 12px;font-size:14px}
-button.primary{background:var(--spx);border-color:var(--spx);color:#fff;font-weight:700}
+:root{--o:#ee4d2d;--tint:#fff5f0;--navy:#172b48;--ink:#303844;--mut:#97a0ad;--line:#eef0f3;--bg:#f5f6f9;--card:#fff;--green:#11c964;--blue:#3274f7;--amber:#f79009;--t2:#e9faf0;--t3:#eef4ff;--t4:#fff4e5}
+*{box-sizing:border-box}
+html[data-theme=dark]{--bg:#dde3ec;--card:#f7f9fc;--line:#c9d2e0;--tint:#ffe9df}
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,Roboto,Arial;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button{cursor:pointer;font-family:inherit;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 13px;font-size:12.5px;font-weight:700;color:var(--navy)}
+button.primary{background:var(--o);border-color:var(--o);color:#fff}
 button:disabled{opacity:.45;cursor:not-allowed}
-main{padding:12px;max-width:980px;margin:0 auto}
-.toolbar{display:flex;gap:8px;margin-bottom:10px}
-.toolbar input{flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:15px}
-#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-.card{background:var(--card);border-radius:10px;overflow:hidden;border:1px solid #eee}
-.card img{width:100%;height:130px;object-fit:cover;display:block;background:#eee}
-.card .body{padding:8px}
-.code{font-weight:700;font-size:13px;word-break:break-all}
-.days{display:inline-block;background:#fff3e0;color:#e65100;border-radius:12px;padding:1px 8px;font-size:12px;margin-left:4px}
-.st{display:inline-block;margin-top:6px;font-size:12px;padding:2px 8px;border-radius:12px;background:#e8f5e9}
-.st.Resolve{background:#e3f2fd}.st.thanhly{background:#fce4ec}
-.meta{color:var(--mut);font-size:12px;margin-top:4px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;padding:14px;z-index:20;overflow:auto}
-.modal.open{display:flex}
-.sheet{background:#fff;border-radius:12px;max-width:640px;width:100%;padding:14px}
-.sheet h2{margin:0 0 8px;font-size:17px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-td,th{border:1px solid #eee;padding:7px;text-align:left;vertical-align:top}
-th{background:#fafafa;width:130px}
-.sheet img.big{width:100%;max-height:260px;object-fit:contain;background:#f6f6f6;border:1px solid #eee;border-radius:8px;margin:6px 0}
-.field{margin:8px 0}.field label{display:block;font-weight:600;margin-bottom:4px;font-size:14px}
-.field input,.field textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px}
-.row{display:flex;gap:8px}.row>*{flex:1}
-.hist{background:#fafafa;border:1px solid #eee;border-radius:8px;padding:8px;font-size:13px;margin-top:8px}
-.msg{min-height:20px;font-size:13px;margin:6px 0}.msg.ok{color:#2e7d32}.msg.err{color:#c62828}
-#liqList{list-style:none;padding:0;margin:8px 0}#liqList li{background:#fff;border:1px solid #eee;border-radius:8px;padding:8px;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+input,textarea,select{font-family:inherit;font-size:13px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 12px;width:100%}
+input:focus,textarea:focus,select:focus{outline:2px solid #ffd9cd;border-color:var(--o)}
+.mono{font-family:ui-monospace,Menlo,monospace}
+.msg{min-height:18px;font-size:12px;margin:8px 2px;font-weight:600}
+.msg.ok{color:#0d9a50}.msg.err{color:var(--o)}
+
+/* ===== header ===== */
+header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);padding:12px 14px;display:flex;align-items:center;gap:10px}
+html[data-theme=dark] header{background:var(--navy);border-bottom-color:transparent}
+html[data-theme=dark] header .mark>span,html[data-theme=dark] header #hdrSummary{color:#fff}
+html[data-theme=dark] header .mark>span small{color:#8fa3c2}
+.mark{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:var(--navy)}
+.mark b{background:var(--o);color:#fff;border-radius:8px;padding:4px 8px;font-size:11.5px;letter-spacing:.3px}
+.mark span small{display:block;font-size:9.5px;color:var(--mut);font-weight:600;margin-top:1px}
+#hdrSummary{margin-left:auto;font-size:10.5px;color:var(--mut);font-weight:600;text-align:right;line-height:1.4;max-width:180px}
+#btnTheme{border-radius:9px;padding:8px 11px;font-size:11px}
+#whoChip{display:none;align-items:center;gap:6px;font-size:10.5px;font-weight:700;color:var(--navy);background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:4px 10px 4px 4px}
+#whoChip i{width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:800}
+html[data-theme=dark] #whoChip{background:rgba(255,255,255,.12);border-color:transparent;color:#fff}
+
+/* ===== nav (top pills on desktop, bottom bar on mobile) ===== */
+.bnav{display:flex;gap:6px;background:var(--card);border-top:1px solid var(--line);padding:8px 14px 12px;position:fixed;bottom:0;left:0;right:0;z-index:19}
+html[data-theme=dark] .bnav{background:var(--navy);border-bottom-color:transparent}
+.bnav button{flex:1;border:none;background:transparent;color:var(--mut);font-size:11px;font-weight:700;padding:8px 6px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bnav button.on{color:var(--o);background:var(--tint)}
+html[data-theme=dark] .bnav button{color:#8fa3c2}
+html[data-theme=dark] .bnav button.on{background:rgba(255,255,255,.12);color:#ffb3a0}
+.bnav button svg{width:18px;height:18px}
+.bnav button.new{color:var(--o)}
+main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
+
+/* ===== scan bar ===== */
+.scanbar{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 13px;margin-bottom:10px}
+.scanbar svg{color:var(--o);flex:none}
+.scanbar input{border:none;background:transparent;padding:9px 0;font-size:14px;font-weight:600}
+.scanbar input:focus{outline:none}
+.scanbar input::placeholder{color:var(--mut);font-weight:500}
 #reader{width:100%;max-width:420px;margin:8px auto}
+
+/* ===== chips row ===== */
+.pills{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+.pills span{font-size:11px;font-weight:700;color:var(--mut);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:6px 12px}
+
+/* ===== card grid ===== */
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:11px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.card img{width:100%;height:120px;object-fit:cover;display:block;background:linear-gradient(135deg,#f1f3f7,#e6eaf1)}
+.card .noimg{width:100%;height:96px;display:grid;place-items:center;font-size:24px;background:var(--bg)}
+.card .body{padding:9px 11px 11px}
+.card .code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;font-weight:700;color:var(--navy);word-break:break-all}
+.card .meta{color:var(--mut);font-size:10px;font-weight:500;margin:4px 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rowend{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.st{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:4px 9px;border-radius:8px;line-height:1;background:var(--tint);color:var(--o)}
+.st::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.st.Resolve{background:var(--t2);color:#0d9a50}
+.st.thanhly{background:var(--t3);color:var(--blue)}
+.days{font-size:10px;font-weight:800;color:var(--mut);background:var(--bg);border-radius:7px;padding:4px 8px;white-space:nowrap}
+.days.hot{color:var(--amber);background:var(--t4)}
+
+/* ===== thanh ly ===== */
+.cnt{background:var(--tint);border:1px solid #ffd9cd;border-radius:15px;padding:13px 15px;display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.cnt b{font-size:30px;font-weight:800;color:var(--o);line-height:1}
+.cnt small{font-size:10.5px;color:#b06a52;font-weight:600;line-height:1.5}
+html[data-theme=dark] .cnt small{color:#a4573d}
+#liqList{list-style:none;padding:0;margin:0 0 12px}
+#liqList li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;font-size:12px;font-weight:600;color:var(--navy)}
+#liqList li span{flex:1;font-family:ui-monospace,Menlo,monospace;font-size:11px;word-break:break-all}
+#liqList li button{padding:5px 10px;font-size:10.5px;color:var(--mut);border-color:var(--line)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+
+/* ===== modal: bottom sheet (mobile) / right drawer (desktop) ===== */
+.modal{position:fixed;inset:0;background:rgba(23,43,72,.4);display:none;align-items:flex-end;justify-content:center;z-index:30}
+.modal.open{display:flex}
+.sheet{background:var(--card);border-radius:20px 20px 0 0;max-width:640px;width:100%;padding:16px 16px 20px;max-height:92%;overflow:auto}
+.sheet h2{margin:0 0 10px;font-size:15.5px;color:var(--navy)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--bg);font-size:12px}
+.kv b{color:var(--mut);font-weight:600;flex:none}
+.kv span{color:var(--ink);font-weight:600;text-align:right;overflow:hidden;text-overflow:ellipsis}
+.sheet img.big{width:100%;max-height:220px;object-fit:cover;border-radius:13px;display:block;margin:10px 0}
+.field{margin:10px 0}
+.field label{display:block;font-weight:800;margin-bottom:5px;font-size:10.5px;letter-spacing:.4px;color:var(--navy)}
+.photoBox{border:1.5px dashed #ffd0c0;border-radius:13px;background:var(--tint);padding:9px;text-align:center;font-size:10.5px;font-weight:700;color:#d4573a}
+.photoBox img{max-width:100%;max-height:170px;display:none;margin-top:6px;border-radius:10px}
+.hist{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:9px 11px;font-size:11.5px;margin-top:10px;line-height:1.7;color:var(--mut)}
+.hist b{color:var(--navy)}
+.seg{display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;margin:10px 0}
+.seg button{flex:1;border:none;background:transparent;color:var(--mut);border-radius:9px;padding:9px;font-size:12px}
+.seg button.primary{background:var(--card);color:var(--o);box-shadow:0 1px 4px rgba(23,43,72,.1);border:none}
+.btnrow{display:flex;gap:8px;margin-top:10px}
+.btnrow button{flex:1}
+button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;font-size:11.5px;padding:9px}
+
+/* ===== users table ===== */
+table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;font-size:12px}
+td,th{padding:10px 12px;text-align:left;border-bottom:1px solid var(--bg);vertical-align:middle}
+th{background:var(--card);font-size:9.5px;letter-spacing:.6px;color:var(--mut);font-weight:800}
+tr:last-child td{border-bottom:none}
+td .st{background:var(--bg);color:var(--mut)}
+td .st.adm{background:var(--tint);color:var(--o)}
+#usersTable .roleBtn{font-size:10px;padding:6px 11px;border-radius:8px}
+
+@media (min-width:900px){
+.bnav{max-width:1100px;margin:0 auto;position:static;border-top:none;padding:14px 14px 0;background:transparent;box-shadow:none}
+html[data-theme=dark] .bnav{background:transparent}
+.bnav button{flex:none;flex-direction:row;gap:7px;font-size:12.5px;padding:10px 18px}
+main{padding:16px 20px 40px}
+#grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:13px}
+.modal{align-items:stretch;justify-content:flex-end;padding:0}
+.sheet{max-width:460px;width:100%;height:100%;max-height:none;border-radius:0;padding:22px 24px;box-shadow:-20px 0 50px rgba(23,43,72,.25)}
+header{padding:12px 22px}
+#whoChip{display:flex}
+}
+
+/* ===== print 4x6 ===== */
 #printArea{display:none}
 @page{size:4in 6in;margin:0}
 #printArea{width:4in;height:6in}
 @media print{body>*{display:none!important}#printArea{display:flex!important;flex-direction:column;align-items:center;justify-content:center;width:4in;height:6in;margin:0;padding:0;text-align:center}#qrBox img,#qrBox canvas,#qrBox table{width:2.8in!important;height:2.8in!important}#printArea .pcode{font-size:34px;font-weight:800;margin-top:12px;word-break:break-all;padding:0 8px}}
-.tabs{display:flex;gap:8px;margin:8px 0}
-.tabs button.flex{flex:1}
-.photoBox{border:1px dashed #bbb;border-radius:8px;padding:8px;text-align:center}
-.photoBox img{max-width:100%;max-height:180px;display:none;margin-top:6px}
 </style>
 </head>
 <body>
 <header>
-<h1>SPX Ngoại Lệ</h1>
-<button id="navMain">Chính</button>
-<button id="navLiq">Thanh Lý</button>
-<button id="navAccess">Quyền</button>
-<button id="btnCreate" class="primary">Create</button>
+<span class="mark"><b>SPX</b><span>Exception Handling<small id="ctxLine">Ngoại lệ kho</small></span></span>
+<div id="whoChip" title="Tài khoản đăng nhập"><i id="whoIni">?</i><span id="whoTxt"></span></div>
+<div id="hdrSummary"></div>
+<button id="btnTheme" type="button">☾ Tối</button>
+<button id="btnCreate" class="primary">＋ Create</button>
 </header>
 
+<nav class="bnav">
+<button id="navMain" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Danh sách</button>
+<button id="navLiq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>Thanh lý</button>
+<button id="navAccess"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Quyền</button>
+</nav>
+
 <main id="viewMain">
-<div class="toolbar">
-<input id="scanMain" placeholder="Scan mã / súng quét rồi Enter…" inputmode="text">
-<button id="camMain">Quét</button>
+<div class="scanbar">
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></svg>
+<input id="scanMain" placeholder="Quét mã VTCode hoặc nhập tay…" inputmode="text">
+<button id="camMain">📷 Quét</button>
 </div>
 <div id="reader" style="display:none"></div>
+<div class="pills" id="pillsRow"></div>
 <div class="msg" id="msgMain"></div>
 <div id="grid"></div>
 </main>
 
 <main id="viewLiq" style="display:none">
-<h2 style="margin:4px 0">Thanh Lý</h2>
-<div class="toolbar">
-<input id="scanLiq" placeholder="Scan mã đơn…" inputmode="text">
-<button id="camLiq">Quét</button>
+<div class="scanbar">
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 5v14M8 5v14M13 5v14M17 5v14M20 5v14" stroke-dasharray="2 3"/></svg>
+<input id="scanLiq" placeholder="Quét mã đơn vào lô thanh lý…" inputmode="text">
+<button id="camLiq">📷 Quét</button>
 </div>
 <div class="msg" id="msgLiq"></div>
+<div class="cnt" id="liqCnt" style="display:none"><b id="liqCount">0</b><small>mã đủ điều kiện trong lô · kiểm tra trùng / đã Resolve / đã thanh lý tự động</small></div>
 <ul id="liqList"></ul>
 <div class="row">
-<button id="btnNext" class="primary" disabled>Next</button>
+<button id="btnNext" class="primary" disabled>Next →</button>
 </div>
 <div id="liqCodeWrap" style="display:none">
-<div class="field"><label>Mã Thanh Lý</label>
-<input id="liqCode" placeholder="Scan mã Thanh Lý SPXVN...">
+<div class="field"><label>MÃ THANH LÝ (từ phiếu bàn giao) *</label>
+<input id="liqCode" class="mono" placeholder="SPXVN…">
 </div>
-<button id="btnLiqDone" class="primary">Hoàn Thành</button>
+<button id="btnLiqDone" class="primary" style="width:100%">✓ Hoàn thành lô</button>
 </div>
 </main>
 
 <main id="viewAccess" style="display:none">
-<h2 style="margin:4px 0">Quyền Truy Cập</h2>
 <div class="msg" id="msgAccess"></div>
 <div id="accessAdmin" style="display:none">
 <div class="row">
-<input id="newEmail" placeholder="Email cần thêm…" inputmode="email" style="flex:2;padding:10px;border:1px solid #ddd;border-radius:8px">
-<select id="newRole" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px"><option value="STAFF">STAFF</option><option value="ADMIN">ADMIN</option></select>
+<input id="newEmail" placeholder="email@shopee.vn cần thêm…" inputmode="email" style="flex:2">
+<select id="newRole" style="flex:1"><option value="STAFF">STAFF</option><option value="ADMIN">ADMIN</option></select>
 <button id="btnAddUser" class="primary">Thêm</button>
 </div>
 </div>
@@ -106,43 +199,45 @@ th{background:#fafafa;width:130px}
 <h2>Chi tiết đơn hàng</h2>
 <div id="detailBody"></div>
 <div class="hist" id="detailHist"></div>
-<div class="field"><label>Resolve</label>
-<input id="resolveBill" placeholder="Vui lòng nhập mã bill xử lý...">
+<div class="field"><label>MÃ BILL XỬ LÝ (VTCODE)</label>
+<input id="resolveBill" class="mono" placeholder="Vui lòng nhập mã bill xử lý…">
 </div>
-<div class="row">
-<button id="btnPrintDetail">In Mã</button>
-<button id="btnResolve" class="primary">Hoàn Thành</button>
-<button id="btnReopen" style="display:none">Mở lại (ADMIN)</button>
-<button id="btnCloseDetail">Đóng</button>
+<div class="btnrow">
+<button id="btnResolve" class="primary">Hoàn thành Resolve</button>
 </div>
+<div class="btnrow">
+<button id="btnPrintDetail">🖨 In mã QR</button>
+<button id="btnReopen" style="display:none">↺ Mở lại (ADMIN)</button>
+</div>
+<button id="btnCloseDetail" class="lnk">Đóng</button>
 <div class="msg" id="msgDetail"></div>
 </div></div>
 
 <div class="modal" id="createModal"><div class="sheet">
-<h2>Create</h2>
-<div class="tabs">
-<button id="tabNonAwb" class="primary flex">+Non-AWB</button>
-<button id="tabLiqGo" class="flex">Thanh Lý</button>
+<h2>Create ngoại lệ</h2>
+<div class="seg">
+<button id="tabNonAwb" class="primary">＋ Non-AWB</button>
+<button id="tabLiqGo">Thanh Lý</button>
 </div>
 <div id="paneNonAwb">
-<div class="tabs"><button id="tabBox" class="primary flex">Box</button><button id="tabItem" class="flex">Item</button></div>
+<div class="seg"><button id="tabBox" class="primary">Box — nguyên thùng</button><button id="tabItem">Item — tách lẻ</button></div>
 <div id="formBox">
-<div class="field"><label>Mã Box</label><input id="boxCode" readonly placeholder="Box.(ngày-tháng-năm).(số tự sinh)"></div>
-<div class="field"><label>Ảnh Ngoại Quan</label><div class="photoBox"><input type="file" id="boxOuter" accept="image/*" capture="environment"><img id="boxOuterPrev"></div></div>
-<div class="field"><label>Ảnh Sản Phẩm</label><div class="photoBox"><input type="file" id="boxProduct" accept="image/*" capture="environment"><img id="boxProductPrev"></div></div>
-<div class="field"><label>Mô tả sản phẩm</label><textarea id="boxDesc" rows="2"></textarea></div>
-<div class="field"><label>Ghi chú</label><input id="boxNote" placeholder="Nơi để, bù đơn hàng..."></div>
-<div class="row"><button id="btnBoxPrint">In Mã</button><button id="btnBoxDone" class="primary">Hoàn Thành</button></div>
+<div class="field"><label>MÃ BOX (server cấp khi lưu)</label><input id="boxCode" class="mono" readonly placeholder="Box.(ngày-tháng-năm).(số tự sinh)"></div>
+<div class="field"><label>ẢNH NGOẠI QUAN *</label><div class="photoBox"><input type="file" id="boxOuter" accept="image/*" capture="environment"><img id="boxOuterPrev"></div></div>
+<div class="field"><label>ẢNH SẢN PHẨM *</label><div class="photoBox"><input type="file" id="boxProduct" accept="image/*" capture="environment"><img id="boxProductPrev"></div></div>
+<div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea id="boxDesc" rows="2" placeholder="VD: Thùng 12 áo thun hoàn, seal còn nguyên…"></textarea></div>
+<div class="field"><label>GHI CHÚ</label><input id="boxNote" placeholder="Nơi để, bù đơn hàng…"></div>
+<div class="row"><button id="btnBoxPrint">🖨 In Mã</button><button id="btnBoxDone" class="primary">✓ Hoàn Thành</button></div>
 </div>
 <div id="formItem" style="display:none">
-<div class="field"><label>Mã Item</label><input id="itemCode" readonly placeholder="Item.(ngày-tháng-năm).(số tự sinh)"></div>
-<div class="field"><label>Ảnh Sản Phẩm</label><div class="photoBox"><input type="file" id="itemProduct" accept="image/*" capture="environment"><img id="itemProductPrev"></div></div>
-<div class="field"><label>Mô tả sản phẩm</label><textarea id="itemDesc" rows="2"></textarea></div>
-<div class="row"><button id="btnItemPrint">In Mã</button><button id="btnItemDone" class="primary">Hoàn Thành</button></div>
+<div class="field"><label>MÃ ITEM (server cấp khi lưu)</label><input id="itemCode" class="mono" readonly placeholder="Item.(ngày-tháng-năm).(số tự sinh)"></div>
+<div class="field"><label>ẢNH SẢN PHẨM *</label><div class="photoBox"><input type="file" id="itemProduct" accept="image/*" capture="environment"><img id="itemProductPrev"></div></div>
+<div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea id="itemDesc" rows="2"></textarea></div>
+<div class="row"><button id="btnItemPrint">🖨 In Mã</button><button id="btnItemDone" class="primary">✓ Hoàn Thành</button></div>
 </div>
 <div class="msg" id="msgCreate"></div>
 </div>
-<div class="row" style="margin-top:8px"><button id="btnCloseCreate">Đóng</button></div>
+<button id="btnCloseCreate" class="lnk" style="margin-top:8px">Đóng</button>
 </div></div>
 
 <div id="printArea"><div id="qrBox"></div><div class="pcode" id="printCode"></div></div>
@@ -173,16 +268,30 @@ if(!r.ok)throw new Error(r.error);
 state.items=r.data;
 }catch(e){state.items=DEMO.slice();}
 state.items.forEach(function(it){if(it.days==null)it.days=daysOf(it.createdAt);});
-renderGrid();msg('msgMain','',true);
+renderGrid();renderSummary();msg('msgMain','',true);
+}
+function renderSummary(){
+var open=state.items.filter(function(it){return it.status==='chua_xu_ly';});
+var late=open.filter(function(it){return +it.days>3;}).length;
+var s=document.getElementById('hdrSummary');if(s)s.textContent=state.items.length+' đơn đang mở · '+late+' quá 3 ngày';
+var p=document.getElementById('pillsRow');
+if(p)p.innerHTML=['<span>Tất cả '+state.items.length+'</span>','<span>Lưu kho '+open.length+'</span>','<span>Resolve '+state.items.filter(function(i){return i.status==='da_tim_bill';}).length+'</span>','<span>Thanh lý '+state.items.filter(function(i){return i.status==='thanh_ly';}).length+'</span>'].join('');
 }
 function renderGrid(){
 var g=document.getElementById('grid');g.innerHTML='';
 state.items.forEach(function(it){
 var d=document.createElement('div');d.className='card';
 var src=thumb(it);
-d.innerHTML='<img alt="" src="'+esc(src)+'"><div class="body"><div class="code">'+esc(it.code)+'<span class="days">'+esc(it.days)+' ngày</span></div><div><span class="st '+stClass(it.status)+'">'+esc(it.statusLabel||it.status)+'</span></div><div class="meta">'+esc(it.createdAt||'')+'</div></div>';
-var im=d.querySelector('img');im.onerror=function(){im.style.display='none';};
-im.onclick=function(){openDetail(it.code);};
+var hot=(+it.days>3&&it.status==='chua_xu_ly')?' hot':'';
+d.innerHTML=(src?'<img alt="" src="'+esc(src)+'">':'<div class="noimg">📦</div>')
++'<div class="body"><div class="code">'+esc(it.code)+'</div>'
++'<div class="meta">'+esc(it.description||it.kind||'')+'</div>'
++'<div class="rowend"><span class="st '+stClass(it.status)+'">'+esc(it.statusLabel||it.status)+'</span>'
++'<span class="days'+hot+'">'+esc(it.days)+'N</span></div></div>';
+var im=d.querySelector('img');
+if(im){im.onerror=function(){im.outerHTML='<div class="noimg">📦</div>';};im.onclick=function(){openDetail(it.code);};}
+else{d.querySelector('.noimg').onclick=function(){openDetail(it.code);};}
+d.onclick=function(){openDetail(it.code);};
 g.appendChild(d);
 });
 }
@@ -199,16 +308,15 @@ var f=state.items.filter(function(x){return x.code===code;})[0]||{code:code};
 state.detail={item:f,history:[]};
 }
 var it=state.detail.item;
-var h='<table>'+
-'<tr><th>Mã đơn</th><td>'+esc(it.code)+'</td></tr>'+
-'<tr><th>Loại</th><td>'+esc(it.kind||'')+'</td></tr>'+
-'<tr><th>Ngày tạo</th><td>'+esc(it.createdAt||'')+' ('+esc(daysOf(it.createdAt)+' ngày lưu kho')+')</td></tr>'+
-'<tr><th>Người tạo</th><td>'+esc(it.createdBy||'')+'</td></tr>'+
-'<tr><th>Mô tả</th><td>'+esc(it.description||'')+'</td></tr>'+
-'<tr><th>Ghi chú</th><td>'+esc(it.note||'')+'</td></tr>'+
-'<tr><th>Trạng thái</th><td>'+esc(it.statusLabel||it.status||'')+'</td></tr></table>';
-if(it.imgOuter)h+='<div>Ảnh Ngoại Quan</div><img class="big" src="'+esc(it.imgOuter)+'">';
-if(it.imgProduct)h+='<div>Ảnh Sản Phẩm</div><img class="big" src="'+esc(it.imgProduct)+'">';
+var h='<div class="kv"><b>Mã đơn</b><span class="mono">'+esc(it.code)+'</span></div>'+
+'<div class="kv"><b>Loại</b><span>'+esc(it.kind||'')+'</span></div>'+
+'<div class="kv"><b>Ngày tạo</b><span>'+esc(it.createdAt||'')+' · '+esc(daysOf(it.createdAt)+' ngày lưu kho')+'</span></div>'+
+'<div class="kv"><b>Người tạo</b><span>'+esc(it.createdBy||'')+'</span></div>'+
+'<div class="kv"><b>Mô tả</b><span>'+esc(it.description||'')+'</span></div>'+
+'<div class="kv"><b>Ghi chú</b><span>'+esc(it.note||'')+'</span></div>'+
+'<div class="kv"><b>Trạng thái</b><span><span class="st '+stClass(it.status)+'">'+esc(it.statusLabel||it.status||'')+'</span></span></div>';
+if(it.imgOuter)h+='<div class="kv"><b>Ảnh Ngoại Quan</b></div><img class="big" src="'+esc(it.imgOuter)+'">';
+if(it.imgProduct)h+='<div class="kv"><b>Ảnh Sản Phẩm</b></div><img class="big" src="'+esc(it.imgProduct)+'">';
 document.getElementById('detailBody').innerHTML=h;
 var hs=state.detail.history||[];
 var hh='<b>Resolve / Thanh Lý (riêng, không đè người tạo):</b>';
@@ -300,11 +408,13 @@ function renderLiq(){
 var ul=document.getElementById('liqList');ul.innerHTML='';
 state.liq.forEach(function(c,i){
 var li=document.createElement('li');
-li.innerHTML='<span style="flex:1">'+esc(c)+'</span>';
-var b=document.createElement('button');b.textContent='Xóa';
+li.innerHTML='<span>'+esc(c)+'</span>';
+var b=document.createElement('button');b.textContent='✕ Xóa';
 b.onclick=function(){state.liq.splice(i,1);renderLiq();};
 li.appendChild(b);ul.appendChild(li);
 });
+var cnt=document.getElementById('liqCount');if(cnt)cnt.textContent=state.liq.length;
+var wrap=document.getElementById('liqCnt');if(wrap)wrap.style.display=state.liq.length?'flex':'none';
 document.getElementById('btnNext').disabled=!state.liq.length;
 }
 function liqStatusOf(code){
@@ -341,8 +451,16 @@ await loadGrid();
 }
 
 async function loadMe(){
-try{var r=await gs('me',[]);if(r.ok){state.me=r.data;return;}}catch(e){}
-state.me={email:'',role:'STAFF'};
+try{var r=await gs('me',[]);if(r.ok){state.me=r.data;renderWho();return;}}catch(e){}
+state.me={email:'',role:'STAFF'};renderWho();
+}
+function renderWho(){
+var chip=document.getElementById('whoChip');if(!chip)return;
+var e=state.me||{};
+if(!e.email){chip.style.display='none';return;}
+chip.style.display='';
+document.getElementById('whoIni').textContent=String(e.email).charAt(0).toUpperCase();
+document.getElementById('whoTxt').textContent=String(e.email).split('@')[0]+' · '+(e.role||'STAFF');
 }
 async function loadUsers(){
 msg('msgAccess','Đang tải…',true);
@@ -351,7 +469,7 @@ var r=await gs('listUsers',[]);
 if(!r.ok)throw new Error(r.error);
 var h='<table><tr><th>Email</th><th>Quyền</th><th></th></tr>';
 r.data.forEach(function(u){
-h+='<tr><td>'+esc(u.email)+'</td><td>'+esc(u.role)+'</td><td><button data-email="'+esc(u.email)+'" data-role="'+(u.role==='ADMIN'?'STAFF':'ADMIN')+'" class="roleBtn">'+(u.role==='ADMIN'?'Hạ STAFF':'Lên ADMIN')+'</button></td></tr>';
+h+='<tr><td class="mono">'+esc(u.email)+'</td><td><span class="st'+(u.role==='ADMIN'?' adm':'')+'">'+esc(u.role)+'</span></td><td><button data-email="'+esc(u.email)+'" data-role="'+(u.role==='ADMIN'?'STAFF':'ADMIN')+'" class="roleBtn">'+(u.role==='ADMIN'?'Hạ STAFF':'Lên ADMIN')+'</button></td></tr>';
 });
 h+='</table>';
 document.getElementById('usersTable').innerHTML=h;
@@ -390,15 +508,27 @@ try{qr.stop();}catch(e){}rd.style.display='none';},
 function(){}).catch(function(){msg('msgMain','Không mở được camera (cần HTTPS). Nhập tay hoặc dùng súng.');});
 }
 
+function applyTheme(t){
+document.documentElement.setAttribute('data-theme',t);
+var b=document.getElementById('btnTheme');
+if(b)b.textContent=t==='dark'?'☀ Sáng':'☾ Tối';
+try{localStorage.setItem('spx_theme',t);}catch(e){}
+}
+var savedTheme=null;try{savedTheme=localStorage.getItem('spx_theme');}catch(e){}
+applyTheme(savedTheme==='dark'?'dark':'light');
+
 window.addEventListener('DOMContentLoaded',function(){
 loadGrid();loadMe();
 bindFile('boxOuter','boxOuterPrev',boxOuter);
 bindFile('boxProduct','boxProductPrev',boxProduct);
 bindFile('itemProduct','itemProductPrev',itemProduct);
+document.getElementById('btnTheme').onclick=function(){
+applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+};
 document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');refreshPreview();};
 document.getElementById('btnCloseCreate').onclick=function(){document.getElementById('createModal').classList.remove('open');};
-document.getElementById('tabBox').onclick=function(){state.kind='Box';document.getElementById('formBox').style.display='block';document.getElementById('formItem').style.display='none';};
-document.getElementById('tabItem').onclick=function(){state.kind='Item';document.getElementById('formBox').style.display='none';document.getElementById('formItem').style.display='block';};
+document.getElementById('tabBox').onclick=function(){state.kind='Box';document.getElementById('formBox').style.display='block';document.getElementById('formItem').style.display='none';this.classList.add('primary');document.getElementById('tabItem').classList.remove('primary');};
+document.getElementById('tabItem').onclick=function(){state.kind='Item';document.getElementById('formBox').style.display='none';document.getElementById('formItem').style.display='block';this.classList.add('primary');document.getElementById('tabBox').classList.remove('primary');};
 document.getElementById('tabNonAwb').onclick=function(){document.getElementById('paneNonAwb').style.display='block';};
 document.getElementById('tabLiqGo').onclick=function(){document.getElementById('createModal').classList.remove('open');showLiq(true);};
 document.getElementById('btnBoxDone').onclick=submitCreate;
@@ -419,8 +549,9 @@ document.getElementById('btnNext').onclick=function(){document.getElementById('l
 document.getElementById('btnLiqDone').onclick=liqDone;
 document.getElementById('camMain').onclick=function(){toggleCam('scanMain');};
 document.getElementById('camLiq').onclick=function(){toggleCam('scanLiq');};
-function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';}
-function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';loadUsers();}
+function setActive(id){['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.toggle('on',n===id);});}
+function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';setActive(on?'navLiq':'navMain');}
+function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';setActive('navAccess');loadUsers();}
 });
 </script>
 </body>

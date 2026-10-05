@@ -29,6 +29,7 @@ Workflows giống repo `spx-diem-danh`:
 - Quét: camera `html5-qrcode` (QR + Code128) + súng = Enter trên ô scan. In: `window.print()` khổ tem nhiệt 4x6in (`@page { size: 4in 6in }`, QR + tên mã; Box/Item đều có nút In Mã).
 
 - Phân quyền: STAFF tạo/Resolve/Thanh Lý khi còn Lưu kho (đơn xong bị khóa) · ADMIN quản lý ở trang Quyền Truy Cập + Mở lại đơn về Lưu kho (log đầy đủ). Seed ADMIN từ Script Properties `ADMIN_EMAILS`.
+- UI: thiết kế theo ngôn ngữ spx.vn (cam phẳng `#ee4d2d`, navy `#172b48`, thẻ trắng viền mảnh, Be Vietnam Pro). Nút **☾ Tối / ☀ Sáng** đổi theme Sáng (header trắng) / Tối (khối navy — mẫu "SPX Navy"), lưu lựa chọn qua `localStorage`. Responsive: mobile có thanh điều hướng đáy, desktop ≥900px hiện pill nav đầu trang + chi tiết mở drawer phải. Brand: **SPX Exception Handling**.
 
 ## Verify
 
