@@ -88,6 +88,9 @@ img.thumbB{width:128px;height:96px;object-fit:cover;border-radius:9px;background
 .btnS{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;font-size:13px;font-weight:700;width:100%;color:var(--navy)}
 .btnrow{display:flex;gap:8px;margin-top:8px}.btnrow>*{flex:1}
 .billrow{display:flex;gap:8px}.billrow input{flex:1}.billrow button{flex:none;width:auto;white-space:nowrap}
+.urow{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.urow .em{flex:1;min-width:0;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:700;color:var(--mut);word-break:break-all}
+.urow .del{flex:none;font-size:11px;padding:8px 12px;border-radius:9px;color:var(--o);border-color:#ffd9cd}
 button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;font-size:12px;padding:10px;width:100%}
 .camSlot{width:100%;padding:24px 12px;border:1.5px dashed #ffd0c0;border-radius:13px;background:var(--tint);display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#d4573a}
 .camSlot .big{font-size:30px}
@@ -169,9 +172,19 @@ button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;f
 </div>
 </main>
 <div class="bnav"><button class="on">⌂<br>Danh sách</button><button>▤<br>Thanh lý</button><button>○<br>Quyền</button></div>
+<div class="phone w430" style="margin-top:16px">
+<header><span class="mark"><b>SPX</b><span>Exception Handling</span></span><span class="hdrBtns"><button>Tối</button></span><span class="hdrSummaryRow">7 đơn đang mở · 5 quá 3 ngày</span></header>
+<main>
+<div class="sec"><span class="tag fix">MỚI v8</span> Tab Role — chỉ email + role, thêm là ADMIN, nút Xóa</div>
+<div class="msg" id="v8diag" style="min-height:18px;font-size:12px;font-weight:600"></div>
+<div class="row"><input id="v8email" placeholder="email shopee" inputmode="email" style="flex:2"><button id="v8add" class="primary" style="flex:1;background:var(--o);border-color:var(--o);color:#fff;border-radius:10px;padding:9px 13px;font-size:12.5px;font-weight:700">Thêm</button></div>
+<div id="v8list" style="margin-top:10px"></div>
+<div class="msg" id="v8msg" style="min-height:18px;font-size:12px;font-weight:600"></div>
+</main>
+<div class="bnav"><button>Danh sách</button><button>Thanh lý</button><button class="on">Role</button></div>
 </div>
 
-<div class="note"><b>Cách test trên điện thoại:</b> phóng to/thu nhỏ trình duyệt ở 360–430px, bấm 3 nút trạng thái ảnh, xem grid 2 cột không bị ép. v2: bỏ chữ VTCODE, nút chỉ ghi Resolve, ấn Resolve mới hiện ô bill + nút Confirm. v3: fallback chỉ ghi 'Không tải được ảnh'/'Không có ảnh', chuyển 3 ô ảnh sang form +Create (tối đa 3, tối thiểu 1 mới xong được). v5: ô ảnh chỉ icon máy ảnh + n/3, bỏ chú thích. v7: chi tiết có nút Edit (ADMIN), Box bắt buộc 2 ảnh + ảnh 3 tùy chọn, Item chỉ 1 ảnh sản phẩm bắt buộc. Sau khi chốt, port CSS <code>.kv/.kvImg/.ph + grid 2 cột + header summary xuống dòng</code> vào <code>index.html</code> + thêm <code>onerror</code> + server <code>setSharing + sz=w400</code> + nút <code>Confirm</code> thay mọi chữ Hoàn thành.</div>
+<div class="note"><b>Cách test trên điện thoại:</b> phóng to/thu nhỏ trình duyệt ở 360–430px, bấm 3 nút trạng thái ảnh, xem grid 2 cột không bị ép. v2: bỏ chữ VTCODE, nút chỉ ghi Resolve, ấn Resolve mới hiện ô bill + nút Confirm. v3: fallback chỉ ghi 'Không tải được ảnh'/'Không có ảnh', chuyển 3 ô ảnh sang form +Create (tối đa 3, tối thiểu 1 mới xong được). v5: ô ảnh chỉ icon máy ảnh + n/3, bỏ chú thích. v7: chi tiết có nút Edit (ADMIN), Box bắt buộc 2 ảnh + ảnh 3 tùy chọn, Item chỉ 1 ảnh sản phẩm bắt buộc. v8: tab Role chỉ hiện email + role, thêm email mặc định ADMIN (không chọn role), nút Xóa thay Hạ STAFF. Sau khi chốt, port CSS <code>.kv/.kvImg/.ph + grid 2 cột + header summary xuống dòng</code> vào <code>index.html</code> + thêm <code>onerror</code> + server <code>setSharing + sz=w400</code> + nút <code>Confirm</code> thay mọi chữ Hoàn thành.</div>
 </div>
 <script>
 var GOOD='https://picsum.photos/seed/spxbox/640/400';
@@ -273,6 +286,34 @@ if(v7ckind==='Item'&&!a[0]){m.textContent='Item cần Ảnh sản phẩm mới C
 m.textContent='Đã tạo task mới.';m.style.color='#0d9a50';};
 document.getElementById('v7cReset').onclick=function(){v7c[v7ckind]=v7ckind==='Box'?['','','']:[''];document.getElementById('v7cdesc').value='';document.getElementById('v7cmsg').textContent='';renderV7Create();};
 renderV7View();renderV7Create();
+var v8me='duc.nguyenvan05@spxexpress.com';
+var v8users=[{email:'duc.nguyenvan05@spxexpress.com'},{email:'thienhuong.tran@spxexpress.com'}];
+document.getElementById('v8diag').textContent='Đăng nhập: '+v8me+' · ADMIN';
+function renderV8(){
+var w=document.getElementById('v8list');w.innerHTML='';
+v8users.forEach(function(u){
+var d=document.createElement('div');d.className='urow';
+d.innerHTML='<span class="em">'+u.email+'</span><span class="st">ADMIN</span>';
+var b=document.createElement('button');b.className='del';b.textContent='Xóa';
+b.onclick=function(){v8del(u.email);};
+d.appendChild(b);w.appendChild(d);});
+}
+function v8msg(t,ok){var m=document.getElementById('v8msg');m.textContent=t;m.style.color=t?(ok?'#0d9a50':'#ee4d2d'):'';}
+function v8del(email){
+var admins=v8users.length;
+if(admins<=1){v8msg('Không thể xóa ADMIN cuối cùng.');return;}
+if(email===v8me){v8msg('Không tự xóa chính mình.');return;}
+v8users=v8users.filter(function(u){return u.email!==email;});
+renderV8();v8msg('Đã xóa '+email+'.',true);
+}
+document.getElementById('v8add').onclick=function(){
+var v=document.getElementById('v8email').value.trim().toLowerCase();
+if(!v||v.indexOf('@')<0){v8msg('Nhập email cần thêm.');return;}
+if(v8users.some(function(u){return u.email===v;})){v8msg('Email đã có trong danh sách.');return;}
+v8users.push({email:v});document.getElementById('v8email').value='';
+renderV8();v8msg('Đã thêm '+v+' (ADMIN).',true);
+};
+renderV8();
 document.getElementById('crReset').onclick=function(){crPhotos=[];document.getElementById('crDesc').value='';document.getElementById('crMsg').textContent='';renderCr();};
 document.getElementById('crDone').onclick=function(){
 var m=document.getElementById('crMsg');
