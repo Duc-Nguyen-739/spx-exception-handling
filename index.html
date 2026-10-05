@@ -313,6 +313,11 @@ header{flex-wrap:wrap}
 <div class="row"><button id="btnItemPrint">🖨 In Mã</button><button id="btnItemDone" class="primary">Confirm</button></div>
 </div>
 <div class="msg" id="msgCreate"></div>
+<div id="createResult" style="display:none;text-align:center;margin-top:10px">
+<div class="field"><label style="text-align:left">Mã QR — mở trên máy tính để in</label>
+<div id="createQR" style="display:flex;justify-content:center"></div>
+<div class="mono" id="createQRCode" style="font-weight:800;margin-top:8px;word-break:break-all"></div>
+</div></div>
 </div>
 <button id="btnBackCreate" class="lnk" style="display:none">‹ Quay lại</button>
 <button id="btnCloseCreate" class="lnk" style="margin-top:8px">Đóng</button>
@@ -462,6 +467,12 @@ await loadGrid();await openDetail(code);
 }catch(e){msg('msgDetail',e.message||'Lỗi resolve');}
 }
 
+function showCreateQR(code){
+document.getElementById('createQRCode').textContent=code;
+var q=document.getElementById('createQR');q.innerHTML='';
+try{if(typeof QRCode!=='undefined'){new QRCode(q,{text:code,width:200,height:200});}}catch(e){}
+document.getElementById('createResult').style.display='block';
+}
 function doPrint(code){
 document.getElementById('printCode').textContent=code;
 var q=document.getElementById('qrBox');q.innerHTML='';
@@ -542,7 +553,7 @@ if(r.data.shareOk===false)msg('msgCreate','Đã tạo '+r.data.code+' — ảnh 
 else msg('msgCreate','Đã tạo '+r.data.code,true);
 boxPhotos=[];itemPhotos=[];renderSlots('Box');renderSlots('Item');
 await loadGrid();await refreshPreview();
-doPrint(r.data.code);
+showCreateQR(r.data.code);
 }catch(e){msg('msgCreate',e.message||'Lỗi tạo mã');}
 }
 
@@ -678,8 +689,8 @@ renderSlots('Box');renderSlots('Item');
 document.getElementById('btnTheme').onclick=function(){
 applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 };
-document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();};
-document.getElementById('btnCreateTop').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();};
+document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';};
+document.getElementById('btnCreateTop').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';};
 function showCreateStep(n){
 state.createStep=n;
 document.getElementById('stepTask').style.display=n===1?'block':'none';
