@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 01 — Mobile fix (gallery + detail)</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--o:#ee4d2d;--tint:#fff5f0;--navy:#172b48;--ink:#303844;--mut:#97a0ad;--line:#eef0f3;--bg:#f5f6f9;--card:#fff;--t4:#fff4e5}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,Roboto,Arial;background:#e9edf3;color:var(--ink);padding:16px 12px 60px}
+.wrap{max-width:430px;margin:0 auto}
+.toolbar{position:sticky;top:0;z-index:5;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.toolbar b{font-size:13px;color:var(--navy)}
+.toolbar .seg{display:flex;gap:6px;margin-left:auto}
+.toolbar button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:700;color:var(--navy)}
+.toolbar button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.note{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:12px;line-height:1.7;color:var(--mut);margin-bottom:12px}
+.note b{color:var(--navy)}
+.note code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:var(--bg);padding:1px 6px;border-radius:6px;color:var(--navy)}
+.phone{background:var(--bg);border:1px solid #d9e0ec;border-radius:26px;overflow:hidden;margin-bottom:16px;box-shadow:0 10px 30px rgba(23,43,72,.12);transition:max-width .2s ease;margin-left:auto;margin-right:auto}
+.phone.w360{max-width:360px}.phone.w390{max-width:390px}.phone.w430{max-width:430px}
+header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mark{display:flex;align-items:center;gap:7px;font-weight:800;font-size:12.5px;color:var(--navy)}
+.mark b{background:var(--o);color:#fff;border-radius:8px;padding:4px 8px;font-size:11px}
+#hdrSummary{font-size:10px;color:var(--mut);font-weight:600;line-height:1.4}
+.hdrBtns{display:flex;gap:6px;margin-left:auto}
+.hdrBtns button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 10px;font-size:11px;font-weight:700;color:var(--navy)}
+.hdrBtns button.primary{background:var(--o);border-color:var(--o);color:#fff}
+/* FIX mobile: summary xuong dong rieng, khong chen nut */
+.hdrSummaryRow{flex-basis:100%;font-size:10px;color:var(--mut);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+main{padding:10px 12px 90px}
+.scanbar{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 12px;margin-bottom:10px}
+.scanbar input{border:none;background:transparent;padding:9px 0;font-size:13.5px;font-weight:600;width:100%}
+.scanbar input:focus{outline:none}
+.scanbar button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.pills{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.pills span{font-size:10.5px;font-weight:700;color:var(--mut);background:#fff;border:1px solid var(--line);border-radius:9px;padding:6px 11px}
+/* BEFORE: auto-fill 150px -> may ep 3 cot tren mobile hep */
+#gridBefore{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+/* AFTER: mobile 2 cot co dinh, thoang */
+#gridAfter{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:480px){#gridAfter{grid-template-columns:repeat(3,1fr)}}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative}
+.card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:linear-gradient(135deg,#f1f3f7,#e6eaf1)}
+.card .noimg{width:100%;aspect-ratio:1/1;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;font-size:30px;background:linear-gradient(135deg,#eef1f6,#e2e8f1);color:var(--mut)}
+.card .noimg small{font-size:10px;font-weight:700}
+.card .cap{padding:8px 9px;display:flex;align-items:center;justify-content:space-between;gap:6px;border-top:1px solid var(--bg)}
+.card .code{font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;color:var(--mut);word-break:break-all;line-height:1.5}
+.card .days{font-size:10px;font-weight:800;color:var(--mut);background:var(--bg);border-radius:7px;padding:4px 8px;white-space:nowrap;flex:none}
+.card .days.hot{color:#f79009;background:var(--t4)}
+.ovst{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.94);border-radius:7px;padding:3px 8px;font-size:9px;font-weight:800;color:var(--o);box-shadow:0 1px 5px rgba(23,43,72,.2)}
+.ovst::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.sec{font-size:12px;font-weight:800;color:var(--navy);margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.sec .tag{font-size:10px;font-weight:800;background:var(--navy);color:#fff;border-radius:7px;padding:2px 8px}
+.sec .tag.fix{background:var(--o)}
+.sheet{background:#fff;border-radius:20px 20px 0 0;padding:14px 14px 18px;margin-top:10px}
+.dhead{display:flex;align-items:center;gap:6px;padding-bottom:10px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.dhead .dt{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;font-weight:800;color:var(--navy);word-break:break-all}
+.iconBtn{border:none;background:transparent;color:var(--mut);font-size:16px;padding:5px 9px;font-weight:800}
+.pcard{background:#fff;border:1px solid var(--line);border-radius:13px;padding:2px 13px;margin:0 0 10px}
+/* BEFORE: kv trai-phai, anh 128x96 dinh phai -> lech, vo hinh hien icon vo */
+.kvB{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--bg);font-size:12px}
+.kvB b{color:var(--mut);font-weight:600;flex:none}
+.kvB span{font-weight:600;text-align:right}
+img.thumbB{width:128px;height:96px;object-fit:cover;border-radius:9px;background:#e2e8f1}
+/* AFTER: hang chu giu 2 cot can doi; hang anh stack doc + anh full-width */
+.kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--bg);font-size:12px}
+.kv:last-child{border-bottom:none}
+.kv>b{color:var(--mut);font-weight:600;flex:none;flex-basis:32%;font-size:11.5px;padding-top:1px}
+.kv>.val{flex:1;min-width:0;font-weight:600;text-align:right;word-break:break-word}
+.kv>.val.mono{font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+.kv>.val .sub{display:block;font-size:10.5px;color:var(--mut);font-weight:600;margin-top:2px}
+.kvImg{display:block;padding:10px 0;border-bottom:1px solid var(--bg)}
+.kvImg>b{display:block;color:var(--mut);font-weight:700;font-size:11px;margin-bottom:8px}
+.ph{position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#eef1f6,#e2e8f1);border:1px solid var(--line)}
+.ph img{width:100%;height:210px;object-fit:cover;display:block}
+.ph .fb{display:flex;flex-direction:column;align-items:center;gap:6px;padding:26px 12px;text-align:center;color:var(--mut);font-size:11.5px;font-weight:600}
+.ph .fb .big{font-size:28px}
+.ph .fb button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 12px;font-size:11.5px;font-weight:700;color:var(--navy)}
+.ph .badge{position:absolute;left:8px;bottom:8px;background:rgba(23,43,72,.75);color:#fff;font-size:10px;font-weight:700;border-radius:7px;padding:3px 8px}
+.st{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:5px 10px;border-radius:8px;background:var(--tint);color:var(--o)}
+.st::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.field{margin:10px 0}
+.field label{display:block;font-weight:800;margin-bottom:5px;font-size:10.5px;letter-spacing:.4px;color:var(--navy)}
+.field input{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13px;font-family:inherit}
+.btnP{background:var(--o);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:800;width:100%}
+.btnS{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;font-size:13px;font-weight:700;width:100%;color:var(--navy)}
+.btnrow{display:flex;gap:8px;margin-top:8px}.btnrow>*{flex:1}
+.hist{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:9px 11px;font-size:11.5px;margin:10px 0;line-height:1.7;color:var(--mut);text-align:center}
+.bnav{display:flex;gap:6px;background:#fff;border-top:1px solid var(--line);padding:8px 12px 14px}
+.bnav button{flex:1;border:none;background:transparent;color:var(--mut);font-size:11px;font-weight:700;padding:8px 6px;border-radius:10px}
+.bnav button.on{color:var(--o);background:var(--tint)}
+.demoBtns{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.demoBtns button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 10px;font-size:11px;font-weight:700}
+.demoBtns button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="toolbar"><b>Mockup 01 · Mobile fix</b><div class="seg"><button data-w="w360">360</button><button data-w="w390" class="on">390</button><button data-w="w430">430</button></div></div>
+<div class="note"><b>Nguon anh hien tai (tim thay trong code):</b><br>1. <code>Code.gs:thumbUrl_</code> — Drive file ID → <code>drive.google.com/thumbnail?id=..&amp;sz=w800</code> (can share cong khai, neu private → vo hinh nhu anh 1).<br>2. URL http giu nguyen (neu het han → vo). 3. Rong → gallery hien 📦, detail hien —.<br><b>De xuat:</b> server <code>setSharing ANYONE_WITH_LINK</code> khi upload + xuong <code>sz=w400</code> cho mobile + client them <code>onerror fallback</code> (khong de icon vo) + anh stack doc full-width. Chi tiet server se lam sau khi chot mau.</div>
+
+<div class="phone w390" id="phone">
+<header><span class="mark"><b>SPX</b><span>Exception Handling</span></span><span class="hdrBtns"><button>☾ Tối</button><button class="primary">＋ Create</button></span><span class="hdrSummaryRow">3 đơn đang mở · 3 quá 3 ngày</span></header>
+<main>
+<div class="sec"><span class="tag">TRƯỚC</span> Grid auto-fill 150px → 3 cột bị ép nhỏ (ảnh 2 của bạn)</div>
+<div id="gridBefore"></div>
+<div class="sec" style="margin-top:14px"><span class="tag fix">SAU</span> Grid mobile 2 cột + caption cân + fallback ảnh lỗi</div>
+<div id="gridAfter"></div>
+
+<div class="sec" style="margin-top:16px"><span class="tag">TRƯỚC</span> Detail: ảnh 128×96 dồn phải + vỡ hiện icon ❓</div>
+<div class="sheet" style="border:1px dashed #e3b8ab">
+<div class="dhead"><span class="dt">Box.05-10-2026.2</span><span style="flex:1"></span><button class="iconBtn">‹</button><button class="iconBtn">›</button><button class="iconBtn">⤢</button><button class="iconBtn">✕</button></div>
+<div class="pcard">
+<div class="kvB"><b>Mã sản phẩm</b><span class="mono">Box.05-10-2026.2</span></div>
+<div class="kvB"><b>Ảnh Ngoại Quan</b><span><img class="thumbB" src="https://drive.google.com/thumbnail?id=INVALID_DEMO_BROKEN&amp;sz=w800" alt=""></span></div>
+<div class="kvB"><b>Ảnh Sản Phẩm</b><span><img class="thumbB" src="https://drive.google.com/thumbnail?id=INVALID_DEMO_BROKEN2&amp;sz=w800" alt=""></span></div>
+<div class="kvB"><b>Loại</b><span>Box</span></div>
+<div class="kvB"><b>Ngày tạo</b><span>10/05/2026 19:14:53 · 148 ngày lưu kho</span></div>
+<div class="kvB"><b>Người tạo</b><span style="overflow:hidden;text-overflow:ellipsis">duc.nguyenvan05@spxexpress.com</span></div>
+</div>
+</div>
+
+<div class="sec" style="margin-top:16px"><span class="tag fix">SAU</span> Detail cân đối mobile (bấm nút để đổi trạng thái ảnh)</div>
+<div class="demoBtns"><button data-m="ok" class="on">Ảnh OK</button><button data-m="broken">Ảnh lỗi (Drive private)</button><button data-m="empty">Chưa có ảnh</button></div>
+<div class="sheet" style="border:2px solid var(--o)">
+<div class="dhead"><span class="dt">Box.05-10-2026.2</span><span style="flex:1"></span><button class="iconBtn">‹</button><button class="iconBtn">›</button><button class="iconBtn">⤢</button><button class="iconBtn">✕</button></div>
+<div class="pcard">
+<div class="kv"><b>Mã sản phẩm</b><span class="val mono">Box.05-10-2026.2</span></div>
+<div class="kvImg"><b>ẢNH NGOẠI QUAN</b><div class="ph" id="phOuter"></div></div>
+<div class="kvImg"><b>ẢNH SẢN PHẨM</b><div class="ph" id="phProduct"></div></div>
+<div class="kv"><b>Loại</b><span class="val">Box</span></div>
+<div class="kv"><b>Ngày tạo</b><span class="val">10/05/2026 19:14:53<span class="sub">148 ngày lưu kho</span></span></div>
+<div class="kv"><b>Người tạo</b><span class="val" style="font-size:11px">duc.nguyenvan05@spxexpress.com</span></div>
+<div class="kv"><b>Mô tả</b><span class="val">Test</span></div>
+<div class="kv"><b>Trạng thái</b><span class="val"><span class="st">Lưu kho</span></span></div>
+</div>
+<div class="pcard"><div class="field"><label>MÃ BILL XỬ LÝ (VTCODE)</label><input placeholder="Vui lòng nhập mã bill xử lý…"></div><button class="btnP">Hoàn thành Resolve</button><div class="btnrow"><button class="btnS">🖨 In mã QR</button></div><div class="hist">Chưa có.</div></div>
+</div>
+</main>
+<div class="bnav"><button class="on">⌂<br>Danh sách</button><button>▤<br>Thanh lý</button><button>○<br>Quyền</button></div>
+</div>
+
+<div class="note"><b>Cach test tren dien thoai:</b> phong to/thu nho trinh duyet o 360–430px, bam 3 nut trang thai anh, xem grid 2 cot khong bi ep. Sau khi chot mau nay, port CSS <code>.kv/.kvImg/.ph + grid 2 cot + header summary xuong dong</code> vao <code>index.html</code> + them <code>onerror</code> + server <code>setSharing + sz=w400</code>.</div>
+</div>
+<script>
+var GOOD='https://picsum.photos/seed/spxbox/640/400';
+var BROKEN='https://drive.google.com/thumbnail?id=INVALID_PRIVATE_FILE&sz=w800';
+function cardHTML(code,days,ok){var img=ok?'<img loading="lazy" src="'+GOOD+'" onerror="this.outerHTML=fbHTML()">':'<div class="noimg">📦<small>Chua co anh</small></div>';return img+'<span class="ovst">Lưu kho</span><div class="cap"><span class="code">'+code+'</span><span class="days hot">'+days+'</span></div>';}
+function fbHTML(){return '<div class="noimg">📦<small>Khong tai duoc anh</small></div>';}
+document.getElementById('gridBefore').innerHTML=
+'<div class="card">'+cardHTML('Box.05-10-2026.2','148N',true)+'</div>'+
+'<div class="card">'+cardHTML('Box.05-10-2026.1','148N',true)+'</div>'+
+'<div class="card">'+cardHTML('Item.05-10-2026.1','148N',false)+'</div>';
+document.getElementById('gridAfter').innerHTML=
+'<div class="card"><img loading="lazy" src="'+GOOD+'" onerror="this.outerHTML=fbHTML()"><span class="ovst">Lưu kho</span><div class="cap"><span class="code">Box.05-10-2026.2</span><span class="days hot">148N</span></div></div>'+
+'<div class="card"><img loading="lazy" src="'+GOOD+'" onerror="this.outerHTML=fbHTML()"><span class="ovst">Lưu kho</span><div class="cap"><span class="code">Box.05-10-2026.1</span><span class="days hot">148N</span></div></div>';
+function phHTML(mode,slot){if(mode==='ok')return '<img loading="lazy" src="'+GOOD+'" onerror="this.parentNode.innerHTML=fbDetail(\''+slot+'\')"><span class="badge">Bam de mo lon</span>';if(mode==='broken')return '<div class="fb"><span class="big">🖼️</span><span>Khong tai duoc anh (file Drive private / het han).</span><button onclick="setMode(\'ok\')">Thu lai</button></div>';return '<div class="fb"><span class="big">📦</span><span>Chua co anh.</span></div>';}
+function fbDetail(slot){return '<div class="fb"><span class="big">🖼️</span><span>Khong tai duoc anh.</span><button onclick="setMode(\'ok\')">Thu lai</button></div>';}
+var cur='ok';
+function setMode(m){cur=m;document.getElementById('phOuter').innerHTML=phHTML(m,'outer');document.getElementById('phProduct').innerHTML=phHTML(m,'product');document.querySelectorAll('.demoBtns button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-m')===m);});}
+setMode('ok');
+document.querySelectorAll('.demoBtns button').forEach(function(b){b.onclick=function(){setMode(b.getAttribute('data-m'));};});
+document.querySelectorAll('.toolbar .seg button').forEach(function(b){b.onclick=function(){document.querySelectorAll('.toolbar .seg button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');var p=document.getElementById('phone');p.className='phone '+b.getAttribute('data-w');};});
+</script>
+</body>
+</html>
