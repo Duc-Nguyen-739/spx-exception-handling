@@ -186,6 +186,40 @@ def can_edit_status(role, to_status, bill=""):
     return (True, "")
 
 
+def map_history_row(header, row, want_code):
+    # KHỚP Code.gs historyFor_: map cột theo tên header (chống lệch thứ tự
+    # cột ở sheet có sẵn), so khớp code sau trim.
+    names = [str(h or "").strip().lower() for h in (header or [])]
+
+    def col(*cands):
+        for n in cands:
+            if n in names:
+                return names.index(n)
+        return -1
+
+    i_code = col("code")
+    if i_code < 0 or i_code >= len(row or []):
+        return None
+    if str(row[i_code] or "").strip() != str(want_code or "").strip():
+        return None
+
+    def cell(*cands):
+        i = col(*cands)
+        if 0 <= i < len(row):
+            return "" if row[i] is None else str(row[i])
+        return ""
+
+    i_at = col("at")
+    return {
+        "at": row[i_at] if 0 <= i_at < len(row) else "",
+        "code": str(want_code or "").strip(),
+        "from": cell("from_status", "from"),
+        "to": cell("to_status", "to"),
+        "by": cell("by"),
+        "note": cell("note"),
+    }
+
+
 def history_bill(from_st, to_st, note):
     # KHỚP Code.gs billOf_: chỉ mốc chuyển sang Resolve/Thanh Lý mới có dòng bill.
     if from_st != to_st and to_st in ("da_tim_bill", "thanh_ly"):

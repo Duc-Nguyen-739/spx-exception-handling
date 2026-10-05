@@ -4,7 +4,7 @@ from datetime import datetime
 from api.logic import (
     gen_code, next_seq, storage_days, can_resolve, can_liquidate,
     canonical_status, canonical_kind, valid_liq_code, can_edit_status,
-    history_bill,
+    history_bill, map_history_row,
     check_create_photos, can_delete_user, extract_drive_id, can_edit, CODE_RE, TZ,
 )
 
@@ -58,6 +58,18 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(can_edit_status("ADMIN", "da_tim_bill", ""), (False, "Thiếu mã bill."))
         self.assertEqual(can_edit_status("ADMIN", "thanh_ly", "  "), (False, "Thiếu mã bill."))
         self.assertEqual(can_edit_status("ADMIN", "da_cho_di", "SPXVN1"), (False, "Trạng thái không hợp lệ."))
+
+    def test_map_history_row(self):
+        h = ["at", "code", "from_status", "to_status", "by", "note"]
+        r = ["06/10/2026 18:01:00", "Box.1", "chua_xu_ly", "da_tim_bill", "a@x.com", "SPXVN1"]
+        self.assertEqual(map_history_row(h, r, "Box.1")["to"], "da_tim_bill")
+        self.assertEqual(map_history_row(h, r, "Box.2"), None)
+        shuffled = ["by", "note", "code", "at", "to_status", "from_status"]
+        rs = ["a@x.com", "SPXVN1", " Box.1 ", "06/10/2026 18:01:00", "da_tim_bill", "chua_xu_ly"]
+        got = map_history_row(shuffled, rs, "Box.1")
+        self.assertEqual(got["from"], "chua_xu_ly")
+        self.assertEqual(got["by"], "a@x.com")
+        self.assertEqual(map_history_row(["at", "by"], ["x", "y"], "Box.1"), None)
 
     def test_history_bill(self):
         self.assertEqual(history_bill("chua_xu_ly", "da_tim_bill", "SPXVN123"), "SPXVN123")

@@ -217,12 +217,33 @@ function historyFor_(code) {
   var sh = getSheet_('ActivityLog', LOG_HEADER);
   var last = sh.getLastRow();
   if (last < 2) return [];
-  var vals = sh.getRange(2, 1, last - 1, LOG_HEADER.length).getValues();
+  var width = Math.max(sh.getLastColumn(), LOG_HEADER.length);
+  var head = sh.getRange(1, 1, 1, width).getValues()[0]
+    .map(function (h) { return String(h || '').trim().toLowerCase(); });
+  function col(names) {
+    for (var k = 0; k < names.length; k++) {
+      var i = head.indexOf(names[k]);
+      if (i >= 0) return i;
+    }
+    return -1;
+  }
+  var iCode = col(['code']);
+  if (iCode < 0) return [];
+  var iAt = col(['at']), iFrom = col(['from_status', 'from']), iTo = col(['to_status', 'to']);
+  var iBy = col(['by']), iNote = col(['note']);
+  var want = String(code || '').trim();
+  var vals = sh.getRange(2, 1, last - 1, width).getValues();
   var out = [];
   for (var i = 0; i < vals.length; i++) {
-    if (String(vals[i][1]) === String(code)) {
-      out.push({ at: vals[i][0], code: vals[i][1], from: vals[i][2], to: vals[i][3], by: vals[i][4], note: vals[i][5] });
-    }
+    if (String(vals[i][iCode] || '').trim() !== want) continue;
+    out.push({
+      at: iAt >= 0 ? vals[i][iAt] : '',
+      code: want,
+      from: iFrom >= 0 ? String(vals[i][iFrom] || '') : '',
+      to: iTo >= 0 ? String(vals[i][iTo] || '') : '',
+      by: iBy >= 0 ? String(vals[i][iBy] || '') : '',
+      note: iNote >= 0 ? String(vals[i][iNote] || '') : ''
+    });
   }
   return out;
 }

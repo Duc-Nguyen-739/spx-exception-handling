@@ -6,6 +6,8 @@ const vm = require('vm');
 // Chạy inline <script> của index.html với DOM + GAS giả để bắt lỗi runtime
 // (sai ID, sai tên hàm, render timeline, luồng Resolve/Edit).
 function makeEnv(fakeItem, fakeHistory) {
+  fakeItem = JSON.parse(JSON.stringify(fakeItem));
+  fakeHistory = JSON.parse(JSON.stringify(fakeHistory));
   const registry = {};
   const calls = [];
   function makeEl() {
@@ -31,9 +33,12 @@ function makeEnv(fakeItem, fakeHistory) {
     return el;
   }
   let okCb = null;
+  let errCb = null;
   const run = {
     withSuccessHandler(h) { okCb = h; return run; },
-    withFailureHandler() { return run; },
+    withFailureHandler(h) { errCb = h; return run; },
+    getOk() { return okCb; },
+    fireErr(e) { errCb(e); },
     listItems() { calls.push(['listItems']); okCb({ ok: true, data: [] }); },
     getItem(code) {
       calls.push(['getItem', code]);
@@ -71,7 +76,7 @@ function makeEnv(fakeItem, fakeHistory) {
   const html = fs.readFileSync('index.html', 'utf8');
   const src = html.match(/<script>([\s\S]*?)<\/script>/)[1];
   vm.runInContext(src, sandbox, { filename: 'index-inline.js' });
-  return { sandbox, registry, calls, listeners };
+  return { sandbox, registry, calls, listeners, run };
 }
 
 const ITEM = {
@@ -155,6 +160,63 @@ test('edit: mở điền sẵn, đơn Resolve có 2 ô Lưu kho/Thanh Lý, bill 
   assert.strictEqual(last[1].description, 'Thùng 12 áo thun mới');
   assert.match(String(registry.msgEdit.textContent), /Đã lưu/);
   assert.strictEqual(registry.editModal._has('open'), false);
+});
+
+test('optimistic: timeline hien truoc tu cache, server ve sau van giu', async () => {
+  const { sandbox, registry, calls, listeners, run } = makeEnv(ITEM, []);
+  await listeners.DOMContentLoaded();
+  await sandbox.openDetail('Box.05-10-2026.1');
+  assert.match(registry.detailHist.innerHTML, /Chưa có/);
+  let fire = null;
+  run.resolveItem = function (code, bill) {
+    calls.push(['resolveItem', code, bill]);
+    const done = run.getOk();
+    fire = function () { done({ ok: true, data: {} }); };
+  };
+  registry.resolveBill.value = 'SPXVN555';
+  const p = registry.btnConfirmResolve.onclick();
+  const h = registry.detailHist.innerHTML;
+  assert.match(h, /SPXVN555/);
+  assert.match(h, /pending/);
+  assert.match(h, /st Resolve/);
+  const css = fs.readFileSync('index.html', 'utf8');
+  assert.match(css, /đang đồng bộ/);
+  assert.match(registry.detailBody.innerHTML, /st Resolve/);
+  fire();
+  await p;
+  assert.ok(calls.filter((c) => c[0] === 'getItem').length >= 2);
+});
+
+test('optimistic: server loi thi rollback + bao loi that', async () => {
+  const { sandbox, registry, calls, listeners, run } = makeEnv(ITEM, []);
+  await listeners.DOMContentLoaded();
+  await sandbox.openDetail('Box.05-10-2026.1');
+  run.resolveItem = function (code, bill) {
+    calls.push(['resolveItem', code, bill]);
+    run.fireErr(new Error('Rớt mạng giả lập'));
+  };
+  registry.resolveBill.value = 'SPXVN555';
+  await registry.btnConfirmResolve.onclick();
+  assert.match(String(registry.msgDetail.textContent), /Rớt mạng giả lập/);
+  assert.ok(!registry.detailHist.innerHTML.includes('SPXVN555'));
+});
+
+test('detail: getItem loi thi hien loi that, khong nuot', async () => {
+  const { sandbox, registry, listeners, run } = makeEnv(ITEM, []);
+  await listeners.DOMContentLoaded();
+  run.getItem = function () { run.fireErr(new Error('Không đọc được đơn')); };
+  await sandbox.openDetail('Box.05-10-2026.1');
+  assert.match(String(registry.msgDetail.textContent), /Không tải được chi tiết từ server/);
+});
+
+test('mergeHist: server co roi thi xoa pending, chua co thi giu', async () => {
+  const { sandbox, listeners } = makeEnv(ITEM, []);
+  await listeners.DOMContentLoaded();
+  const e = { from: 'chua_xu_ly', to: 'da_tim_bill', bill: 'SPXVN1', note: 'SPXVN1' };
+  assert.strictEqual(sandbox.mergeHist([], [e]).length, 1);
+  assert.strictEqual(sandbox.mergeHist([{ ...e }], [e]).length, 1);
+  assert.strictEqual(sandbox.mergeHist([{ ...e, bill: 'SPXVN2', note: 'SPXVN2' }], [e]).length, 2);
+  assert.match(sandbox.nowClientStr(), /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/);
 });
 
 test('edit: đơn Lưu kho không có ô đổi trạng thái; không đổi gì thì không gọi server', async () => {
