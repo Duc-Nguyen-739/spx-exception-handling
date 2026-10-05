@@ -257,18 +257,16 @@ function dataUrlToBlob_(dataUrl, name) {
   }
 }
 
-function shareFile_(f) {
+function tryShareFile_(f) {
   try {
     f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     return 'link';
-  } catch (e1) {
-    try {
-      f.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
-      return 'domain';
-    } catch (e2) {
-      throw new Error('Không mở share ảnh được — nhờ ADMIN kiểm tra quyền share Drive.');
-    }
-  }
+  } catch (e1) { /* org chặn share ngoài */ }
+  try {
+    f.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
+    return 'domain';
+  } catch (e2) { /* deployer không thuộc domain hoặc drive khóa share */ }
+  return 'none';
 }
 
 function monthFolder_() {
@@ -312,10 +310,11 @@ function create_(kind, p) {
     var folder = monthFolder_();
     var slots = CREATE_SLOTS[kind] || CREATE_SLOTS.Box;
     var ids = {};
+    var shareOk = true;
 
     for (var s = 0; s < photos.length; s++) {
       var f = folder.createFile(dataUrlToBlob_(photos[s], code + '.' + slots[s] + '.jpg'));
-      shareFile_(f);
+      if (tryShareFile_(f) === 'none') shareOk = false;
       ids[slots[s]] = f.getId();
     }
     var outerId = ids['ngoai_quan'] || '', productId = ids['san_pham'] || '';
@@ -330,18 +329,18 @@ function create_(kind, p) {
       if (ids[slots[k]]) ph.appendRow([code, slots[k], ids[slots[k]], at]);
     }
 
-    getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, '', 'chua_xu_ly', by, 'Tạo mới']);
-    return code;
+    getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, '', 'chua_xu_ly', by, 'Tạo mới' + (shareOk ? '' : ' (ảnh chưa share được)')]);
+    return { code: code, shareOk: shareOk };
   });
 }
 
 function createBox(p) {
-  try { return ok({ code: create_('Box', p) }); }
+  try { return ok(create_('Box', p)); }
   catch (e) { Logger.log(e); return fail(e.message); }
 }
 
 function createItem(p) {
-  try { return ok({ code: create_('Item', p) }); }
+  try { return ok(create_('Item', p)); }
   catch (e) { Logger.log(e); return fail(e.message); }
 }
 
@@ -437,7 +436,9 @@ function fixPhotoSharing() {
     var shared = 0, domainOnly = false, failed = [];
     for (var fid in ids) {
       try {
-        if (shareFile_(DriveApp.getFileById(fid)) === 'domain') domainOnly = true;
+        var lv = tryShareFile_(DriveApp.getFileById(fid));
+        if (lv === 'domain') domainOnly = true;
+        if (lv === 'none') { failed.push(fid); continue; }
         shared++;
       } catch (e) {
         failed.push(fid);
@@ -486,8 +487,12 @@ function requireAdmin_() {
   if (getRole_() !== 'ADMIN') throw new Error('Cần quyền ADMIN.');
 }
 
+function deployerEmail_() {
+  try { return Session.getEffectiveUser().getEmail() || ''; } catch (e) { return ''; }
+}
+
 function me() {
-  try { return ok({ email: currentEmail_(), role: getRole_() }); }
+  try { return ok({ email: currentEmail_(), role: getRole_(), deployer: deployerEmail_() }); }
   catch (e) { Logger.log(e); return fail(e.message); }
 }
 

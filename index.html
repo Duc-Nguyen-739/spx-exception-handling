@@ -164,6 +164,7 @@ header{padding:12px 22px}
 /* ===== mobile-fix (mockup v2-v6) ===== */
 @media(max-width:899px){
 header{flex-wrap:wrap}
+#btnTheme{margin-left:auto}
 #hdrSummary{flex-basis:100%;order:9;max-width:none;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
 .kv>b{flex-basis:32%;font-size:11.5px;padding-top:1px}
@@ -243,6 +244,7 @@ header{flex-wrap:wrap}
 
 <main id="viewAccess" style="display:none">
 <div class="msg" id="msgAccess"></div>
+<div class="msg" id="msgDeploy"></div>
 <div id="accessAdmin" style="display:none">
 <div class="row">
 <input id="newEmail" placeholder="email@shopee.vn cần thêm…" inputmode="email" style="flex:2">
@@ -536,7 +538,8 @@ try{
 var r=await gs(isBox?'createBox':'createItem',[{description:desc,note:note,photos:photos}]);
 if(!r.ok)throw new Error(r.error);
 state.lastCreated=r.data.code;
-msg('msgCreate','Đã tạo '+r.data.code,true);
+if(r.data.shareOk===false)msg('msgCreate','Đã tạo '+r.data.code+' — ảnh chưa share được, báo ADMIN kiểm tra quyền share Drive.');
+else msg('msgCreate','Đã tạo '+r.data.code,true);
 boxPhotos=[];itemPhotos=[];renderSlots('Box');renderSlots('Item');
 await loadGrid();await refreshPreview();
 doPrint(r.data.code);
@@ -598,6 +601,8 @@ var chip=document.getElementById('whoChip');if(!chip)return;
 var e=state.me||{};
 if(!e.email){chip.style.display='none';return;}
 chip.style.display='';
+var dl=document.getElementById('msgDeploy');
+if(dl)dl.textContent='Tài khoản chạy app (upload ảnh): '+(e.deployer||'?')+' — phải là email công ty thì ảnh mới share được.';
 document.getElementById('whoIni').textContent=String(e.email).charAt(0).toUpperCase();
 document.getElementById('whoTxt').textContent=String(e.email).split('@')[0]+' · '+(e.role||'STAFF');
 }
