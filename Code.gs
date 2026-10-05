@@ -227,6 +227,11 @@ function historyFor_(code) {
   return out;
 }
 
+function billOf_(from, to, note) {
+  if (from !== to && (to === 'da_tim_bill' || to === 'thanh_ly')) return String(note || '');
+  return '';
+}
+
 function getItem(code) {
   try {
     code = String(code || '').trim();
@@ -237,7 +242,11 @@ function getItem(code) {
         var it = toClient_(r.items[i]);
         it.extras = extrasFor_(code);
         it.slots = photosFor_(code).map(function (p) { return { slot: p.slot, url: thumbUrl_(p.fileId) }; });
-        return ok({ item: it, history: historyFor_(code) });
+        var hist = historyFor_(code).map(function (x) {
+          x.bill = billOf_(x.from, x.to, x.note);
+          return x;
+        });
+        return ok({ item: it, history: hist });
       }
     }
     return fail('Không Có');
@@ -488,18 +497,24 @@ function readPhotosAll_() {
   return sh.getRange(2, 1, last - 1, PHOTOS_HEADER.length).getValues();
 }
 
-function adminUpdateItem(code, p) {
+function adminEditItem(p) {
   try {
     requireAdmin_();
-    code = String(code || '').trim();
-    if (!code) return fail('Thiếu mã đơn.');
     p = p || {};
+    var code = String(p.code || '').trim();
+    if (!code) return fail('Thiếu mã đơn.');
     var desc = (p.description == null) ? null : String(p.description).trim();
     var note = (p.note == null) ? null : String(p.note).trim();
     var delSlots = (p.deleteSlots || []).map(function (s) { return String(s); });
     var adds = (p.addPhotos || []).filter(Boolean);
+    var toStatus = p.toStatus ? String(p.toStatus) : '';
+    var bill = String(p.bill || '').trim();
     if (desc !== null && !desc) return fail('Vui lòng nhập mô tả sản phẩm.');
     if (adds.length > 3) return fail('Tối đa 3 ảnh.');
+    if (toStatus && ['chua_xu_ly', 'da_tim_bill', 'thanh_ly'].indexOf(toStatus) < 0) return fail('Trạng thái không hợp lệ.');
+    if ((toStatus === 'da_tim_bill' || toStatus === 'thanh_ly') && !bill) {
+      return fail('Đổi sang ' + (STATUS_LABEL[toStatus] || toStatus) + ' phải điền mã bill.');
+    }
     return ok(withLock_(function () {
       var r = readAllItems_();
       var idx = -1;
@@ -507,10 +522,11 @@ function adminUpdateItem(code, p) {
         if (r.items[i].code === code) { idx = i; break; }
       }
       if (idx < 0) throw new Error('Không Có');
+      var cur = r.items[idx].status || 'chua_xu_ly';
       var kind = r.items[idx].kind === 'Item' ? 'Item' : 'Box';
       var need = (kind === 'Box') ? ['ngoai_quan', 'san_pham'] : ['san_pham'];
-      var cur = photosFor_(code);
-      var keep = cur.filter(function (x) { return delSlots.indexOf(String(x.slot)) < 0; });
+      var curPhotos = photosFor_(code);
+      var keep = curPhotos.filter(function (x) { return delSlots.indexOf(String(x.slot)) < 0; });
       var total = keep.length + adds.length;
       if (total > 3) throw new Error('Tối đa 3 ảnh.');
       var have = {};
@@ -536,6 +552,10 @@ function adminUpdateItem(code, p) {
           throw new Error(kind === 'Box' ? 'Box cần đủ Ảnh ngoại quan + Ảnh sản phẩm.' : 'Item cần Ảnh sản phẩm.');
         }
       }
+      var changed = [];
+      if (desc !== null && desc !== String(r.items[idx].description || '')) changed.push('Mô tả sản phẩm');
+      if (note !== null && note !== String(r.items[idx].note || '')) changed.push('Ghi chú');
+      if (delSlots.length || placed.length) changed.push('Ảnh');
       var row = idx + 2;
       if (desc !== null) r.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
       if (note !== null) r.sh.getRange(row, 12, 1, 1).setValues([[note]]);
@@ -569,8 +589,19 @@ function adminUpdateItem(code, p) {
         }
       }
       r.sh.getRange(row, 5, 1, 2).setValues([[outerId, productId]]);
-      var st = r.items[idx].status || 'chua_xu_ly';
-      getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, st, st, by, 'ADMIN sửa task']);
+      var finalSt = cur;
+      if (toStatus && toStatus !== cur) {
+        if (toStatus === 'chua_xu_ly') {
+          r.sh.getRange(row, 7, 1, 1).setValues([[toStatus]]);
+        } else {
+          r.sh.getRange(row, 7, 1, 3).setValues([[toStatus, r.items[idx].status_note || '', bill]]);
+        }
+        getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, cur, toStatus, by, bill]);
+        finalSt = toStatus;
+      }
+      if (changed.length) {
+        getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, finalSt, finalSt, by, 'ADMIN chỉnh sửa ' + changed.join(', ')]);
+      }
       return { code: code };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
@@ -671,28 +702,6 @@ function deleteUser(email) {
       u.sh.getRange(2, 1, last - 1, USERS_HEADER.length).clearContent();
       if (vals.length) u.sh.getRange(2, 1, vals.length, USERS_HEADER.length).setValues(vals);
       return { email: email };
-    }));
-  } catch (e) { Logger.log(e); return fail(e.message); }
-}
-
-function adminReopen(code, note) {
-  try {
-    requireAdmin_();
-    code = String(code || '').trim();
-    if (!code) return fail('Thiếu mã đơn.');
-    return ok(withLock_(function () {
-      var r = readAllItems_();
-      var idx = -1;
-      for (var i = 0; i < r.items.length; i++) {
-        if (r.items[i].code === code) { idx = i; break; }
-      }
-      if (idx < 0) throw new Error('Khong Co');
-      var cur = r.items[idx].status || 'chua_xu_ly';
-      if (cur === 'chua_xu_ly') throw new Error('Đơn đang Lưu kho, không cần mở lại.');
-      var at = nowStr_(), by = currentEmail_();
-      r.sh.getRange(idx + 2, 7, 1, 1).setValues([['chua_xu_ly']]);
-      getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, cur, 'chua_xu_ly', by, String(note || 'ADMIN mở lại')]);
-      return { code: code, from: cur, to: 'chua_xu_ly', at: at, by: by };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
 }

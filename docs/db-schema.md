@@ -46,7 +46,9 @@ Spreadsheet ID để ở Script Properties `SPREADSHEET_ID` (không hardcode —
 
 ### `ActivityLog` (append-only, ai đổi trạng thái)
 
-| `at` | `code` | `from` | `to` | `by` | Ghi đè tay bị cấm — mọi đổi `status` qua WebApp để có log |
+| `at` | `code` | `from` | `to` | `by` | `note` |
+
+- `note`: mã bill khi chuyển sang Resolve/Thanh Lý (hiện dòng riêng trong Chi tiết trạng thái) · `ADMIN chỉnh sửa <Ảnh, Mô tả sản phẩm, Ghi chú>` khi ADMIN sửa trường (from = to, không ghi email ADMIN) · `Tạo mới…` khi tạo đơn. Ghi đè tay bị cấm — mọi đổi `status` qua WebApp để có log.
 
 ## 3. `status` chuẩn hóa (5 giá trị, tiếng Việt hiển thị)
 
@@ -76,7 +78,7 @@ Matbill/
 
 - Batch `getValues()`/`setValues()`, không loop cell lẻ (luật 2).
 - Ghi `status` qua `LockService` + append `ActivityLog` cùng execution.
-- Đơn mới insert ở dòng 2 (mới nhất lên đầu); `listItems` chỉ đọc ≤100 dòng đầu + sắp xếp mới → cũ. `getItem`/ghi theo mã (Resolve/Thanh Lý/mở lại) vẫn quét toàn sheet để không sót đơn cũ.
+- Đơn mới insert ở dòng 2 (mới nhất lên đầu); `listItems` chỉ đọc ≤100 dòng đầu + sắp xếp mới → cũ. `getItem`/ghi theo mã (Resolve/Thanh Lý/Edit đổi trạng thái) vẫn quét toàn sheet để không sót đơn cũ.
 - `CacheService` có fallback — không xem là source of truth.
 
 ## 6. Lộ trình nâng cấp

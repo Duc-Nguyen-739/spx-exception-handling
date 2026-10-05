@@ -1,16 +1,33 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 
-// KHỚP server: Code.gs adminReopen/getRole_ / KHỚP api/logic.py can_admin_edit.
-function canAdminEdit(status, role) {
+// KHỚP server: Code.gs adminEditItem / KHỚP api/logic.py can_edit_status.
+var EDIT_OK = ['chua_xu_ly', 'da_tim_bill', 'thanh_ly'];
+function canEditStatus(role, toStatus, bill) {
   if (role !== 'ADMIN') return [false, 'Cần quyền ADMIN.'];
-  if (status === 'chua_xu_ly') return [false, 'Đơn đang Lưu kho, không cần mở lại.'];
+  if (EDIT_OK.indexOf(toStatus) < 0) return [false, 'Trạng thái không hợp lệ.'];
+  if ((toStatus === 'da_tim_bill' || toStatus === 'thanh_ly') && !String(bill || '').trim()) return [false, 'Thiếu mã bill.'];
   return [true, ''];
 }
 
-test('access: STAFF bị khóa sau Hoàn Thành', () => {
-  assert.deepStrictEqual(canAdminEdit('da_tim_bill', 'STAFF'), [false, 'Cần quyền ADMIN.']);
-  assert.deepStrictEqual(canAdminEdit('thanh_ly', 'STAFF'), [false, 'Cần quyền ADMIN.']);
+// KHỚP server: Code.gs billOf_ — chỉ mốc chuyển sang Resolve/Thanh Lý mới có dòng bill.
+function historyBill(from, to, note) {
+  if (from !== to && (to === 'da_tim_bill' || to === 'thanh_ly')) return String(note || '');
+  return '';
+}
+
+test('access: STAFF không đổi trạng thái trong Edit', () => {
+  assert.deepStrictEqual(canEditStatus('STAFF', 'chua_xu_ly', ''), [false, 'Cần quyền ADMIN.']);
+  assert.deepStrictEqual(canEditStatus('STAFF', 'da_tim_bill', 'SPXVN1'), [false, 'Cần quyền ADMIN.']);
+});
+
+test('access: ADMIN đổi trạng thái trong Edit, bill bắt buộc khi sang Resolve/Thanh Lý', () => {
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'chua_xu_ly', ''), [true, '']);
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'da_tim_bill', 'SPXVN123'), [true, '']);
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'thanh_ly', 'SPXVN123'), [true, '']);
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'da_tim_bill', ''), [false, 'Thiếu mã bill.']);
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'thanh_ly', '  '), [false, 'Thiếu mã bill.']);
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'da_cho_di', 'SPXVN1'), [false, 'Trạng thái không hợp lệ.']);
 });
 
 test('access: chỉ ADMIN được sửa task (kể cả đơn đã xong)', () => {
@@ -34,8 +51,10 @@ test('access: xóa user — chặn tự xóa và ADMIN cuối', () => {
   assert.deepStrictEqual(canDelete([['a@x.com', 'ADMIN']], 'a@x.com', 'z@x.com'), [false, 'Không thể xóa ADMIN cuối cùng.']);
 });
 
-test('access: ADMIN được mở lại, trừ đơn đang Lưu kho', () => {
-  assert.deepStrictEqual(canAdminEdit('da_tim_bill', 'ADMIN'), [true, '']);
-  assert.deepStrictEqual(canAdminEdit('thanh_ly', 'ADMIN'), [true, '']);
-  assert.deepStrictEqual(canAdminEdit('chua_xu_ly', 'ADMIN'), [false, 'Đơn đang Lưu kho, không cần mở lại.']);
+test('timeline: chỉ mốc chuyển sang Resolve/Thanh Lý mới có dòng bill', () => {
+  assert.strictEqual(historyBill('chua_xu_ly', 'da_tim_bill', 'SPXVN123'), 'SPXVN123');
+  assert.strictEqual(historyBill('chua_xu_ly', 'thanh_ly', 'SPXVN9'), 'SPXVN9');
+  assert.strictEqual(historyBill('', 'chua_xu_ly', 'Tạo mới'), '');
+  assert.strictEqual(historyBill('da_tim_bill', 'da_tim_bill', 'ADMIN chỉnh sửa Mô tả sản phẩm'), '');
+  assert.strictEqual(historyBill('da_tim_bill', 'chua_xu_ly', ''), '');
 });

@@ -171,10 +171,23 @@ def can_edit(role):
     return (False, "Chỉ ADMIN được sửa.")
 
 
-def can_admin_edit(status, role):
-    # STAFF bị khóa sau Hoàn Thành; ADMIN được mở lại về Lưu kho.
+EDIT_STATUS_OK = ("chua_xu_ly", "da_tim_bill", "thanh_ly")
+
+
+def can_edit_status(role, to_status, bill=""):
+    # KHỚP Code.gs adminEditItem: chỉ ADMIN đổi trạng thái trong Edit;
+    # sang Resolve/Thanh Lý bắt buộc có mã bill.
     if role != "ADMIN":
         return (False, "Cần quyền ADMIN.")
-    if status == "chua_xu_ly":
-        return (False, "Đơn đang Lưu kho, không cần mở lại.")
+    if to_status not in EDIT_STATUS_OK:
+        return (False, "Trạng thái không hợp lệ.")
+    if to_status in ("da_tim_bill", "thanh_ly") and not (bill or "").strip():
+        return (False, "Thiếu mã bill.")
     return (True, "")
+
+
+def history_bill(from_st, to_st, note):
+    # KHỚP Code.gs billOf_: chỉ mốc chuyển sang Resolve/Thanh Lý mới có dòng bill.
+    if from_st != to_st and to_st in ("da_tim_bill", "thanh_ly"):
+        return note or ""
+    return ""

@@ -3,7 +3,8 @@ import unittest
 from datetime import datetime
 from api.logic import (
     gen_code, next_seq, storage_days, can_resolve, can_liquidate,
-    canonical_status, canonical_kind, valid_liq_code, can_admin_edit,
+    canonical_status, canonical_kind, valid_liq_code, can_edit_status,
+    history_bill,
     check_create_photos, can_delete_user, extract_drive_id, can_edit, CODE_RE, TZ,
 )
 
@@ -49,12 +50,21 @@ class TestStatus(unittest.TestCase):
         self.assertFalse(valid_liq_code(""))
         self.assertFalse(valid_liq_code("hello"))
 
-    def test_admin_gate(self):
-        self.assertEqual(can_admin_edit("da_tim_bill", "STAFF"), (False, "Cần quyền ADMIN."))
-        self.assertEqual(can_admin_edit("thanh_ly", "STAFF"), (False, "Cần quyền ADMIN."))
-        self.assertEqual(can_admin_edit("chua_xu_ly", "ADMIN"), (False, "Đơn đang Lưu kho, không cần mở lại."))
-        self.assertEqual(can_admin_edit("da_tim_bill", "ADMIN"), (True, ""))
-        self.assertEqual(can_admin_edit("thanh_ly", "ADMIN"), (True, ""))
+    def test_edit_status_gate(self):
+        self.assertEqual(can_edit_status("STAFF", "chua_xu_ly", ""), (False, "Cần quyền ADMIN."))
+        self.assertEqual(can_edit_status("ADMIN", "chua_xu_ly", ""), (True, ""))
+        self.assertEqual(can_edit_status("ADMIN", "da_tim_bill", "SPXVN123"), (True, ""))
+        self.assertEqual(can_edit_status("ADMIN", "thanh_ly", "SPXVN123"), (True, ""))
+        self.assertEqual(can_edit_status("ADMIN", "da_tim_bill", ""), (False, "Thiếu mã bill."))
+        self.assertEqual(can_edit_status("ADMIN", "thanh_ly", "  "), (False, "Thiếu mã bill."))
+        self.assertEqual(can_edit_status("ADMIN", "da_cho_di", "SPXVN1"), (False, "Trạng thái không hợp lệ."))
+
+    def test_history_bill(self):
+        self.assertEqual(history_bill("chua_xu_ly", "da_tim_bill", "SPXVN123"), "SPXVN123")
+        self.assertEqual(history_bill("chua_xu_ly", "thanh_ly", "SPXVN9"), "SPXVN9")
+        self.assertEqual(history_bill("", "chua_xu_ly", "Tạo mới"), "")
+        self.assertEqual(history_bill("da_tim_bill", "da_tim_bill", "ADMIN chỉnh sửa Ảnh"), "")
+        self.assertEqual(history_bill("da_tim_bill", "chua_xu_ly", ""), "")
 
     def test_photo_gate(self):
         self.assertEqual(check_create_photos("Box", "", "", 0)[0], False)
