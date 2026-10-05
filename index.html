@@ -26,10 +26,8 @@ input:focus,textarea:focus,select:focus{outline:2px solid #ffd9cd;border-color:v
 header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);padding:12px 14px;display:flex;align-items:center;gap:10px}
 html[data-theme=dark] header{background:var(--navy);border-bottom-color:transparent}
 html[data-theme=dark] header .mark>span,html[data-theme=dark] header #hdrSummary{color:#fff}
-html[data-theme=dark] header .mark>span small{color:#8fa3c2}
 .mark{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:var(--navy)}
 .mark b{background:var(--o);color:#fff;border-radius:8px;padding:4px 8px;font-size:11.5px;letter-spacing:.3px}
-.mark span small{display:block;font-size:9.5px;color:var(--mut);font-weight:600;margin-top:1px}
 #hdrSummary{margin-left:auto;font-size:10.5px;color:var(--mut);font-weight:600;text-align:right;line-height:1.4;max-width:180px}
 #btnTheme{border-radius:9px;padding:8px 11px;font-size:11px}
 #whoChip{display:none;align-items:center;gap:6px;font-size:10.5px;font-weight:700;color:var(--navy);background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:4px 10px 4px 4px}
@@ -118,6 +116,12 @@ img.thumb{width:128px;height:96px;object-fit:cover;border-radius:9px;background:
 .seg{display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;margin:10px 0}
 .seg button{flex:1;border:none;background:transparent;color:var(--mut);border-radius:9px;padding:9px;font-size:12px}
 .seg button.primary{background:var(--card);color:var(--o);box-shadow:0 1px 4px rgba(23,43,72,.1);border:none}
+.csub{color:var(--mut);font-size:12.5px;margin:2px 0 4px}
+.opt{border:1px solid var(--line);border-radius:11px;padding:13px 14px;display:flex;gap:10px;align-items:center;margin-top:12px;cursor:pointer}
+.opt:hover{border-color:var(--o)}
+.opt b{display:block;font-size:13.5px;color:var(--navy)}
+.opt small{color:var(--mut);font-size:11.5px;display:block;margin-top:3px}
+.opt .chev{margin-left:auto;color:var(--mut);font-size:18px;font-weight:400}
 .btnrow{display:flex;gap:8px;margin-top:10px}
 .btnrow button{flex:1}
 button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;font-size:11.5px;padding:9px}
@@ -163,7 +167,7 @@ header{padding:12px 22px}
 </head>
 <body>
 <header>
-<span class="mark"><b>SPX</b><span>Exception Handling<small id="ctxLine">Ngoại lệ kho</small></span></span>
+<span class="mark"><b>SPX</b><span>Exception Handling</span></span>
 <div id="whoChip" title="Tài khoản đăng nhập"><i id="whoIni">?</i><span id="whoTxt"></span></div>
 <div id="hdrSummary"></div>
 <button id="btnTheme" type="button">☾ Tối</button>
@@ -243,16 +247,20 @@ header{padding:12px 22px}
 <button id="btnReopen" style="display:none">↺ Mở lại (ADMIN)</button>
 </div>
 <div class="msg" id="msgDetail"></div>
-</div></div>
+</div></div></div>
 
 <div class="modal" id="createModal"><div class="sheet">
-<h2>Create ngoại lệ</h2>
-<div class="seg">
-<button id="tabNonAwb" class="primary">＋ Non-AWB</button>
-<button id="tabLiqGo">Thanh Lý</button>
+<h2 id="createTitle">Create New Task</h2>
+<div class="csub" id="createSub">Select a task type to start the process.</div>
+<div id="stepTask">
+<div class="opt" id="optLiqGo"><div><b>Thanh Lý</b><small>Gom đơn tồn vào lô thanh lý</small></div><span class="chev">›</span></div>
+<div class="opt" id="optNonAwb"><div><b>Non-AWB Recovery</b><small>No AWB / No Package</small></div><span class="chev">›</span></div>
 </div>
-<div id="paneNonAwb">
-<div class="seg"><button id="tabBox" class="primary">Box — nguyên thùng</button><button id="tabItem">Item — tách lẻ</button></div>
+<div id="stepKind" style="display:none">
+<div class="opt" id="optBox"><div><b>BOX</b><small>Nguyên thùng — ảnh ngoại quan + sản phẩm</small></div><span class="chev">›</span></div>
+<div class="opt" id="optItem"><div><b>ITEM</b><small>Tách lẻ — chỉ ảnh sản phẩm</small></div><span class="chev">›</span></div>
+</div>
+<div id="stepForm" style="display:none">
 <div id="formBox">
 <div class="field"><label>MÃ BOX (server cấp khi lưu)</label><input id="boxCode" class="mono" readonly placeholder="Box.(ngày-tháng-năm).(số tự sinh)"></div>
 <div class="field"><label>ẢNH NGOẠI QUAN *</label><div class="photoBox"><input type="file" id="boxOuter" accept="image/*" capture="environment"><img id="boxOuterPrev"></div></div>
@@ -269,6 +277,7 @@ header{padding:12px 22px}
 </div>
 <div class="msg" id="msgCreate"></div>
 </div>
+<button id="btnBackCreate" class="lnk" style="display:none">‹ Quay lại</button>
 <button id="btnCloseCreate" class="lnk" style="margin-top:8px">Đóng</button>
 </div></div>
 
@@ -582,12 +591,23 @@ bindFile('itemProduct','itemProductPrev',itemProduct);
 document.getElementById('btnTheme').onclick=function(){
 applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 };
-document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');refreshPreview();};
+document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();};
+function showCreateStep(n){
+state.createStep=n;
+document.getElementById('stepTask').style.display=n===1?'block':'none';
+document.getElementById('stepKind').style.display=n===2?'block':'none';
+document.getElementById('stepForm').style.display=n===3?'block':'none';
+document.getElementById('createTitle').textContent=n===1?'Create New Task':(n===2?'Non-AWB Recovery':'Create');
+document.getElementById('createSub').textContent=n===1?'Select a task type to start the process.':(n===2?'Chọn loại đơn để tạo task.':'');
+document.getElementById('createSub').style.display=n===3?'none':'';
+document.getElementById('btnBackCreate').style.display=n===1?'none':'';
+}
+document.getElementById('optLiqGo').onclick=function(){document.getElementById('createModal').classList.remove('open');showLiq(true);};
+document.getElementById('optNonAwb').onclick=function(){showCreateStep(2);};
+document.getElementById('optBox').onclick=function(){state.kind='Box';document.getElementById('formBox').style.display='block';document.getElementById('formItem').style.display='none';showCreateStep(3);};
+document.getElementById('optItem').onclick=function(){state.kind='Item';document.getElementById('formBox').style.display='none';document.getElementById('formItem').style.display='block';showCreateStep(3);};
+document.getElementById('btnBackCreate').onclick=function(){showCreateStep(state.createStep===3?2:1);};
 document.getElementById('btnCloseCreate').onclick=function(){document.getElementById('createModal').classList.remove('open');};
-document.getElementById('tabBox').onclick=function(){state.kind='Box';document.getElementById('formBox').style.display='block';document.getElementById('formItem').style.display='none';this.classList.add('primary');document.getElementById('tabItem').classList.remove('primary');};
-document.getElementById('tabItem').onclick=function(){state.kind='Item';document.getElementById('formBox').style.display='none';document.getElementById('formItem').style.display='block';this.classList.add('primary');document.getElementById('tabBox').classList.remove('primary');};
-document.getElementById('tabNonAwb').onclick=function(){document.getElementById('paneNonAwb').style.display='block';};
-document.getElementById('tabLiqGo').onclick=function(){document.getElementById('createModal').classList.remove('open');showLiq(true);};
 document.getElementById('btnBoxDone').onclick=submitCreate;
 document.getElementById('btnItemDone').onclick=function(){state.kind='Item';submitCreate();};
 document.getElementById('btnBoxPrint').onclick=function(){if(state.lastCreated)doPrint(state.lastCreated);};
