@@ -148,7 +148,7 @@ button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;f
 <div class="bnav"><button class="on">⌂<br>Danh sách</button><button>▤<br>Thanh lý</button><button>○<br>Quyền</button></div>
 </div>
 
-<div class="note"><b>Cách test trên điện thoại:</b> phóng to/thu nhỏ trình duyệt ở 360–430px, bấm 3 nút trạng thái ảnh, xem grid 2 cột không bị ép. v2: bỏ chữ VTCODE, nút chỉ ghi Resolve, ấn Resolve mới hiện ô bill + nút Confirm. v3: fallback chỉ ghi 'Không tải được ảnh'/'Không có ảnh', chuyển 3 ô ảnh sang form +Create (tối đa 3, tối thiểu 1 mới xong được). v5: ô ảnh chỉ icon máy ảnh + n/3, bỏ chú thích. Sau khi chot, port CSS <code>.kv/.kvImg/.ph + grid 2 cot + header summary xuong dong</code> vao <code>index.html</code> + them <code>onerror</code> + server <code>setSharing + sz=w400</code>.</div>
+<div class="note"><b>Cách test trên điện thoại:</b> phóng to/thu nhỏ trình duyệt ở 360–430px, bấm 3 nút trạng thái ảnh, xem grid 2 cột không bị ép. v2: bỏ chữ VTCODE, nút chỉ ghi Resolve, ấn Resolve mới hiện ô bill + nút Confirm. v3: fallback chỉ ghi 'Không tải được ảnh'/'Không có ảnh', chuyển 3 ô ảnh sang form +Create (tối đa 3, tối thiểu 1 mới xong được). v5: ô ảnh chỉ icon máy ảnh + n/3, bỏ chú thích. Sau khi chốt, port CSS <code>.kv/.kvImg/.ph + grid 2 cột + header summary xuống dòng</code> vào <code>index.html</code> + thêm <code>onerror</code> + server <code>setSharing + sz=w400</code> + nút <code>Confirm</code> thay mọi chữ Hoàn thành.</div>
 </div>
 <script>
 var GOOD='https://picsum.photos/seed/spxbox/640/400';
