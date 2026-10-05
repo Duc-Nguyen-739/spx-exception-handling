@@ -613,8 +613,6 @@ var chip=document.getElementById('whoChip');if(!chip)return;
 var e=state.me||{};
 if(!e.email){chip.style.display='none';return;}
 chip.style.display='';
-var dl=document.getElementById('msgDeploy');
-if(dl)dl.textContent='Tài khoản chạy app (upload ảnh): '+(e.deployer||'?')+' — phải là email công ty thì ảnh mới share được.';
 document.getElementById('whoIni').textContent=String(e.email).charAt(0).toUpperCase();
 document.getElementById('whoTxt').textContent=String(e.email).split('@')[0]+' · '+(e.role||'STAFF');
 }
@@ -737,7 +735,11 @@ document.getElementById('camMain').onclick=function(){toggleCam('scanMain');};
 document.getElementById('camLiq').onclick=function(){toggleCam('scanLiq');};
 function setActive(id){['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.toggle('on',n===id);});}
 function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';setActive(on?'navLiq':'navMain');}
-function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';setActive('navAccess');loadUsers();}
+async function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';setActive('navAccess');try{await loadMe();}catch(e){}
+var e=state.me||{};
+var dl=document.getElementById('msgDeploy');
+if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?')+' · App chạy bằng: '+(e.deployer||'?');
+loadUsers();}
 });
 </script>
 </body>

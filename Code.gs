@@ -508,7 +508,7 @@ function listUsers() {
         u.rows.push([seeds[i], 'ADMIN', at, by]);
       }
     }
-    var out = u.rows.map(function (r) { return { email: r[0], role: r[1], addedAt: r[2], addedBy: r[3] }; });
+    var out = u.rows.map(function (r) { return { email: cellText_(r[0]), role: cellText_(r[1]), addedAt: cellText_(r[2]), addedBy: cellText_(r[3]) }; });
     return ok(out);
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
