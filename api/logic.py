@@ -119,3 +119,12 @@ def can_liquidate(status):
 
 def valid_liq_code(s):
     return bool(re.search(r"SPXVN[0-9A-Z]+", (s or "").upper()))
+
+
+def can_admin_edit(status, role):
+    # STAFF bị khóa sau Hoàn Thành; ADMIN được mở lại về Lưu kho.
+    if role != "ADMIN":
+        return (False, "Cần quyền ADMIN.")
+    if status == "chua_xu_ly":
+        return (False, "Đơn đang Lưu kho, không cần mở lại.")
+    return (True, "")

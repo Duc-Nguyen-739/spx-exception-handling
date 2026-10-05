@@ -7,6 +7,8 @@
 var TZ = 'Asia/Ho_Chi_Minh';
 var PROP_SHEET = 'SPREADSHEET_ID';
 var PROP_FOLDER = 'FOLDER_ID';
+var PROP_ADMINS = 'ADMIN_EMAILS';
+var USERS_HEADER = ['email', 'role', 'added_at', 'added_by'];
 
 var ITEMS_HEADER = ['code', 'created_at', 'description', 'kind', 'photo_path_outer',
   'photo_path_product', 'status', 'status_note', 'mvdn', 'trip', 'reporter', 'note'];
@@ -329,6 +331,108 @@ function liquidateBatch(codes, liqCode) {
         log.appendRow([at, codes[m], 'chua_xu_ly', 'thanh_ly', by, liqCode]);
       }
       return { count: codes.length, at: at, by: by, liqCode: liqCode };
+    }));
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function normEmail_(s) {
+  return String(s || '').trim().toLowerCase();
+}
+
+function seedAdmins_() {
+  var raw = PropertiesService.getScriptProperties().getProperty(PROP_ADMINS) || '';
+  return raw.split(',').map(normEmail_).filter(Boolean);
+}
+
+function readUsers_() {
+  var sh = getSheet_('Users', USERS_HEADER);
+  var last = sh.getLastRow();
+  if (last < 2) return { sh: sh, rows: [] };
+  var vals = sh.getRange(2, 1, last - 1, USERS_HEADER.length).getValues();
+  return { sh: sh, rows: vals };
+}
+
+function getRole_() {
+  var me = normEmail_(currentEmail_());
+  if (!me) return 'STAFF';
+  var u = readUsers_();
+  for (var i = 0; i < u.rows.length; i++) {
+    if (normEmail_(u.rows[i][0]) === me) return u.rows[i][1] === 'ADMIN' ? 'ADMIN' : 'STAFF';
+  }
+  if (seedAdmins_().indexOf(me) >= 0) return 'ADMIN';
+  return 'STAFF';
+}
+
+function requireAdmin_() {
+  if (getRole_() !== 'ADMIN') throw new Error('Cần quyền ADMIN.');
+}
+
+function me() {
+  try { return ok({ email: currentEmail_(), role: getRole_() }); }
+  catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function listUsers() {
+  try {
+    requireAdmin_();
+    var u = readUsers_();
+    if (!u.rows.length) {
+      var seeds = seedAdmins_();
+      var at = nowStr_(), by = currentEmail_();
+      for (var i = 0; i < seeds.length; i++) {
+        u.sh.appendRow([seeds[i], 'ADMIN', at, by]);
+        u.rows.push([seeds[i], 'ADMIN', at, by]);
+      }
+    }
+    var out = u.rows.map(function (r) { return { email: r[0], role: r[1], addedAt: r[2], addedBy: r[3] }; });
+    return ok(out);
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function setUserRole(email, role) {
+  try {
+    requireAdmin_();
+    email = normEmail_(email);
+    role = (role === 'ADMIN') ? 'ADMIN' : 'STAFF';
+    if (!email || email.indexOf('@') < 0) throw new Error('Email chưa đúng.');
+    return ok(withLock_(function () {
+      var u = readUsers_();
+      var idx = -1;
+      for (var i = 0; i < u.rows.length; i++) {
+        if (normEmail_(u.rows[i][0]) === email) { idx = i; break; }
+      }
+      if (idx >= 0 && u.rows[idx][1] === 'ADMIN' && role !== 'ADMIN') {
+        var admins = 0;
+        for (var k = 0; k < u.rows.length; k++) if (u.rows[k][1] === 'ADMIN') admins++;
+        if (admins <= 1) throw new Error('Không thể hạ ADMIN cuối cùng.');
+        if (normEmail_(currentEmail_()) === email) throw new Error('Không tự hạ quyền chính mình.');
+      }
+      var at = nowStr_(), by = currentEmail_();
+      if (idx >= 0) u.sh.getRange(idx + 2, 2, 1, 3).setValues([[role, at, by]]);
+      else u.sh.appendRow([email, role, at, by]);
+      return { email: email, role: role };
+    }));
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function adminReopen(code, note) {
+  try {
+    requireAdmin_();
+    code = String(code || '').trim();
+    if (!code) return fail('Thiếu mã đơn.');
+    return ok(withLock_(function () {
+      var r = readAllItems_();
+      var idx = -1;
+      for (var i = 0; i < r.items.length; i++) {
+        if (r.items[i].code === code) { idx = i; break; }
+      }
+      if (idx < 0) throw new Error('Khong Co');
+      var cur = r.items[idx].status || 'chua_xu_ly';
+      if (cur === 'chua_xu_ly') throw new Error('Đơn đang Lưu kho, không cần mở lại.');
+      var at = nowStr_(), by = currentEmail_();
+      r.sh.getRange(idx + 2, 7, 1, 1).setValues([['chua_xu_ly']]);
+      getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, cur, 'chua_xu_ly', by, String(note || 'ADMIN mở lại')]);
+      return { code: code, from: cur, to: 'chua_xu_ly', at: at, by: by };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
 }

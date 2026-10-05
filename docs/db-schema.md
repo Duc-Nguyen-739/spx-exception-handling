@@ -31,6 +31,15 @@ Spreadsheet ID để ở Script Properties `SPREADSHEET_ID` (không hardcode —
 | K | `reporter` | Người nhập | Email; trống ở dữ liệu cũ |
 | L | `note` | — | Ghi chú vận hành (mã lạ, nhiều MVDN…) |
 
+### `Users` (phân quyền ADMIN/STAFF)
+
+| `email` | `role` (`ADMIN`/`STAFF`) | `added_at` | `added_by` |
+
+- Seed ADMIN từ Script Properties `ADMIN_EMAILS` (csv email) khi sheet còn trống;
+  `listUsers` tự chèn seed ở lần gọi đầu. STAFF là mặc định.
+- Chặn hạ ADMIN cuối cùng + chặn tự hạ quyền chính mình (server-side).
+- Mọi check role bằng `Session.getActiveUser().getEmail()`, không tin client.
+
 ### `Photos`
 
 | `code` | `slot` (`ngoai_quan`/`san_pham`) | `drive_file_id` | `uploaded_at` |
