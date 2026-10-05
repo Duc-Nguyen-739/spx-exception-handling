@@ -89,6 +89,8 @@ img.thumbB{width:128px;height:96px;object-fit:cover;border-radius:9px;background
 .btnrow{display:flex;gap:8px;margin-top:8px}.btnrow>*{flex:1}
 .billrow{display:flex;gap:8px}.billrow input{flex:1}.billrow button{flex:none;width:auto;white-space:nowrap}
 button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;font-size:12px;padding:10px;width:100%}
+.camSlot{width:100%;padding:24px 12px;border:1.5px dashed #ffd0c0;border-radius:13px;background:var(--tint);display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#d4573a}
+.camSlot .big{font-size:30px}
 .hist{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:9px 11px;font-size:11.5px;margin:10px 0;line-height:1.7;color:var(--mut);text-align:center}
 .bnav{display:flex;gap:6px;background:#fff;border-top:1px solid var(--line);padding:8px 12px 14px}
 .bnav button{flex:1;border:none;background:transparent;color:var(--mut);font-size:11px;font-weight:700;padding:8px 6px;border-radius:10px}
@@ -140,13 +142,13 @@ button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;f
 </div>
 <div class="pcard"><div id="rsStep1"><button class="btnP" id="btnGoResolve">Resolve</button><div class="btnrow"><button class="btnS">In mã QR</button></div></div><div id="rsStep2" style="display:none"><div class="field"><label>Mã bill</label><div class="billrow"><input id="demoBill" class="mono" placeholder="Nhập hoặc quét mã bill…"><button class="btnS" id="demoScan" type="button">Quét</button></div></div><button class="btnP" id="btnConfirmDemo">Confirm</button><button class="lnk" id="btnCancelDemo">Hủy</button></div><div class="hist" id="demoHist">Chưa có.</div><div class="msg" id="demoMsg" style="min-height:18px;font-size:12px;font-weight:600"></div></div>
 <div class="sec" style="margin-top:14px"><span class="tag fix">MỚI v4</span> +Create — tối đa 3 ảnh, tối thiểu 1 (<span id="crCount">0/3</span>)</div>
-<div class="sheet" style="border:2px solid var(--o)"><h2 style="margin:0 0 4px;font-size:15px;color:var(--navy)">Create</h2><div class="field"><label>Mô tả sản phẩm *</label><textarea id="crDesc" rows="2" style="width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13px;font-family:inherit" placeholder="VD: Thùng 12 áo thun hoàn…"></textarea></div><div class="field"><label>Ảnh (chụp xong hiện ô tiếp theo, tối đa 3 — cần ít nhất 1)</label><div id="crSlots"></div></div><button class="btnP" id="crDone">Hoàn thành</button><button class="lnk" id="crReset">Chụp lại từ đầu</button><div class="msg" id="crMsg" style="min-height:18px;font-size:12px;font-weight:600"></div></div>
+<div class="sheet" style="border:2px solid var(--o)"><h2 style="margin:0 0 4px;font-size:15px;color:var(--navy)">Create</h2><div class="field"><label>Mô tả sản phẩm *</label><textarea id="crDesc" rows="2" style="width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13px;font-family:inherit" placeholder="VD: Thùng 12 áo thun hoàn…"></textarea></div><div class="field"><label>Ảnh *</label><div id="crSlots"></div></div><button class="btnP" id="crDone">Hoàn thành</button><button class="lnk" id="crReset">Chụp lại từ đầu</button><div class="msg" id="crMsg" style="min-height:18px;font-size:12px;font-weight:600"></div></div>
 </div>
 </main>
 <div class="bnav"><button class="on">⌂<br>Danh sách</button><button>▤<br>Thanh lý</button><button>○<br>Quyền</button></div>
 </div>
 
-<div class="note"><b>Cach test tren dien thoai:</b> phong to/thu nho trinh duyet o 360–430px, bam 3 nut trang thai anh, xem grid 2 cot khong bi ep. v2: bo chu VTCODE, nut chi ghi Resolve, an Resolve moi hien o bill + nut Confirm. v3: fallback chi ghi 'Không tải được ảnh'/'Không có ảnh', chuyen 3 o anh sang form +Create (toi da 3, toi thieu 1 moi xong duoc). Sau khi chot, port CSS <code>.kv/.kvImg/.ph + grid 2 cot + header summary xuong dong</code> vao <code>index.html</code> + them <code>onerror</code> + server <code>setSharing + sz=w400</code>.</div>
+<div class="note"><b>Cach test tren dien thoai:</b> phong to/thu nho trinh duyet o 360–430px, bam 3 nut trang thai anh, xem grid 2 cot khong bi ep. v2: bo chu VTCODE, nut chi ghi Resolve, an Resolve moi hien o bill + nut Confirm. v3: fallback chi ghi 'Không tải được ảnh'/'Không có ảnh', chuyen 3 o anh sang form +Create (toi da 3, toi thieu 1 moi xong duoc). v5: o anh chi icon may anh + n/3, bo chu thich. Sau khi chot, port CSS <code>.kv/.kvImg/.ph + grid 2 cot + header summary xuong dong</code> vao <code>index.html</code> + them <code>onerror</code> + server <code>setSharing + sz=w400</code>.</div>
 </div>
 <script>
 var GOOD='https://picsum.photos/seed/spxbox/640/400';
@@ -173,13 +175,13 @@ document.getElementById('crCount').textContent=crPhotos.length+'/3';
 crPhotos.forEach(function(src,i){
 var box=document.createElement('div');box.style.marginBottom='10px';
 var d=document.createElement('div');d.className='ph';
-d.innerHTML='<img loading="lazy" src="'+src+'"><span class="badge">Ảnh '+(i+1)+'</span>';
+d.innerHTML='<img loading="lazy" src="'+src+'"><span class="badge">'+(i+1)+' / 3</span>';
 var del=document.createElement('button');del.className='btnS';del.style.cssText='width:100%;margin-top:6px';del.textContent='Xóa ảnh '+(i+1);
 del.onclick=function(){crPhotos.splice(i,1);renderCr();};
 box.appendChild(d);box.appendChild(del);w.appendChild(box);});
 if(crPhotos.length<3){
-var b=document.createElement('button');b.className='btnS';b.style.cssText='width:100%;padding:18px;border-style:dashed';
-b.textContent='+ Chụp ảnh '+(crPhotos.length+1)+' / 3';
+var b=document.createElement('button');b.className='camSlot';
+b.innerHTML='<span class=big>📷</span><span>'+(crPhotos.length+1)+' / 3</span>';
 b.onclick=function(){crPhotos.push('https://picsum.photos/seed/spx'+Date.now()+'/640/400');renderCr();};
 w.appendChild(b);}
 else{var m=document.createElement('div');m.className='hist';m.textContent='Đã đủ 3 ảnh.';w.appendChild(m);}}
