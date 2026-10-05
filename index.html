@@ -366,6 +366,10 @@ header{flex-wrap:wrap}
 <div id="printArea"><div id="qrBox"></div><div class="pcode" id="printCode"></div></div>
 
 <script>
+if(typeof google==='undefined'||!google.script){
+if(document.readyState==='loading'){document.write('<script src="mock/mock-google.js?v='+Date.now()+'"><\/script>');}
+else{var __m=document.createElement('script');__m.src='mock/mock-google.js?v='+Date.now();document.head.appendChild(__m);}
+}
 var DEMO=[
 {code:'Box.01-10-2026.21',kind:'Box',createdAt:'01/10/2026 09:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo box',note:'',status:'chua_xu_ly',statusLabel:'Lưu kho',bill:'',days:5},
 {code:'Item.01-10-2026.3',kind:'Item',createdAt:'01/10/2026 10:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo item',note:'',status:'da_tim_bill',statusLabel:'Resolve',bill:'SPXVN1',days:5}
