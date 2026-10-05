@@ -59,15 +59,18 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 .pills{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}
 .pills span{font-size:11px;font-weight:700;color:var(--mut);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:6px 12px}
 
-/* ===== card grid ===== */
-#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:11px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.card img{width:100%;height:120px;object-fit:cover;display:block;background:linear-gradient(135deg,#f1f3f7,#e6eaf1)}
-.card .noimg{width:100%;height:96px;display:grid;place-items:center;font-size:24px;background:var(--bg)}
-.card .body{padding:9px 11px 11px}
-.card .code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;font-weight:700;color:var(--navy);word-break:break-all}
-.card .meta{color:var(--mut);font-size:10px;font-weight:500;margin:4px 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rowend{display:flex;align-items:center;justify-content:space-between;gap:6px}
+/* ===== gallery grid (kiểu AppSheet: ảnh vuông + caption) ===== */
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative;cursor:pointer}
+.card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:linear-gradient(135deg,#f1f3f7,#e6eaf1)}
+.card .noimg{width:100%;aspect-ratio:1/1;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,#eef1f6,#e2e8f1)}
+.card .cap{padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--bg)}
+.card .code{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:700;color:var(--mut);word-break:break-all}
+.card.sel{outline:2px solid var(--o);outline-offset:-2px}
+.ovst{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.94);border-radius:7px;padding:3px 8px;font-size:9px;font-weight:800;box-shadow:0 1px 5px rgba(23,43,72,.2);color:var(--o)}
+.ovst::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.ovst.Resolve{color:#0d9a50}
+.ovst.thanhly{color:var(--blue)}
 .st{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:4px 9px;border-radius:8px;line-height:1;background:var(--tint);color:var(--o)}
 .st::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
 .st.Resolve{background:var(--t2);color:#0d9a50}
@@ -91,6 +94,11 @@ html[data-theme=dark] .cnt small{color:#a4573d}
 .modal.open{display:flex}
 .sheet{background:var(--card);border-radius:20px 20px 0 0;max-width:640px;width:100%;padding:16px 16px 20px;max-height:92%;overflow:auto}
 .sheet h2{margin:0 0 10px;font-size:15.5px;color:var(--navy)}
+.dhead{display:flex;align-items:center;gap:8px;padding-bottom:10px;margin:-2px 0 6px;border-bottom:1px solid var(--line)}
+.dhead .dt{font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:800;color:var(--navy);word-break:break-all}
+.iconBtn{border:none!important;background:transparent!important;color:var(--mut);font-size:17px;line-height:1;padding:5px 10px!important;font-weight:800;border-radius:8px}
+.iconBtn:hover{background:var(--bg);color:var(--navy)}
+.iconBtn:disabled{opacity:.3;cursor:not-allowed}
 .kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--bg);font-size:12px}
 .kv b{color:var(--mut);font-weight:600;flex:none}
 .kv span{color:var(--ink);font-weight:600;text-align:right;overflow:hidden;text-overflow:ellipsis}
@@ -118,13 +126,13 @@ td .st.adm{background:var(--tint);color:var(--o)}
 #usersTable .roleBtn{font-size:10px;padding:6px 11px;border-radius:8px}
 
 @media (min-width:900px){
-.bnav{max-width:1100px;margin:0 auto;position:static;border-top:none;padding:14px 14px 0;background:transparent;box-shadow:none}
-html[data-theme=dark] .bnav{background:transparent}
-.bnav button{flex:none;flex-direction:row;gap:7px;font-size:12.5px;padding:10px 18px}
-main{padding:16px 20px 40px}
-#grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:13px}
+.bnav{position:fixed;left:0;top:58px;bottom:0;width:216px;flex-direction:column;gap:2px;border-top:none;border-right:1px solid var(--line);background:var(--card);padding:14px 10px;z-index:18}
+html[data-theme=dark] .bnav{background:var(--navy);border-right-color:transparent}
+.bnav button{width:100%;flex:none;flex-direction:row;justify-content:flex-start;gap:10px;font-size:13px;padding:11px 14px;border-radius:10px}
+main{margin-left:216px;max-width:none;padding:18px 26px 40px}
+#grid{grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px}
 .modal{align-items:stretch;justify-content:flex-end;padding:0}
-.sheet{max-width:460px;width:100%;height:100%;max-height:none;border-radius:0;padding:22px 24px;box-shadow:-20px 0 50px rgba(23,43,72,.25)}
+.sheet{max-width:470px;width:100%;height:100%;max-height:none;border-radius:0;padding:22px 24px;box-shadow:-20px 0 50px rgba(23,43,72,.25)}
 header{padding:12px 22px}
 #whoChip{display:flex}
 }
@@ -196,7 +204,14 @@ header{padding:12px 22px}
 </main>
 
 <div class="modal" id="detailModal"><div class="sheet">
-<h2>Chi tiết đơn hàng</h2>
+<div class="dhead">
+<span class="dt" id="detailTitle">Chi tiết</span>
+<span class="st" id="detailSt" style="display:none"></span>
+<span style="flex:1"></span>
+<button id="btnPrevDetail" class="iconBtn" title="Đơn trước">‹</button>
+<button id="btnNextDetail" class="iconBtn" title="Đơn sau">›</button>
+<button id="btnCloseDetail" class="iconBtn" title="Đóng">✕</button>
+</div>
 <div id="detailBody"></div>
 <div class="hist" id="detailHist"></div>
 <div class="field"><label>MÃ BILL XỬ LÝ (VTCODE)</label>
@@ -209,7 +224,6 @@ header{padding:12px 22px}
 <button id="btnPrintDetail">🖨 In mã QR</button>
 <button id="btnReopen" style="display:none">↺ Mở lại (ADMIN)</button>
 </div>
-<button id="btnCloseDetail" class="lnk">Đóng</button>
 <div class="msg" id="msgDetail"></div>
 </div></div>
 
@@ -247,7 +261,7 @@ var DEMO=[
 {code:'Box.01-10-2026.21',kind:'Box',createdAt:'01/10/2026 09:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo box',note:'',status:'chua_xu_ly',statusLabel:'Lưu kho',bill:'',days:5},
 {code:'Item.01-10-2026.3',kind:'Item',createdAt:'01/10/2026 10:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo item',note:'',status:'da_tim_bill',statusLabel:'Resolve',bill:'SPXVN1',days:5}
 ];
-var state={items:[],detail:null,liq:[],kind:'Box',lastCreated:'',me:null};
+var state={items:[],detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:''};
 function hasGs(){return typeof google!=='undefined'&&google.script&&google.script.run;}
 function gs(fn,args){return new Promise(function(res,rej){
 if(!hasGs()){rej(new Error('LOCAL'));return;}
@@ -277,20 +291,26 @@ var s=document.getElementById('hdrSummary');if(s)s.textContent=state.items.lengt
 var p=document.getElementById('pillsRow');
 if(p)p.innerHTML=['<span>Tất cả '+state.items.length+'</span>','<span>Lưu kho '+open.length+'</span>','<span>Resolve '+state.items.filter(function(i){return i.status==='da_tim_bill';}).length+'</span>','<span>Thanh lý '+state.items.filter(function(i){return i.status==='thanh_ly';}).length+'</span>'].join('');
 }
+function visibleItems(){
+var q=(state.filter||'').toLowerCase();
+if(!q)return state.items;
+return state.items.filter(function(it){
+return String(it.code).toLowerCase().indexOf(q)>=0
+||String(it.description||'').toLowerCase().indexOf(q)>=0
+||String(it.kind||'').toLowerCase().indexOf(q)>=0;
+});
+}
 function renderGrid(){
 var g=document.getElementById('grid');g.innerHTML='';
-state.items.forEach(function(it){
+visibleItems().forEach(function(it){
 var d=document.createElement('div');d.className='card';
 var src=thumb(it);
 var hot=(+it.days>3&&it.status==='chua_xu_ly')?' hot':'';
 d.innerHTML=(src?'<img alt="" src="'+esc(src)+'">':'<div class="noimg">📦</div>')
-+'<div class="body"><div class="code">'+esc(it.code)+'</div>'
-+'<div class="meta">'+esc(it.description||it.kind||'')+'</div>'
-+'<div class="rowend"><span class="st '+stClass(it.status)+'">'+esc(it.statusLabel||it.status)+'</span>'
-+'<span class="days'+hot+'">'+esc(it.days)+'N</span></div></div>';
++'<span class="ovst '+stClass(it.status)+'">'+esc(it.statusLabel||it.status)+'</span>'
++'<div class="cap"><span class="code">'+esc(it.code)+'</span><span class="days'+hot+'">'+esc(it.days)+'N</span></div>';
 var im=d.querySelector('img');
-if(im){im.onerror=function(){im.outerHTML='<div class="noimg">📦</div>';};im.onclick=function(){openDetail(it.code);};}
-else{d.querySelector('.noimg').onclick=function(){openDetail(it.code);};}
+if(im)im.onerror=function(){im.outerHTML='<div class="noimg">📦</div>';};
 d.onclick=function(){openDetail(it.code);};
 g.appendChild(d);
 });
@@ -308,8 +328,16 @@ var f=state.items.filter(function(x){return x.code===code;})[0]||{code:code};
 state.detail={item:f,history:[]};
 }
 var it=state.detail.item;
-var h='<div class="kv"><b>Mã đơn</b><span class="mono">'+esc(it.code)+'</span></div>'+
-'<div class="kv"><b>Loại</b><span>'+esc(it.kind||'')+'</span></div>'+
+document.getElementById('detailTitle').textContent=it.code||'';
+var ds=document.getElementById('detailSt');
+ds.textContent=it.statusLabel||it.status||'';
+ds.className='st '+stClass(it.status);
+ds.style.display=(it.statusLabel||it.status)?'':'none';
+var vis=visibleItems(),vi=-1;
+vis.forEach(function(x,j){if(x.code===it.code)vi=j;});
+document.getElementById('btnPrevDetail').disabled=vi<=0;
+document.getElementById('btnNextDetail').disabled=vi<0||vi>=vis.length-1;
+var h='<div class="kv"><b>Loại</b><span>'+esc(it.kind||'')+'</span></div>'+
 '<div class="kv"><b>Ngày tạo</b><span>'+esc(it.createdAt||'')+' · '+esc(daysOf(it.createdAt)+' ngày lưu kho')+'</span></div>'+
 '<div class="kv"><b>Người tạo</b><span>'+esc(it.createdBy||'')+'</span></div>'+
 '<div class="kv"><b>Mô tả</b><span>'+esc(it.description||'')+'</span></div>'+
@@ -330,6 +358,13 @@ var done=it.status&&it.status!=='chua_xu_ly';
 document.getElementById('btnResolve').style.display=done?'none':'';
 document.getElementById('btnReopen').style.display=(done&&role==='ADMIN')?'':'none';
 msg('msgDetail','',true);
+}
+function detailNav(dir){
+if(!state.detail||!state.detail.item)return;
+var vis=visibleItems(),cur=state.detail.item.code,i=-1;
+vis.forEach(function(x,j){if(x.code===cur)i=j;});
+if(i<0||!vis[i+dir])return;
+openDetail(vis[i+dir].code);
 }
 
 async function doResolve(){
@@ -536,6 +571,9 @@ document.getElementById('btnItemDone').onclick=function(){state.kind='Item';subm
 document.getElementById('btnBoxPrint').onclick=function(){if(state.lastCreated)doPrint(state.lastCreated);};
 document.getElementById('btnItemPrint').onclick=function(){if(state.lastCreated)doPrint(state.lastCreated);};
 document.getElementById('btnCloseDetail').onclick=function(){document.getElementById('detailModal').classList.remove('open');};
+document.getElementById('btnPrevDetail').onclick=function(){detailNav(-1);};
+document.getElementById('btnNextDetail').onclick=function(){detailNav(1);};
+document.getElementById('scanMain').addEventListener('input',function(){state.filter=this.value.trim();renderGrid();});
 document.getElementById('btnResolve').onclick=doResolve;
 document.getElementById('btnPrintDetail').onclick=function(){if(state.detail)doPrint(state.detail.item.code);};
 document.getElementById('navMain').onclick=function(){showLiq(false);};
@@ -543,7 +581,7 @@ document.getElementById('navLiq').onclick=function(){showLiq(true);};
 document.getElementById('navAccess').onclick=function(){showAccess();};
 document.getElementById('btnAddUser').onclick=function(){var em=document.getElementById('newEmail').value.trim();var ro=document.getElementById('newRole').value;if(!em){msg('msgAccess','Nhập email cần thêm.');return;}setRole(em,ro);document.getElementById('newEmail').value='';};
 document.getElementById('btnReopen').onclick=doReopen;
-document.getElementById('scanMain').addEventListener('keydown',function(e){if(e.key==='Enter')openDetail(e.target.value.trim());});
+document.getElementById('scanMain').addEventListener('keydown',function(e){if(e.key==='Enter'){var v=e.target.value.trim();state.filter='';renderGrid();openDetail(v);}});
 document.getElementById('scanLiq').addEventListener('keydown',function(e){if(e.key==='Enter'){liqAdd(e.target.value.trim());e.target.value='';}});
 document.getElementById('btnNext').onclick=function(){document.getElementById('liqCodeWrap').style.display='block';};
 document.getElementById('btnLiqDone').onclick=liqDone;
