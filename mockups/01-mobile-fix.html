@@ -92,6 +92,18 @@ img.thumbB{width:128px;height:96px;object-fit:cover;border-radius:9px;background
 .urow .em{flex:1;min-width:0;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:700;color:var(--mut);word-break:break-all}
 .urow .del{flex:none;font-size:11px;padding:8px 12px;border-radius:9px;color:var(--o);border-color:#ffd9cd}
 button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;font-size:12px;padding:10px;width:100%}
+.pill{border:1px solid var(--line);background:#fff;border-radius:99px;padding:8px 14px;font-size:11.5px;font-weight:800;display:inline-flex;gap:7px;align-items:center;color:var(--navy)}
+.pill .n{border-radius:99px;padding:2px 9px;font-size:10.5px;background:var(--bg);color:inherit}
+.pill[data-k="open"]{color:var(--o)}
+.pill[data-k="resolve"]{color:#0d9a50}
+.pill[data-k="liq"]{color:var(--blue)}
+.pill.on{color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(23,43,72,.28)}
+.pill[data-k=""].on{background:var(--navy)}
+.pill[data-k="open"].on{background:var(--o)}
+.pill[data-k="resolve"].on{background:#0d9a50}
+.pill[data-k="liq"].on{background:var(--blue)}
+.pill.on .n{background:rgba(255,255,255,.22);color:#fff}
+.pill:active{transform:scale(.95)}
 .camSlot{width:100%;padding:24px 12px;border:1.5px dashed #ffd0c0;border-radius:13px;background:var(--tint);display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#d4573a}
 .camSlot .big{font-size:30px}
 .hist{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:9px 11px;font-size:11.5px;margin:10px 0;line-height:1.7;color:var(--mut);text-align:center}
@@ -182,9 +194,17 @@ button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;f
 <div class="msg" id="v8msg" style="min-height:18px;font-size:12px;font-weight:600"></div>
 </main>
 <div class="bnav"><button>Danh sách</button><button>Thanh lý</button><button class="on">Role</button></div>
+<div class="phone w430" style="margin-top:16px">
+<header><span class="mark"><b>SPX</b><span>Exception Handling</span></span><span class="hdrBtns"><button>Tối</button></span><span class="hdrSummaryRow">duc.nguyenvan05</span></header>
+<main>
+<div class="sec"><span class="tag fix">MỚI v9</span> Nút filter theo màu trạng thái (bấm thử)</div>
+<div class="pills" id="v9pills"></div>
+<div id="v9grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px"></div>
+</main>
+<div class="bnav"><button class="on">Danh sách</button><button>Thanh lý</button><button>Role</button></div>
 </div>
 
-<div class="note"><b>Cách test trên điện thoại:</b> phóng to/thu nhỏ trình duyệt ở 360–430px, bấm 3 nút trạng thái ảnh, xem grid 2 cột không bị ép. v2: bỏ chữ VTCODE, nút chỉ ghi Resolve, ấn Resolve mới hiện ô bill + nút Confirm. v3: fallback chỉ ghi 'Không tải được ảnh'/'Không có ảnh', chuyển 3 ô ảnh sang form +Create (tối đa 3, tối thiểu 1 mới xong được). v5: ô ảnh chỉ icon máy ảnh + n/3, bỏ chú thích. v7: chi tiết có nút Edit (ADMIN), Box bắt buộc 2 ảnh + ảnh 3 tùy chọn, Item chỉ 1 ảnh sản phẩm bắt buộc. v8: tab Role chỉ hiện email + role, thêm email mặc định ADMIN (không chọn role), nút Xóa thay Hạ STAFF. Sau khi chốt, port CSS <code>.kv/.kvImg/.ph + grid 2 cột + header summary xuống dòng</code> vào <code>index.html</code> + thêm <code>onerror</code> + server <code>setSharing + sz=w400</code> + nút <code>Confirm</code> thay mọi chữ Hoàn thành.</div>
+<div class="note"><b>Cách test trên điện thoại:</b> phóng to/thu nhỏ trình duyệt ở 360–430px, bấm 3 nút trạng thái ảnh, xem grid 2 cột không bị ép. v2: bỏ chữ VTCODE, nút chỉ ghi Resolve, ấn Resolve mới hiện ô bill + nút Confirm. v3: fallback chỉ ghi 'Không tải được ảnh'/'Không có ảnh', chuyển 3 ô ảnh sang form +Create (tối đa 3, tối thiểu 1 mới xong được). v5: ô ảnh chỉ icon máy ảnh + n/3, bỏ chú thích. v7: chi tiết có nút Edit (ADMIN), Box bắt buộc 2 ảnh + ảnh 3 tùy chọn, Item chỉ 1 ảnh sản phẩm bắt buộc. v8: tab Role chỉ hiện email + role, thêm email mặc định ADMIN (không chọn role), nút Xóa thay Hạ STAFF. v9: hàng trạng thái thành nút filter màu (nút đang chọn nền đặc + bóng). Sau khi chốt, port CSS <code>.kv/.kvImg/.ph + grid 2 cột + header summary xuống dòng</code> vào <code>index.html</code> + thêm <code>onerror</code> + server <code>setSharing + sz=w400</code> + nút <code>Confirm</code> thay mọi chữ Hoàn thành.</div>
 </div>
 <script>
 var GOOD='https://picsum.photos/seed/spxbox/640/400';
@@ -286,6 +306,33 @@ if(v7ckind==='Item'&&!a[0]){m.textContent='Item cần Ảnh sản phẩm mới C
 m.textContent='Đã tạo task mới.';m.style.color='#0d9a50';};
 document.getElementById('v7cReset').onclick=function(){v7c[v7ckind]=v7ckind==='Box'?['','','']:[''];document.getElementById('v7cdesc').value='';document.getElementById('v7cmsg').textContent='';renderV7Create();};
 renderV7View();renderV7Create();
+var v9f='';
+var v9items=[
+{code:'Box.06-10-2026.2',k:'open',label:'Lưu kho',cls:'',days:'0 Ngày',hot:false},
+{code:'Box.06-10-2026.1',k:'open',label:'Lưu kho',cls:'',days:'118 Ngày',hot:true},
+{code:'Item.06-10-2026.3',k:'open',label:'Lưu kho',cls:'',days:'0 Ngày',hot:false},
+{code:'Item.06-10-2026.2',k:'open',label:'Lưu kho',cls:'',days:'1 Ngày',hot:false},
+{code:'Item.06-10-2026.1',k:'open',label:'Lưu kho',cls:'',days:'2 Ngày',hot:false},
+{code:'Box.05-10-2026.1',k:'resolve',label:'Resolve',cls:'Resolve',days:'3 Ngày',hot:false},
+{code:'Item.05-10-2026.1',k:'liq',label:'Thanh lý',cls:'thanhly',days:'4 Ngày',hot:false}];
+var v9names={ '':'Tất cả',open:'Lưu kho',resolve:'Resolve',liq:'Thanh lý'};
+function v9count(k){return k?v9items.filter(function(x){return x.k===k;}).length:v9items.length;}
+function renderV9(){
+var pw=document.getElementById('v9pills');pw.innerHTML='';
+['','open','resolve','liq'].forEach(function(k){
+var b=document.createElement('button');b.type='button';b.className='pill'+(v9f===k?' on':'');b.setAttribute('data-k',k);
+b.innerHTML=v9names[k]+'<span class="n">'+v9count(k)+'</span>';
+b.onclick=function(){v9f=k;renderV9();};
+pw.appendChild(b);});
+var g=document.getElementById('v9grid');g.innerHTML='';
+var list=v9items.filter(function(x){return !v9f||x.k===v9f;});
+if(!list.length){g.innerHTML='<div class="hist" style="grid-column:1/-1">Không có đơn ở trạng thái này.</div>';return;}
+list.forEach(function(x,i){
+var d=document.createElement('div');d.className='card';
+d.innerHTML='<img loading="lazy" src="https://picsum.photos/seed/v9'+i+'/400/400" onerror="this.outerHTML=\'<div class=\'noimg\'>📦<small>Không tải được ảnh</small></div>\'"><span class="ovst '+x.cls+'">'+x.label+'</span><div class="cap"><span class="code">'+x.code+'</span><span class="days'+(x.hot?' hot':'')+'">'+x.days+'</span></div>';
+g.appendChild(d);});
+}
+renderV9();
 var v8me='duc.nguyenvan05@spxexpress.com';
 var v8users=[{email:'duc.nguyenvan05@spxexpress.com'},{email:'thienhuong.tran@spxexpress.com'}];
 document.getElementById('v8diag').textContent='Đăng nhập: '+v8me+' · ADMIN';
