@@ -184,7 +184,8 @@ async function main() {
     const needBill = await evalIn(ws, `document.getElementById('msgDetail').textContent`);
     check('Resolve thiếu bill báo lỗi', /mã bill/.test(needBill.value || ''), needBill.value);
     await evalIn(ws, `document.getElementById('resolveBill').value = 'SPXVN777'; document.getElementById('btnConfirmResolve').click()`);
-    const rsOk = await waitUntil(ws, "document.getElementById('detailHist').innerText.includes('SPXVN777')", 6000);
+    const rsOk = await waitUntil(ws, "document.getElementById('detailHist').innerText.includes('SPXVN777')"
+      + " && document.querySelectorAll('#detailHist .tl.pending').length === 0", 8000);
     const rs = await evalIn(ws, `JSON.stringify({
       token: document.getElementById('detailBody').innerText.includes('Resolve'),
       calls: (window.__MOCK_CALLS__ || []).map(function(c){return c[0];}).join(',')
@@ -206,14 +207,29 @@ async function main() {
       for (var i = 0; i < g.length; i++) if (g[i].textContent === 'Lưu kho') g[i].click();
     })()`);
     await evalIn(ws, `document.getElementById('btnConfirmEdit').click()`);
-    const edOk = await waitUntil(ws, "document.getElementById('detailHist').innerText.includes('ADMIN đổi trạng thái')", 6000);
+    const edOk = await waitUntil(ws, "document.getElementById('detailHist').innerText.includes('ADMIN đổi trạng thái')"
+      + " && document.querySelectorAll('#detailHist .tl.pending').length === 0", 8000);
     const ed = await evalIn(ws, `JSON.stringify({
-      hist: document.getElementById('detailHist').innerText,
+      adminEntry: (function(){
+        var tls = document.querySelectorAll('#detailHist .tl');
+        for (var i = 0; i < tls.length; i++) {
+          if (tls[i].innerText.includes('ADMIN đổi trạng thái')) return tls[i].innerText;
+        }
+        return '';
+      })(),
+      resolveEntry: (function(){
+        var tls = document.querySelectorAll('#detailHist .tl');
+        for (var i = 0; i < tls.length; i++) {
+          if (tls[i].innerText.includes('SPXVN777')) return tls[i].innerText;
+        }
+        return '';
+      })(),
       editCalls: (window.__MOCK_CALLS__ || []).filter(function(c){return c[0]==='adminEditItem';}).length
     })`);
     const D = ed.err ? null : JSON.parse(ed.value);
     check('Edit về Lưu kho → mốc ADMIN đổi trạng thái', !!edOk, D && ('adminEditItem x' + D.editCalls));
-    check('Mốc Edit không lộ email ADMIN', !!(D && !/admin\.mock@/.test(D.hist)), edOk ? 'ok' : ed.err);
+    check('Mốc Edit không lộ email ADMIN', !!(D && /ADMIN đổi trạng thái/.test(D.adminEntry) && !/@/.test(D.adminEntry)), D && D.adminEntry.replace(/\n/g, ' | '));
+    check('Mốc Resolve nút thường vẫn hiện email', !!(D && /@/.test(D.resolveEntry)), D && D.resolveEntry.replace(/\n/g, ' | ').slice(0, 120));
 
     const errs = await evalIn(ws, `JSON.stringify(window.__PAGE_ERRORS__ || [])`);
     check('Không lỗi JS trên trang', errs.value === '[]', errs.value);

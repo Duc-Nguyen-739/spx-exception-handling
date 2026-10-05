@@ -46,6 +46,8 @@
     ]
   };
 
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
   function find(code) {
     for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].code === code) return ITEMS[i];
     return null;
@@ -55,12 +57,12 @@
     me: function () { return { ok: true, data: { email: ME, role: 'ADMIN', deployer: ME } }; },
     listItems: function (limit) {
       var out = ITEMS.slice().sort(function (a, b) { return b.code < a.code ? -1 : 1; });
-      return { ok: true, data: out.slice(0, limit || 100) };
+      return { ok: true, data: clone(out.slice(0, limit || 100)) };
     },
     getItem: function (code) {
       var it = find(code);
       if (!it) return { ok: false, error: 'Không Có' };
-      return { ok: true, data: { item: it, history: HIST[code] || [] } };
+      return { ok: true, data: { item: clone(it), history: clone(HIST[code] || []) } };
     },
     previewCode: function (kind) {
       var k = kind === 'Item' ? 'Item' : 'Box';
@@ -140,6 +142,7 @@
             (err || function () {})(e);
             return;
           }
+
           (ok || function () {})(r);
         }, 20);
       };
