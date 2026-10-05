@@ -139,14 +139,14 @@ button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;f
 <div class="kv"><b>Trạng thái</b><span class="val"><span class="st">Lưu kho</span></span></div>
 </div>
 <div class="pcard"><div id="rsStep1"><button class="btnP" id="btnGoResolve">Resolve</button><div class="btnrow"><button class="btnS">In mã QR</button></div></div><div id="rsStep2" style="display:none"><div class="field"><label>Mã bill</label><div class="billrow"><input id="demoBill" class="mono" placeholder="Nhập hoặc quét mã bill…"><button class="btnS" id="demoScan" type="button">Quét</button></div></div><button class="btnP" id="btnConfirmDemo">Confirm</button><button class="lnk" id="btnCancelDemo">Hủy</button></div><div class="hist" id="demoHist">Chưa có.</div><div class="msg" id="demoMsg" style="min-height:18px;font-size:12px;font-weight:600"></div></div>
-<div class="sec" style="margin-top:14px"><span class="tag fix">MỚI</span> Ảnh bổ sung — tối đa 3 (<span id="exCount">0/3</span>)</div>
-<div class="pcard"><div class="field"><label>Chụp xong hiện ô tiếp theo, đến ảnh thứ 3 thì dừng</label><div id="exSlots"></div></div><button class="lnk" id="exReset">Chụp lại từ đầu</button></div>
+<div class="sec" style="margin-top:14px"><span class="tag fix">MỚI v4</span> +Create — tối đa 3 ảnh, tối thiểu 1 (<span id="crCount">0/3</span>)</div>
+<div class="sheet" style="border:2px solid var(--o)"><h2 style="margin:0 0 4px;font-size:15px;color:var(--navy)">Create</h2><div class="field"><label>Mô tả sản phẩm *</label><textarea id="crDesc" rows="2" style="width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13px;font-family:inherit" placeholder="VD: Thùng 12 áo thun hoàn…"></textarea></div><div class="field"><label>Ảnh (chụp xong hiện ô tiếp theo, tối đa 3 — cần ít nhất 1)</label><div id="crSlots"></div></div><button class="btnP" id="crDone">Hoàn thành</button><button class="lnk" id="crReset">Chụp lại từ đầu</button><div class="msg" id="crMsg" style="min-height:18px;font-size:12px;font-weight:600"></div></div>
 </div>
 </main>
 <div class="bnav"><button class="on">⌂<br>Danh sách</button><button>▤<br>Thanh lý</button><button>○<br>Quyền</button></div>
 </div>
 
-<div class="note"><b>Cach test tren dien thoai:</b> phong to/thu nho trinh duyet o 360–430px, bam 3 nut trang thai anh, xem grid 2 cot khong bi ep. v2: bo chu VTCODE, nut chi ghi Resolve, an Resolve moi hien o bill + nut Confirm. v3: fallback chi ghi 'Không tải được ảnh'/'Không có ảnh', them anh bo sung toi da 3. Sau khi chot, port CSS <code>.kv/.kvImg/.ph + grid 2 cot + header summary xuong dong</code> vao <code>index.html</code> + them <code>onerror</code> + server <code>setSharing + sz=w400</code>.</div>
+<div class="note"><b>Cach test tren dien thoai:</b> phong to/thu nho trinh duyet o 360–430px, bam 3 nut trang thai anh, xem grid 2 cot khong bi ep. v2: bo chu VTCODE, nut chi ghi Resolve, an Resolve moi hien o bill + nut Confirm. v3: fallback chi ghi 'Không tải được ảnh'/'Không có ảnh', chuyen 3 o anh sang form +Create (toi da 3, toi thieu 1 moi xong duoc). Sau khi chot, port CSS <code>.kv/.kvImg/.ph + grid 2 cot + header summary xuong dong</code> vao <code>index.html</code> + them <code>onerror</code> + server <code>setSharing + sz=w400</code>.</div>
 </div>
 <script>
 var GOOD='https://picsum.photos/seed/spxbox/640/400';
@@ -166,25 +166,30 @@ var cur='ok';
 function setMode(m){cur=m;document.getElementById('phOuter').innerHTML=phHTML(m,'outer');document.getElementById('phProduct').innerHTML=phHTML(m,'product');document.querySelectorAll('.demoBtns button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-m')===m);});}
 setMode('ok');
 document.querySelectorAll('.demoBtns button').forEach(function(b){b.onclick=function(){setMode(b.getAttribute('data-m'));};});
-var exPhotos=[];
-function renderEx(){
-var w=document.getElementById('exSlots');w.innerHTML='';
-document.getElementById('exCount').textContent=exPhotos.length+'/3';
-exPhotos.forEach(function(src,i){
+var crPhotos=[];
+function renderCr(){
+var w=document.getElementById('crSlots');w.innerHTML='';
+document.getElementById('crCount').textContent=crPhotos.length+'/3';
+crPhotos.forEach(function(src,i){
 var box=document.createElement('div');box.style.marginBottom='10px';
 var d=document.createElement('div');d.className='ph';
 d.innerHTML='<img loading="lazy" src="'+src+'"><span class="badge">Ảnh '+(i+1)+'</span>';
 var del=document.createElement('button');del.className='btnS';del.style.cssText='width:100%;margin-top:6px';del.textContent='Xóa ảnh '+(i+1);
-del.onclick=function(){exPhotos.splice(i,1);renderEx();};
+del.onclick=function(){crPhotos.splice(i,1);renderCr();};
 box.appendChild(d);box.appendChild(del);w.appendChild(box);});
-if(exPhotos.length<3){
+if(crPhotos.length<3){
 var b=document.createElement('button');b.className='btnS';b.style.cssText='width:100%;padding:18px;border-style:dashed';
-b.textContent='+ Chụp ảnh '+(exPhotos.length+1)+' / 3';
-b.onclick=function(){exPhotos.push('https://picsum.photos/seed/spx'+Date.now()+'/640/400');renderEx();};
+b.textContent='+ Chụp ảnh '+(crPhotos.length+1)+' / 3';
+b.onclick=function(){crPhotos.push('https://picsum.photos/seed/spx'+Date.now()+'/640/400');renderCr();};
 w.appendChild(b);}
 else{var m=document.createElement('div');m.className='hist';m.textContent='Đã đủ 3 ảnh.';w.appendChild(m);}}
-renderEx();
-document.getElementById('exReset').onclick=function(){exPhotos=[];renderEx();};
+renderCr();
+document.getElementById('crReset').onclick=function(){crPhotos=[];document.getElementById('crDesc').value='';document.getElementById('crMsg').textContent='';renderCr();};
+document.getElementById('crDone').onclick=function(){
+var m=document.getElementById('crMsg');
+if(!document.getElementById('crDesc').value.trim()){m.textContent='Vui lòng nhập mô tả sản phẩm.';m.style.color='#ee4d2d';return;}
+if(!crPhotos.length){m.textContent='Cần ít nhất 1 ảnh mới hoàn thành được.';m.style.color='#ee4d2d';return;}
+m.textContent='Đã tạo task với '+crPhotos.length+' ảnh.';m.style.color='#0d9a50';};
 document.getElementById('btnGoResolve').onclick=function(){document.getElementById('rsStep1').style.display='none';document.getElementById('rsStep2').style.display='block';document.getElementById('demoBill').focus();};
 document.getElementById('btnCancelDemo').onclick=function(){document.getElementById('rsStep2').style.display='none';document.getElementById('rsStep1').style.display='block';};
 document.getElementById('demoScan').onclick=function(){document.getElementById('demoBill').value='SPXVN demo 123';};
