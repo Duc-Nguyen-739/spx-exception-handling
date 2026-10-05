@@ -308,7 +308,7 @@ function stClass(s){return s==='da_tim_bill'?'Resolve':(s==='thanh_ly'?'thanhly'
 async function loadGrid(){
 msg('msgMain','Đang tải…',true);
 try{
-var r=await gs('listItems',[300]);
+var r=await gs('listItems',[100]);
 if(!r.ok)throw new Error(r.error);
 state.items=r.data;
 }catch(e){

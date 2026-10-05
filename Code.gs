@@ -9,6 +9,7 @@ var PROP_SHEET = 'SPREADSHEET_ID';
 var PROP_FOLDER = 'FOLDER_ID';
 var PROP_ADMINS = 'ADMIN_EMAILS';
 var USERS_HEADER = ['email', 'role', 'added_at', 'added_by'];
+var LIST_LIMIT = 100; // listItems chỉ đọc tối đa 100 dòng đầu (đơn mới insert ở dòng 2)
 
 var ITEMS_HEADER = ['code', 'created_at', 'description', 'kind', 'photo_path_outer',
   'photo_path_product', 'status', 'status_note', 'mvdn', 'trip', 'reporter', 'note'];
@@ -136,9 +137,19 @@ function readAllItems_() {
   return { sh: sh, items: rowsToItems_(vals) };
 }
 
+function readHeadItems_(maxRows) {
+  var sh = getSheet_('Items', ITEMS_HEADER);
+  var last = sh.getLastRow();
+  if (last < 2) return { sh: sh, items: [] };
+  var n = Math.min(last - 1, Math.max(1, maxRows || LIST_LIMIT));
+  var vals = sh.getRange(2, 1, n, ITEMS_HEADER.length).getValues();
+  return { sh: sh, items: rowsToItems_(vals) };
+}
+
 function listItems(limit) {
   try {
-    var r = readAllItems_();
+    var n = limit ? Math.min(limit, LIST_LIMIT) : LIST_LIMIT;
+    var r = readHeadItems_(n);
     var out = r.items.map(function (o) { return toClient_(o); });
     out.sort(function (a, b) {
       var da = parseCreated_(a.createdAt), db = parseCreated_(b.createdAt);
@@ -250,7 +261,8 @@ function create_(kind, p) {
 
     var row = [code, at, desc, kind, outerId, productId, 'chua_xu_ly', '',
       '', '', by, String(p.note || '').trim()];
-    r.sh.appendRow(row);
+    r.sh.insertRowBefore(2);
+    r.sh.getRange(2, 1, 1, row.length).setValues([row]);
 
     var ph = getSheet_('Photos', PHOTOS_HEADER);
     if (outerId) ph.appendRow([code, 'ngoai_quan', outerId, at]);

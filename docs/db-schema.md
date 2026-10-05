@@ -76,7 +76,7 @@ Matbill/
 
 - Batch `getValues()`/`setValues()`, không loop cell lẻ (luật 2).
 - Ghi `status` qua `LockService` + append `ActivityLog` cùng execution.
-- Tra cứu theo mã: `Items!A:A` load 1 lần/execution (memoize), gallery phân trang 30 dòng.
+- Đơn mới insert ở dòng 2 (mới nhất lên đầu); `listItems` chỉ đọc ≤100 dòng đầu + sắp xếp mới → cũ. `getItem`/ghi theo mã (Resolve/Thanh Lý/mở lại) vẫn quét toàn sheet để không sót đơn cũ.
 - `CacheService` có fallback — không xem là source of truth.
 
 ## 6. Lộ trình nâng cấp
