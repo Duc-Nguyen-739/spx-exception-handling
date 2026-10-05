@@ -143,12 +143,35 @@ button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;f
 <div class="pcard"><div id="rsStep1"><button class="btnP" id="btnGoResolve">Resolve</button><div class="btnrow"><button class="btnS">In mã QR</button></div></div><div id="rsStep2" style="display:none"><div class="field"><label>Mã bill</label><div class="billrow"><input id="demoBill" class="mono" placeholder="Nhập hoặc quét mã bill…"><button class="btnS" id="demoScan" type="button">Quét</button></div></div><button class="btnP" id="btnConfirmDemo">Confirm</button><button class="lnk" id="btnCancelDemo">Hủy</button></div><div class="hist" id="demoHist">Chưa có.</div><div class="msg" id="demoMsg" style="min-height:18px;font-size:12px;font-weight:600"></div></div>
 <div class="sec" style="margin-top:14px"><span class="tag fix">MỚI v4</span> +Create — tối đa 3 ảnh, tối thiểu 1 (<span id="crCount">0/3</span>)</div>
 <div class="sheet" style="border:2px solid var(--o)"><h2 style="margin:0 0 4px;font-size:15px;color:var(--navy)">Create</h2><div class="field"><label>Mô tả sản phẩm *</label><textarea id="crDesc" rows="2" style="width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13px;font-family:inherit" placeholder="VD: Thùng 12 áo thun hoàn…"></textarea></div><div class="field"><label>Ảnh *</label><div id="crSlots"></div></div><button class="btnP" id="crDone">Confirm</button><button class="lnk" id="crReset">Chụp lại từ đầu</button><div class="msg" id="crMsg" style="min-height:18px;font-size:12px;font-weight:600"></div></div>
+<div class="sec" style="margin-top:16px"><span class="tag fix">MỚI v7</span> Chi tiết: ADMIN có nút <b>Edit</b> · Box cần 2 ảnh · Item cần 1 ảnh</div>
+<div class="demoBtns"><button id="v7kBox" class="on">Box</button><button id="v7kItem">Item</button></div>
+<div class="sheet" style="border:2px solid var(--o)">
+<div class="dhead"><span class="dt" id="v7code">Box.06-10-2026.1</span><span style="flex:1"></span><button class="iconBtn">‹</button><button class="iconBtn">›</button><button class="btnS" id="v7editBtn" style="flex:none;width:auto;white-space:nowrap">Edit</button><button class="iconBtn">✕</button></div>
+<div id="v7view"><div class="pcard" id="v7viewCard"></div></div>
+<div id="v7form" style="display:none"><div class="pcard">
+<div class="field"><label>Mô tả sản phẩm *</label><textarea id="v7desc" rows="2" style="width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13px;font-family:inherit">Áo màu cam</textarea></div>
+<div class="field"><label>Ghi chú</label><input id="v7note" placeholder="—"></div>
+<div id="v7slots"></div>
+<button class="btnP" id="v7save">Lưu</button>
+<button class="lnk" id="v7cancel">Hủy</button>
+<div class="msg" id="v7msg" style="min-height:18px;font-size:12px;font-weight:600"></div>
+</div></div>
+</div>
+<div class="sec" style="margin-top:14px"><span class="tag fix">MỚI v7</span> +Create theo loại (Box 2 ảnh bắt buộc · Item 1 ảnh)</div>
+<div class="sheet" style="border:2px solid var(--o)"><h2 style="margin:0 0 4px;font-size:15px;color:var(--navy)">Create · <span id="v7ckind">Box</span></h2>
+<div class="demoBtns"><button id="v7cBox" class="on">Box</button><button id="v7cItem">Item</button></div>
+<div class="field"><label>Mô tả sản phẩm *</label><textarea id="v7cdesc" rows="2" style="width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13px;font-family:inherit" placeholder="VD: Thùng 12 áo thun hoàn…"></textarea></div>
+<div id="v7cslots"></div>
+<button class="btnP" id="v7cDone">Confirm</button>
+<button class="lnk" id="v7cReset">Chụp lại từ đầu</button>
+<div class="msg" id="v7cmsg" style="min-height:18px;font-size:12px;font-weight:600"></div>
+</div>
 </div>
 </main>
 <div class="bnav"><button class="on">⌂<br>Danh sách</button><button>▤<br>Thanh lý</button><button>○<br>Quyền</button></div>
 </div>
 
-<div class="note"><b>Cách test trên điện thoại:</b> phóng to/thu nhỏ trình duyệt ở 360–430px, bấm 3 nút trạng thái ảnh, xem grid 2 cột không bị ép. v2: bỏ chữ VTCODE, nút chỉ ghi Resolve, ấn Resolve mới hiện ô bill + nút Confirm. v3: fallback chỉ ghi 'Không tải được ảnh'/'Không có ảnh', chuyển 3 ô ảnh sang form +Create (tối đa 3, tối thiểu 1 mới xong được). v5: ô ảnh chỉ icon máy ảnh + n/3, bỏ chú thích. Sau khi chốt, port CSS <code>.kv/.kvImg/.ph + grid 2 cột + header summary xuống dòng</code> vào <code>index.html</code> + thêm <code>onerror</code> + server <code>setSharing + sz=w400</code> + nút <code>Confirm</code> thay mọi chữ Hoàn thành.</div>
+<div class="note"><b>Cách test trên điện thoại:</b> phóng to/thu nhỏ trình duyệt ở 360–430px, bấm 3 nút trạng thái ảnh, xem grid 2 cột không bị ép. v2: bỏ chữ VTCODE, nút chỉ ghi Resolve, ấn Resolve mới hiện ô bill + nút Confirm. v3: fallback chỉ ghi 'Không tải được ảnh'/'Không có ảnh', chuyển 3 ô ảnh sang form +Create (tối đa 3, tối thiểu 1 mới xong được). v5: ô ảnh chỉ icon máy ảnh + n/3, bỏ chú thích. v7: chi tiết có nút Edit (ADMIN), Box bắt buộc 2 ảnh + ảnh 3 tùy chọn, Item chỉ 1 ảnh sản phẩm bắt buộc. Sau khi chốt, port CSS <code>.kv/.kvImg/.ph + grid 2 cột + header summary xuống dòng</code> vào <code>index.html</code> + thêm <code>onerror</code> + server <code>setSharing + sz=w400</code> + nút <code>Confirm</code> thay mọi chữ Hoàn thành.</div>
 </div>
 <script>
 var GOOD='https://picsum.photos/seed/spxbox/640/400';
@@ -186,6 +209,70 @@ b.onclick=function(){crPhotos.push('https://picsum.photos/seed/spx'+Date.now()+'
 w.appendChild(b);}
 else{var m=document.createElement('div');m.className='hist';m.textContent='Đã đủ 3 ảnh.';w.appendChild(m);}}
 renderCr();
+var v7kind='Box',v7ckind='Box';
+var v7e={Box:[GOOD,'',''],Item:[GOOD]};
+var v7c={Box:['','',''],Item:['']};
+function v7snap(){return 'https://picsum.photos/seed/spx'+Date.now()+'/640/400';}
+function v7labels(k){return k==='Box'?['Ảnh ngoại quan *','Ảnh sản phẩm *','Ảnh bổ sung']:['Ảnh sản phẩm *'];}
+function renderV7View(){
+var L=v7kind==='Box'?['ẢNH NGOẠI QUAN','ẢNH SẢN PHẨM']:['ẢNH SẢN PHẨM'];
+var h='<div class="kv"><b>Mã sản phẩm</b><span class="val mono">'+document.getElementById('v7code').textContent+'</span></div>';
+v7e[v7kind].forEach(function(du,i){h+='<div class="kvImg"><b>'+L[i]+'</b><div class="ph">'+(du?'<img loading="lazy" src="'+du+'">':'<div class="fb"><span class="big">📦</span><span>Không có ảnh</span></div>')+'</div></div>';});
+h+='<div class="kv"><b>Loại</b><span class="val">'+v7kind+'</span></div><div class="kv"><b>Mô tả</b><span class="val">'+document.getElementById('v7desc').value+'</span></div>';
+document.getElementById('v7viewCard').innerHTML=h;
+}
+function renderV7Form(){
+var L=v7labels(v7kind),arr=v7e[v7kind],w=document.getElementById('v7slots');w.innerHTML='';
+arr.forEach(function(du,i){
+var box=document.createElement('div');box.style.marginBottom='10px';
+if(du){box.innerHTML='<div class="ph"><img src="'+du+'"><span class="badge">'+L[i]+'</span></div>';
+var del=document.createElement('button');del.className='btnS';del.style.cssText='width:100%;margin-top:6px';del.textContent='Xóa '+L[i].replace(' *','');
+del.onclick=(function(k,idx){return function(){v7e[k][idx]='';renderV7Form();};})(v7kind,i);
+box.appendChild(del);
+}else{var b=document.createElement('button');b.type='button';b.className='camSlot';
+b.innerHTML='<span class="big">📷</span><span>'+L[i]+'</span>';
+b.onclick=(function(k,idx){return function(){v7e[k][idx]=v7snap();renderV7Form();};})(v7kind,i);
+box.appendChild(b);}
+w.appendChild(box);});
+}
+function renderV7Create(){
+document.getElementById('v7ckind').textContent=v7ckind;
+var L=v7labels(v7ckind),arr=v7c[v7ckind],w=document.getElementById('v7cslots');w.innerHTML='';
+arr.forEach(function(du,i){
+var box=document.createElement('div');box.style.marginBottom='10px';
+if(du){box.innerHTML='<div class="ph"><img src="'+du+'"><span class="badge">'+L[i]+'</span></div>';
+var del=document.createElement('button');del.className='btnS';del.style.cssText='width:100%;margin-top:6px';del.textContent='Xóa '+L[i].replace(' *','');
+del.onclick=(function(idx){return function(){v7c[v7ckind][idx]='';renderV7Create();};})(i);
+box.appendChild(del);
+}else{var b=document.createElement('button');b.type='button';b.className='camSlot';
+b.innerHTML='<span class="big">📷</span><span>'+L[i]+'</span>';
+b.onclick=(function(idx){return function(){v7c[v7ckind][idx]=v7snap();renderV7Create();};})(i);
+box.appendChild(b);}
+w.appendChild(box);});
+}
+function v7setKind(k){v7kind=k;document.getElementById('v7kBox').classList.toggle('on',k==='Box');document.getElementById('v7kItem').classList.toggle('on',k==='Item');document.getElementById('v7code').textContent=k==='Box'?'Box.06-10-2026.1':'Item.06-10-2026.3';document.getElementById('v7form').style.display='none';document.getElementById('v7view').style.display='block';renderV7View();}
+function v7setCKind(k){v7ckind=k;document.getElementById('v7cBox').classList.toggle('on',k==='Box');document.getElementById('v7cItem').classList.toggle('on',k==='Item');renderV7Create();}
+document.getElementById('v7kBox').onclick=function(){v7setKind('Box');};
+document.getElementById('v7kItem').onclick=function(){v7setKind('Item');};
+document.getElementById('v7cBox').onclick=function(){v7setCKind('Box');};
+document.getElementById('v7cItem').onclick=function(){v7setCKind('Item');};
+document.getElementById('v7editBtn').onclick=function(){document.getElementById('v7view').style.display='none';document.getElementById('v7form').style.display='block';renderV7Form();};
+document.getElementById('v7cancel').onclick=function(){document.getElementById('v7form').style.display='none';document.getElementById('v7view').style.display='block';};
+document.getElementById('v7save').onclick=function(){
+var m=document.getElementById('v7msg'),a=v7e[v7kind];
+if(!document.getElementById('v7desc').value.trim()){m.textContent='Vui lòng nhập mô tả sản phẩm.';m.style.color='#ee4d2d';return;}
+if(v7kind==='Box'&&!(a[0]&&a[1])){m.textContent='Box cần đủ Ảnh ngoại quan + Ảnh sản phẩm.';m.style.color='#ee4d2d';return;}
+if(v7kind==='Item'&&!a[0]){m.textContent='Item cần Ảnh sản phẩm.';m.style.color='#ee4d2d';return;}
+m.textContent='Đã lưu thay đổi.';m.style.color='#0d9a50';
+document.getElementById('v7form').style.display='none';document.getElementById('v7view').style.display='block';renderV7View();};
+document.getElementById('v7cDone').onclick=function(){
+var m=document.getElementById('v7cmsg'),a=v7c[v7ckind];
+if(!document.getElementById('v7cdesc').value.trim()){m.textContent='Vui lòng nhập mô tả sản phẩm.';m.style.color='#ee4d2d';return;}
+if(v7ckind==='Box'&&!(a[0]&&a[1])){m.textContent='Box cần đủ 2 ảnh mới Confirm được.';m.style.color='#ee4d2d';return;}
+if(v7ckind==='Item'&&!a[0]){m.textContent='Item cần Ảnh sản phẩm mới Confirm được.';m.style.color='#ee4d2d';return;}
+m.textContent='Đã tạo task mới.';m.style.color='#0d9a50';};
+document.getElementById('v7cReset').onclick=function(){v7c[v7ckind]=v7ckind==='Box'?['','','']:[''];document.getElementById('v7cdesc').value='';document.getElementById('v7cmsg').textContent='';renderV7Create();};
+renderV7View();renderV7Create();
 document.getElementById('crReset').onclick=function(){crPhotos=[];document.getElementById('crDesc').value='';document.getElementById('crMsg').textContent='';renderCr();};
 document.getElementById('crDone').onclick=function(){
 var m=document.getElementById('crMsg');
