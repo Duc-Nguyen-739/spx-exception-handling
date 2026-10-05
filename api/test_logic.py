@@ -4,7 +4,7 @@ from datetime import datetime
 from api.logic import (
     gen_code, next_seq, storage_days, can_resolve, can_liquidate,
     canonical_status, canonical_kind, valid_liq_code, can_admin_edit, check_photos,
-    extract_drive_id, CODE_RE, TZ,
+    extract_drive_id, can_edit, CODE_RE, TZ,
 )
 
 
@@ -61,6 +61,11 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(check_photos(4), (False, "Tối đa 3 ảnh."))
         self.assertEqual(check_photos(1), (True, ""))
         self.assertEqual(check_photos(3), (True, ""))
+
+    def test_edit_gate(self):
+        self.assertEqual(can_edit("ADMIN"), (True, ""))
+        self.assertEqual(can_edit("STAFF"), (False, "Chỉ ADMIN được sửa."))
+        self.assertEqual(can_edit(""), (False, "Chỉ ADMIN được sửa."))
 
     def test_extract_drive_id(self):
         self.assertEqual(extract_drive_id("1AbCdefGhIjKlMnOp"), "1AbCdefGhIjKlMnOp")

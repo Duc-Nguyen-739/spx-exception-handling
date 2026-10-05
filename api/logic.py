@@ -145,6 +145,13 @@ def check_photos(count):
     return (True, "")
 
 
+def can_edit(role):
+    # Sua task (mo ta/anh): chi ADMIN, ke ca don da xong. STAFF khong co UI sua.
+    if role == "ADMIN":
+        return (True, "")
+    return (False, "Chỉ ADMIN được sửa.")
+
+
 def can_admin_edit(status, role):
     # STAFF bị khóa sau Hoàn Thành; ADMIN được mở lại về Lưu kho.
     if role != "ADMIN":

@@ -206,7 +206,7 @@ header{flex-wrap:wrap}
 <nav class="bnav">
 <button id="navMain" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Danh sách</button>
 <button id="navLiq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>Thanh lý</button>
-<button id="navAccess"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Quyền</button>
+<button id="navAccess" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Role</button>
 </nav>
 
 <main id="viewMain">
@@ -269,6 +269,14 @@ header{flex-wrap:wrap}
 </div>
 <div class="pcard" id="detailBody"></div>
 <div class="pcard"><h4>Resolve / Thanh Lý (riêng, không đè người tạo) <span class="cnt" id="histCnt">0</span></h4><div class="hist" id="detailHist"></div></div>
+<div class="pcard" id="adminCard" style="display:none">
+<div class="field"><label>Mô tả (ADMIN sửa)</label><textarea id="admDesc" rows="2" style="width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13px;font-family:inherit"></textarea></div>
+<div class="field"><label>Ghi chú (ADMIN sửa)</label><input id="admNote"></div>
+<div class="field"><label>Ảnh — bấm Xóa để gỡ khỏi task (giữ file gốc để đối chiếu)</label><div id="admPhotos"></div></div>
+<div class="field" id="admAddWrap" style="display:none"><label>Thêm ảnh</label><div id="admAddSlot"></div></div>
+<button id="btnAdminSave" class="primary" style="width:100%">Lưu</button>
+<div class="msg" id="msgAdmin"></div>
+</div>
 <div class="pcard" id="resolveCard">
 <div id="rsStep1">
 <div class="btnrow"><button id="btnGoResolve" class="primary">Resolve</button></div>
@@ -440,6 +448,15 @@ document.getElementById('detailHist').innerHTML=hh;
 document.getElementById('histCnt').textContent=hs.length;
 document.getElementById('resolveBill').value='';
 document.getElementById('rsStep2').style.display='none';
+var isAdm=(state.me&&state.me.role)==='ADMIN';
+document.getElementById('adminCard').style.display=isAdm?'':'none';
+if(isAdm){
+document.getElementById('admDesc').value=it.description||'';
+document.getElementById('admNote').value=it.note||'';
+admDel=[];admAdd=[];renderAdmPhotos();
+document.getElementById('msgAdmin').textContent='';
+document.getElementById('msgAdmin').className='msg';
+}
 try{if(!state.me)await loadMe();}catch(e){}
 var role=state.me&&state.me.role;
 var done=it.status&&it.status!=='chua_xu_ly';
@@ -455,6 +472,51 @@ if(i<0||!vis[i+dir])return;
 openDetail(vis[i+dir].code);
 }
 
+var admDel=[],admAdd=[];
+var SLOT_VN={'ngoai_quan':'Ảnh ngoại quan','san_pham':'Ảnh sản phẩm','bo_sung':'Ảnh bổ sung','bo_sung_1':'Ảnh bổ sung 1','bo_sung_2':'Ảnh bổ sung 2','bo_sung_3':'Ảnh bổ sung 3'};
+function slotVn(s){return SLOT_VN[s]||'Ảnh bổ sung';}
+function renderAdmPhotos(){
+var slots=(state.detail&&state.detail.slots)||[];
+var keep=slots.filter(function(x){return admDel.indexOf(String(x.slot))<0;});
+var w=document.getElementById('admPhotos');w.innerHTML='';
+keep.forEach(function(x){
+var box=document.createElement('div');box.style.marginBottom='10px';
+box.innerHTML='<div class="ph"><img loading="lazy" src="'+esc(x.url||'')+'"><span class="badge">'+esc(slotVn(x.slot))+'</span></div>';
+var del=document.createElement('button');del.style.cssText='width:100%;margin-top:6px';del.textContent='Xóa '+slotVn(x.slot);
+del.onclick=(function(s){return function(){admDel.push(s);renderAdmPhotos();};})(String(x.slot));
+box.appendChild(del);w.appendChild(box);
+});
+admAdd.forEach(function(du,i){
+var box=document.createElement('div');box.style.marginBottom='10px';
+box.innerHTML='<div class="ph"><img src="'+du+'"><span class="badge">Ảnh mới '+(i+1)+'</span></div>';
+w.appendChild(box);
+});
+var left=3-keep.length-admAdd.length;
+var aw=document.getElementById('admAddWrap');
+if(left>0){
+aw.style.display='block';
+var sw=document.getElementById('admAddSlot');sw.innerHTML='';
+var b=document.createElement('button');b.type='button';b.className='camSlot';
+b.innerHTML='<span class="big">\uD83D\uDCF7</span><span>Thêm ảnh</span>';
+var inp=document.createElement('input');
+inp.type='file';inp.accept='image/*';inp.setAttribute('capture','environment');inp.style.display='none';
+inp.onchange=function(){slotFile(inp,admAdd,admAdd.length,'_adm');};
+b.onclick=function(){inp.click();};
+sw.appendChild(b);sw.appendChild(inp);
+}else{aw.style.display='none';}
+}
+async function adminSave(){
+var code=state.detail&&state.detail.item&&state.detail.item.code;
+var desc=document.getElementById('admDesc').value.trim();
+if(!desc){msg('msgAdmin','Vui lòng nhập mô tả sản phẩm.');return;}
+msg('msgAdmin','Đang lưu…',true);
+try{
+var r=await gs('adminUpdateItem',[{code:code,description:desc,note:document.getElementById('admNote').value.trim(),deleteSlots:admDel,addPhotos:admAdd}]);
+if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi lưu');
+msg('msgAdmin','Đã lưu thay đổi.',true);
+await loadGrid();await openDetail(code);
+}catch(e){msg('msgAdmin',e.message||'Lỗi lưu');}
+}
 async function doResolve(){
 var code=state.detail&&state.detail.item&&state.detail.item.code;
 var bill=document.getElementById('resolveBill').value.trim();
@@ -519,7 +581,7 @@ var cv=document.createElement('canvas');cv.width=Math.round(img.width*sc);cv.hei
 cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
 arr[idx]=cv.toDataURL('image/jpeg',0.82);
 URL.revokeObjectURL(url);
-renderSlots(kind);
+if(kind==='_adm')renderAdmPhotos();else renderSlots(kind);
 };
 img.src=url;
 }
@@ -613,6 +675,7 @@ var chip=document.getElementById('whoChip');if(!chip)return;
 var e=state.me||{};
 if(!e.email){chip.style.display='none';return;}
 chip.style.display='';
+document.getElementById('navAccess').style.display=(e.role==='ADMIN')?'':'none';
 document.getElementById('whoIni').textContent=String(e.email).charAt(0).toUpperCase();
 document.getElementById('whoTxt').textContent=String(e.email).split('@')[0]+' · '+(e.role||'STAFF');
 }
@@ -727,6 +790,7 @@ document.getElementById('navAccess').onclick=function(){showAccess();};
 document.getElementById('btnFixShare').onclick=fixSharing;
 document.getElementById('btnAddUser').onclick=function(){var em=document.getElementById('newEmail').value.trim();var ro=document.getElementById('newRole').value;if(!em){msg('msgAccess','Nhập email cần thêm.');return;}setRole(em,ro);document.getElementById('newEmail').value='';};
 document.getElementById('btnReopen').onclick=doReopen;
+document.getElementById('btnAdminSave').onclick=adminSave;
 document.getElementById('scanMain').addEventListener('keydown',function(e){if(e.key==='Enter'){var v=e.target.value.trim();state.filter='';renderGrid();openDetail(v);}});
 document.getElementById('scanLiq').addEventListener('keydown',function(e){if(e.key==='Enter'){liqAdd(e.target.value.trim());e.target.value='';}});
 document.getElementById('btnNext').onclick=function(){document.getElementById('liqCodeWrap').style.display='block';};
@@ -739,6 +803,7 @@ async function showAccess(){document.getElementById('viewAccess').style.display=
 var e=state.me||{};
 var dl=document.getElementById('msgDeploy');
 if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?')+' · App chạy bằng: '+(e.deployer||'?');
+if((state.me&&state.me.role)!=='ADMIN'){msg('msgAccess','Chỉ ADMIN mới xem được trang này.');return;}
 loadUsers();}
 });
 </script>

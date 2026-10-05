@@ -156,11 +156,33 @@ function readHeadItems_(maxRows) {
   return { sh: sh, items: rowsToItems_(vals) };
 }
 
+function firstExtraMap_(codes) {
+  var want = {};
+  for (var i = 0; i < codes.length; i++) want[codes[i]] = true;
+  var map = {};
+  var vals = readPhotosAll_();
+  for (var j = 0; j < vals.length; j++) {
+    var code = String(vals[j][0]);
+    if (!want[code] || map[code]) continue;
+    var slot = String(vals[j][1]);
+    if (slot === 'ngoai_quan' || slot === 'san_pham') continue;
+    var url = thumbUrl_(vals[j][2]);
+    if (url) map[code] = url;
+  }
+  return map;
+}
+
 function listItems(limit) {
   try {
     var n = limit ? Math.min(limit, LIST_LIMIT) : LIST_LIMIT;
     var r = readHeadItems_(n);
-    var out = r.items.map(function (o) { return toClient_(o); });
+    var codes = r.items.map(function (o) { return o.code; });
+    var exMap = firstExtraMap_(codes);
+    var out = r.items.map(function (o) {
+      var t = toClient_(o);
+      if (exMap[o.code]) t.extras = [exMap[o.code]];
+      return t;
+    });
     out.sort(function (a, b) {
       var da = parseCreated_(a.createdAt), db = parseCreated_(b.createdAt);
       return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
@@ -214,6 +236,7 @@ function getItem(code) {
       if (r.items[i].code === code) {
         var it = toClient_(r.items[i]);
         it.extras = extrasFor_(code);
+        it.slots = photosFor_(code).map(function (p) { return { slot: p.slot, url: thumbUrl_(p.fileId) }; });
         return ok({ item: it, history: historyFor_(code) });
       }
     }
@@ -453,6 +476,77 @@ function readPhotosAll_() {
   var last = sh.getLastRow();
   if (last < 2) return [];
   return sh.getRange(2, 1, last - 1, PHOTOS_HEADER.length).getValues();
+}
+
+function adminUpdateItem(code, p) {
+  try {
+    requireAdmin_();
+    code = String(code || '').trim();
+    if (!code) return fail('Thiếu mã đơn.');
+    p = p || {};
+    var desc = (p.description == null) ? null : String(p.description).trim();
+    var note = (p.note == null) ? null : String(p.note).trim();
+    var delSlots = (p.deleteSlots || []).map(function (s) { return String(s); });
+    var adds = (p.addPhotos || []).filter(Boolean);
+    if (desc !== null && !desc) return fail('Vui lòng nhập mô tả sản phẩm.');
+    if (adds.length > 3) return fail('Tối đa 3 ảnh.');
+    return ok(withLock_(function () {
+      var r = readAllItems_();
+      var idx = -1;
+      for (var i = 0; i < r.items.length; i++) {
+        if (r.items[i].code === code) { idx = i; break; }
+      }
+      if (idx < 0) throw new Error('Không Có');
+      var cur = photosFor_(code);
+      var keep = cur.filter(function (x) { return delSlots.indexOf(String(x.slot)) < 0; });
+      var total = keep.length + adds.length;
+      if (total < 1) throw new Error('Task phải giữ ít nhất 1 ảnh.');
+      if (total > 3) throw new Error('Tối đa 3 ảnh.');
+      var row = idx + 2;
+      if (desc !== null) r.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
+      if (note !== null) r.sh.getRange(row, 12, 1, 1).setValues([[note]]);
+      if (delSlots.length) {
+        var ph = getSheet_('Photos', PHOTOS_HEADER);
+        var last = ph.getLastRow();
+        if (last > 1) {
+          var vals = ph.getRange(2, 1, last - 1, PHOTOS_HEADER.length).getValues();
+          var left = vals.filter(function (v) {
+            return !(String(v[0]) === String(code) && delSlots.indexOf(String(v[1])) >= 0);
+          });
+          ph.getRange(2, 1, last - 1, PHOTOS_HEADER.length).clearContent();
+          if (left.length) ph.getRange(2, 1, left.length, PHOTOS_HEADER.length).setValues(left);
+        }
+      }
+      var at = nowStr_(), by = currentEmail_();
+      var outerId = '', productId = '';
+      keep.forEach(function (x) {
+        if (String(x.slot) === 'ngoai_quan') outerId = x.fileId;
+        if (String(x.slot) === 'san_pham') productId = x.fileId;
+      });
+      if (adds.length) {
+        var folder = monthFolder_();
+        var used = {};
+        keep.forEach(function (x) { used[String(x.slot)] = true; });
+        var cands = ['bo_sung', 'bo_sung_1', 'bo_sung_2', 'bo_sung_3'];
+        var ph2 = getSheet_('Photos', PHOTOS_HEADER);
+        for (var a = 0; a < adds.length; a++) {
+          var slot = '';
+          for (var q = 0; q < cands.length; q++) {
+            if (!used[cands[q]]) { slot = cands[q]; break; }
+          }
+          if (!slot) slot = 'bo_sung_' + Date.now();
+          used[slot] = true;
+          var f = folder.createFile(dataUrlToBlob_(adds[a], code + '.' + slot + '.jpg'));
+          tryShareFile_(f);
+          ph2.appendRow([code, slot, f.getId(), at]);
+        }
+      }
+      r.sh.getRange(row, 5, 1, 2).setValues([[outerId, productId]]);
+      var st = r.items[idx].status || 'chua_xu_ly';
+      getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, st, st, by, 'ADMIN sửa task']);
+      return { code: code };
+    }));
+  } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
 function normEmail_(s) {
