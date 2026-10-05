@@ -56,6 +56,7 @@ th{background:#fafafa;width:130px}
 <h1>SPX Ngoại Lệ</h1>
 <button id="navMain">Chính</button>
 <button id="navLiq">Thanh Lý</button>
+<button id="navAccess">Quyền</button>
 <button id="btnCreate" class="primary">Create</button>
 </header>
 
@@ -88,6 +89,19 @@ th{background:#fafafa;width:130px}
 </div>
 </main>
 
+<main id="viewAccess" style="display:none">
+<h2 style="margin:4px 0">Quyền Truy Cập</h2>
+<div class="msg" id="msgAccess"></div>
+<div id="accessAdmin" style="display:none">
+<div class="row">
+<input id="newEmail" placeholder="Email cần thêm…" inputmode="email" style="flex:2;padding:10px;border:1px solid #ddd;border-radius:8px">
+<select id="newRole" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px"><option value="STAFF">STAFF</option><option value="ADMIN">ADMIN</option></select>
+<button id="btnAddUser" class="primary">Thêm</button>
+</div>
+</div>
+<div id="usersTable" style="margin-top:8px"></div>
+</main>
+
 <div class="modal" id="detailModal"><div class="sheet">
 <h2>Chi tiết đơn hàng</h2>
 <div id="detailBody"></div>
@@ -98,6 +112,7 @@ th{background:#fafafa;width:130px}
 <div class="row">
 <button id="btnPrintDetail">In Mã</button>
 <button id="btnResolve" class="primary">Hoàn Thành</button>
+<button id="btnReopen" style="display:none">Mở lại (ADMIN)</button>
 <button id="btnCloseDetail">Đóng</button>
 </div>
 <div class="msg" id="msgDetail"></div>
@@ -137,11 +152,11 @@ var DEMO=[
 {code:'Box.01-10-2026.21',kind:'Box',createdAt:'01/10/2026 09:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo box',note:'',status:'chua_xu_ly',statusLabel:'Lưu kho',bill:'',days:5},
 {code:'Item.01-10-2026.3',kind:'Item',createdAt:'01/10/2026 10:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo item',note:'',status:'da_tim_bill',statusLabel:'Resolve',bill:'SPXVN1',days:5}
 ];
-var state={items:[],detail:null,liq:[],kind:'Box',lastCreated:''};
+var state={items:[],detail:null,liq:[],kind:'Box',lastCreated:'',me:null};
 function hasGs(){return typeof google!=='undefined'&&google.script&&google.script.run;}
 function gs(fn,args){return new Promise(function(res,rej){
 if(!hasGs()){rej(new Error('LOCAL'));return;}
-try{google.script.run.withSuccessHandler(res).withFailureHandler(function(e){rej(new Error(e&&e.message||'GAS lỗi'));}))[fn].apply(null,args||[]);}catch(e){rej(e);}});}
+try{google.script.run.withSuccessHandler(res).withFailureHandler(function(e){rej(new Error(e&&e.message||'GAS lỗi'));})[fn].apply(null,args||[]);}catch(e){rej(e);}});}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function msg(id,t,ok){var e=document.getElementById(id);e.textContent=t||'';e.className='msg '+(t?(ok?'ok':'err'):'');}
 function todayPart(){try{return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date()).replace(/\//g,'-');}catch(e){var d=new Date();return('0'+d.getDate()).slice(-2)+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+d.getFullYear();}}
@@ -201,6 +216,11 @@ if(!hs.length)hh+='<div>Chưa có.</div>';
 hs.forEach(function(x){hh+='<div>'+esc(x.at)+' · '+esc(x.from)+' → '+esc(x.to)+' · '+esc(x.by)+' · '+esc(x.note||'')+'</div>';});
 document.getElementById('detailHist').innerHTML=hh;
 document.getElementById('resolveBill').value='';
+try{if(!state.me)await loadMe();}catch(e){}
+var role=state.me&&state.me.role;
+var done=it.status&&it.status!=='chua_xu_ly';
+document.getElementById('btnResolve').style.display=done?'none':'';
+document.getElementById('btnReopen').style.display=(done&&role==='ADMIN')?'':'none';
 msg('msgDetail','',true);
 }
 
@@ -320,6 +340,41 @@ await loadGrid();
 }catch(e){msg('msgLiq',e.message||'Lỗi thanh lý');}
 }
 
+async function loadMe(){
+try{var r=await gs('me',[]);if(r.ok){state.me=r.data;return;}}catch(e){}
+state.me={email:'',role:'STAFF'};
+}
+async function loadUsers(){
+msg('msgAccess','Đang tải…',true);
+try{
+var r=await gs('listUsers',[]);
+if(!r.ok)throw new Error(r.error);
+var h='<table><tr><th>Email</th><th>Quyền</th><th></th></tr>';
+r.data.forEach(function(u){
+h+='<tr><td>'+esc(u.email)+'</td><td>'+esc(u.role)+'</td><td><button data-email="'+esc(u.email)+'" data-role="'+(u.role==='ADMIN'?'STAFF':'ADMIN')+'" class="roleBtn">'+(u.role==='ADMIN'?'Hạ STAFF':'Lên ADMIN')+'</button></td></tr>';
+});
+h+='</table>';
+document.getElementById('usersTable').innerHTML=h;
+document.getElementById('accessAdmin').style.display='block';
+var btns=document.querySelectorAll('.roleBtn');
+btns.forEach(function(b){b.onclick=function(){setRole(b.getAttribute('data-email'),b.getAttribute('data-role'));};});
+msg('msgAccess','',true);
+}catch(e){
+document.getElementById('accessAdmin').style.display='none';
+document.getElementById('usersTable').innerHTML='';
+msg('msgAccess',e.message||'Lỗi tải danh sách');
+}
+}
+async function setRole(email,role){
+msg('msgAccess','Đang xử lý…',true);
+try{var r=await gs('setUserRole',[email,role]);if(!r.ok)throw new Error(r.error);msg('msgAccess','Đã cập nhật '+email+' → '+role,true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi cập nhật');}
+}
+async function doReopen(){
+var code=state.detail&&state.detail.item&&state.detail.item.code;
+if(!code)return;
+msg('msgDetail','Đang mở lại…',true);
+try{var r=await gs('adminReopen',[code,'ADMIN mở lại từ chi tiết']);if(!r.ok)throw new Error(r.error);msg('msgDetail','Đã mở '+code+' về Lưu kho.',true);await loadGrid();await openDetail(code);}catch(e){msg('msgDetail',e.message||'Lỗi mở lại');}
+}
 var qr=null;
 function toggleCam(inputId){
 var rd=document.getElementById('reader');
@@ -336,7 +391,7 @@ function(){}).catch(function(){msg('msgMain','Không mở được camera (cần
 }
 
 window.addEventListener('DOMContentLoaded',function(){
-loadGrid();
+loadGrid();loadMe();
 bindFile('boxOuter','boxOuterPrev',boxOuter);
 bindFile('boxProduct','boxProductPrev',boxProduct);
 bindFile('itemProduct','itemProductPrev',itemProduct);
@@ -355,13 +410,17 @@ document.getElementById('btnResolve').onclick=doResolve;
 document.getElementById('btnPrintDetail').onclick=function(){if(state.detail)doPrint(state.detail.item.code);};
 document.getElementById('navMain').onclick=function(){showLiq(false);};
 document.getElementById('navLiq').onclick=function(){showLiq(true);};
+document.getElementById('navAccess').onclick=function(){showAccess();};
+document.getElementById('btnAddUser').onclick=function(){var em=document.getElementById('newEmail').value.trim();var ro=document.getElementById('newRole').value;if(!em){msg('msgAccess','Nhập email cần thêm.');return;}setRole(em,ro);document.getElementById('newEmail').value='';};
+document.getElementById('btnReopen').onclick=doReopen;
 document.getElementById('scanMain').addEventListener('keydown',function(e){if(e.key==='Enter')openDetail(e.target.value.trim());});
 document.getElementById('scanLiq').addEventListener('keydown',function(e){if(e.key==='Enter'){liqAdd(e.target.value.trim());e.target.value='';}});
 document.getElementById('btnNext').onclick=function(){document.getElementById('liqCodeWrap').style.display='block';};
 document.getElementById('btnLiqDone').onclick=liqDone;
 document.getElementById('camMain').onclick=function(){toggleCam('scanMain');};
 document.getElementById('camLiq').onclick=function(){toggleCam('scanLiq');};
-function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';}
+function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';}
+function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';loadUsers();}
 });
 </script>
 </body>
