@@ -334,7 +334,8 @@ var state={items:[],detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:
 function hasGs(){return typeof google!=='undefined'&&google.script&&google.script.run;}
 function gs(fn,args){return new Promise(function(res,rej){
 if(!hasGs()){rej(new Error('LOCAL'));return;}
-try{google.script.run.withSuccessHandler(res).withFailureHandler(function(e){rej(new Error(e&&e.message||'GAS lỗi'));})[fn].apply(null,args||[]);}catch(e){rej(e);}});}
+function done(r){if(r==null){rej(new Error('Không gọi được server — kiểm tra đăng nhập email công ty.'));}else{res(r);}}
+try{google.script.run.withSuccessHandler(done).withFailureHandler(function(e){rej(new Error(e&&e.message||'GAS lỗi'));})[fn].apply(null,args||[]);}catch(e){rej(e);}});}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function msg(id,t,ok){var e=document.getElementById(id);e.textContent=t||'';e.className='msg '+(t?(ok?'ok':'err'):'');}
 function todayPart(){try{return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date()).replace(/\//g,'-');}catch(e){var d=new Date();return('0'+d.getDate()).slice(-2)+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+d.getFullYear();}}
@@ -380,7 +381,7 @@ var src=thumb(it);
 var hot=(+it.days>3&&it.status==='chua_xu_ly')?' hot':'';
 d.innerHTML=(src?'<img loading="lazy" alt="" src="'+esc(src)+'">':'<div class="noimg">📦<small>Không có ảnh</small></div>')
 +'<span class="ovst '+stClass(it.status)+'">'+esc(it.statusLabel||it.status)+'</span>'
-+'<div class="cap"><span class="code">'+esc(it.code)+'</span><span class="days'+hot+'">'+esc(it.days)+'N</span></div>';
++'<div class="cap"><span class="code">'+esc(it.code)+'</span><span class="days'+hot+'">'+esc(it.days)+' Ngày</span></div>';
 var im=d.querySelector('img');
 if(im){im.onerror=function(){var n=document.createElement('div');n.className='noimg';n.innerHTML='📦<small>Không tải được ảnh</small>';n.onclick=function(){openDetail(it.code);};im.replaceWith(n);};im.onclick=function(){openDetail(it.code);};}
 else{var nz=d.querySelector('.noimg');if(nz)nz.onclick=function(){openDetail(it.code);};}

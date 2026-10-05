@@ -19,7 +19,7 @@ Spreadsheet ID để ở Script Properties `SPREADSHEET_ID` (không hardcode —
 | Cột | Tên (tiếng Anh) | Nguồn CSV | Ghi chú |
 | :-- | :-- | :-- | :-- |
 | A | `code` | Mã sản phẩm | UNIQUE, vd `BOX.02032026.01`. Mã `LT…`/`SPXVN…` lẫn trong CSV → cho vào `note`, không làm `code` |
-| B | `created_at` | Thời gian | Giữ text gốc `dd/mm/yyyy hh:mm:ss`, timezone `Asia/Ho_Chi_Minh` |
+| B | `created_at` | Thời gian | Text gốc `dd/mm/yyyy hh:mm:ss` (ghi kèm dấu `'` để Sheets không tự đổi sang Date theo locale US rồi tính ngày lưu kho sai), timezone `Asia/Ho_Chi_Minh` |
 | C | `description` | Mô tả | Text tự do |
 | D | `kind` | Loại hàng | Chuẩn hóa `Box`/`Item` theo **prefix mã** (CSV gốc lệch nhiều: `ITEM…` ghi `Box`…) |
 | E | `photo_outer` | Ảnh ngoại quan | Drive file ID (import xong điền) |

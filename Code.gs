@@ -319,7 +319,7 @@ function create_(kind, p) {
     }
     var outerId = ids['ngoai_quan'] || '', productId = ids['san_pham'] || '';
 
-    var row = [code, at, desc, kind, outerId, productId, 'chua_xu_ly', '',
+    var row = [code, "'" + at, desc, kind, outerId, productId, 'chua_xu_ly', '',
       '', '', by, String(p.note || '').trim()];
     r.sh.insertRowBefore(2);
     r.sh.getRange(2, 1, 1, row.length).setValues([row]);
