@@ -61,7 +61,8 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 
 /* ===== gallery grid (kiểu AppSheet: ảnh vuông + caption) ===== */
 #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative;cursor:pointer}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative}
+.card img,.card .noimg{cursor:pointer}
 .card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:linear-gradient(135deg,#f1f3f7,#e6eaf1)}
 .card .noimg{width:100%;aspect-ratio:1/1;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,#eef1f6,#e2e8f1)}
 .card .cap{padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--bg)}
@@ -102,7 +103,12 @@ html[data-theme=dark] .cnt small{color:#a4573d}
 .kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--bg);font-size:12px}
 .kv b{color:var(--mut);font-weight:600;flex:none}
 .kv span{color:var(--ink);font-weight:600;text-align:right;overflow:hidden;text-overflow:ellipsis}
-.sheet img.big{width:100%;max-height:220px;object-fit:cover;border-radius:13px;display:block;margin:10px 0}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:2px 14px;margin:0 0 12px}
+.sheet .pcard h4{margin:12px 0 2px;font-size:13px;color:var(--navy);display:flex;align-items:center;gap:8px}
+.sheet .pcard h4 .cnt{background:var(--bg);color:var(--mut);font-size:10.5px;font-weight:800;border-radius:7px;padding:2px 8px}
+.kv .val{flex:1;min-width:0}
+img.thumb{width:128px;height:96px;object-fit:cover;border-radius:9px;background:linear-gradient(135deg,#eef1f6,#e2e8f1)}
+.rel-empty{text-align:center;padding:20px 0;color:var(--mut)}
 .field{margin:10px 0}
 .field label{display:block;font-weight:800;margin-bottom:5px;font-size:10.5px;letter-spacing:.4px;color:var(--navy)}
 .photoBox{border:1.5px dashed #ffd0c0;border-radius:13px;background:var(--tint);padding:9px;text-align:center;font-size:10.5px;font-weight:700;color:#d4573a}
@@ -125,6 +131,10 @@ td .st{background:var(--bg);color:var(--mut)}
 td .st.adm{background:var(--tint);color:var(--o)}
 #usersTable .roleBtn{font-size:10px;padding:6px 11px;border-radius:8px}
 
+@media (max-width:899px){
+#detailModal{display:none}
+#detailModal.open{display:flex}
+}
 @media (min-width:900px){
 .bnav{position:fixed;left:0;top:58px;bottom:0;width:216px;flex-direction:column;gap:2px;border-top:none;border-right:1px solid var(--line);background:var(--card);padding:14px 10px;z-index:18}
 html[data-theme=dark] .bnav{background:var(--navy);border-right-color:transparent}
@@ -134,9 +144,11 @@ main{margin-left:216px;max-width:none;padding:18px 26px 40px}
 .modal{align-items:stretch;justify-content:flex-end;padding:0}
 .sheet{max-width:470px;width:100%;height:100%;max-height:none;border-radius:0;padding:22px 24px;box-shadow:-20px 0 50px rgba(23,43,72,.25)}
 #detailModal{display:block;background:transparent;pointer-events:none}
-#detailModal .sheet{pointer-events:auto;transform:translateX(105%);transition:transform .28s ease}
+#detailModal .sheet{pointer-events:auto;margin-left:auto;transform:translateX(105%);transition:transform .28s ease}
 #detailModal.open .sheet{transform:translateX(0)}
 body.has-drawer main{padding-right:498px}
+body.wide.has-drawer main{padding-right:668px}
+body.wide #detailModal .sheet{max-width:640px}
 main{transition:padding-right .28s ease}
 header{padding:12px 22px}
 #whoChip{display:flex}
@@ -211,14 +223,15 @@ header{padding:12px 22px}
 <div class="modal" id="detailModal"><div class="sheet">
 <div class="dhead">
 <span class="dt" id="detailTitle">Chi tiết</span>
-<span class="st" id="detailSt" style="display:none"></span>
 <span style="flex:1"></span>
 <button id="btnPrevDetail" class="iconBtn" title="Đơn trước">‹</button>
 <button id="btnNextDetail" class="iconBtn" title="Đơn sau">›</button>
+<button id="btnWideDetail" class="iconBtn" title="Phóng to / thu nhỏ">⤢</button>
 <button id="btnCloseDetail" class="iconBtn" title="Đóng">✕</button>
 </div>
-<div id="detailBody"></div>
-<div class="hist" id="detailHist"></div>
+<div class="pcard" id="detailBody"></div>
+<div class="pcard"><h4>Resolve / Thanh Lý (riêng, không đè người tạo) <span class="cnt" id="histCnt">0</span></h4><div class="hist" id="detailHist"></div></div>
+<div class="pcard">
 <div class="field"><label>MÃ BILL XỬ LÝ (VTCODE)</label>
 <input id="resolveBill" class="mono" placeholder="Vui lòng nhập mã bill xử lý…">
 </div>
@@ -318,8 +331,9 @@ d.innerHTML=(src?'<img alt="" src="'+esc(src)+'">':'<div class="noimg">📦</div
 +'<span class="ovst '+stClass(it.status)+'">'+esc(it.statusLabel||it.status)+'</span>'
 +'<div class="cap"><span class="code">'+esc(it.code)+'</span><span class="days'+hot+'">'+esc(it.days)+'N</span></div>';
 var im=d.querySelector('img');
-if(im)im.onerror=function(){im.outerHTML='<div class="noimg">📦</div>';};
-d.onclick=function(){openDetail(it.code);};
+if(im){im.onerror=function(){var n=document.createElement('div');n.className='noimg';n.textContent='📦';n.onclick=function(){openDetail(it.code);};im.replaceWith(n);};im.onclick=function(){openDetail(it.code);};}
+else{var nz=d.querySelector('.noimg');if(nz)nz.onclick=function(){openDetail(it.code);};}
+d.querySelector('.cap').onclick=function(){msg('msgMain','Bấm vào ẢNH mới mở chi tiết — dòng mã/ngày chỉ để xem nhanh.');};
 g.appendChild(d);
 });
 }
@@ -338,28 +352,27 @@ state.detail={item:f,history:[]};
 }
 var it=state.detail.item;
 document.getElementById('detailTitle').textContent=it.code||'';
-var ds=document.getElementById('detailSt');
-ds.textContent=it.statusLabel||it.status||'';
-ds.className='st '+stClass(it.status);
-ds.style.display=(it.statusLabel||it.status)?'':'none';
 var vis=visibleItems(),vi=-1;
 vis.forEach(function(x,j){if(x.code===it.code)vi=j;});
 document.getElementById('btnPrevDetail').disabled=vi<=0;
 document.getElementById('btnNextDetail').disabled=vi<0||vi>=vis.length-1;
-var h='<div class="kv"><b>Loại</b><span>'+esc(it.kind||'')+'</span></div>'+
-'<div class="kv"><b>Ngày tạo</b><span>'+esc(it.createdAt||'')+' · '+esc(daysOf(it.createdAt)+' ngày lưu kho')+'</span></div>'+
-'<div class="kv"><b>Người tạo</b><span>'+esc(it.createdBy||'')+'</span></div>'+
-'<div class="kv"><b>Mô tả</b><span>'+esc(it.description||'')+'</span></div>'+
-'<div class="kv"><b>Ghi chú</b><span>'+esc(it.note||'')+'</span></div>'+
-'<div class="kv"><b>Trạng thái</b><span><span class="st '+stClass(it.status)+'">'+esc(it.statusLabel||it.status||'')+'</span></span></div>';
-if(it.imgOuter)h+='<div class="kv"><b>Ảnh Ngoại Quan</b></div><img class="big" src="'+esc(it.imgOuter)+'">';
-if(it.imgProduct)h+='<div class="kv"><b>Ảnh Sản Phẩm</b></div><img class="big" src="'+esc(it.imgProduct)+'">';
+function thumbImg(url){return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener"><img class="thumb" loading="lazy" src="'+esc(url)+'"></a>':'—';}
+var h='<div class="kv"><b>Mã sản phẩm</b><span class="val mono">'+esc(it.code||'')+'</span></div>'+
+'<div class="kv"><b>Ảnh Ngoại Quan</b><span class="val">'+thumbImg(it.imgOuter)+'</span></div>'+
+'<div class="kv"><b>Ảnh Sản Phẩm</b><span class="val">'+thumbImg(it.imgProduct)+'</span></div>'+
+'<div class="kv"><b>Loại</b><span class="val">'+esc(it.kind||'')+'</span></div>'+
+'<div class="kv"><b>Ngày tạo</b><span class="val">'+esc(it.createdAt||'')+' · '+esc(daysOf(it.createdAt)+' ngày lưu kho')+'</span></div>'+
+'<div class="kv"><b>Người tạo</b><span class="val">'+esc(it.createdBy||'')+'</span></div>'+
+'<div class="kv"><b>Mô tả</b><span class="val">'+esc(it.description||'')+'</span></div>'+
+'<div class="kv"><b>Ghi chú</b><span class="val">'+esc(it.note||'—')+'</span></div>'+
+'<div class="kv"><b>Trạng thái</b><span class="val"><span class="st '+stClass(it.status)+'">'+esc(it.statusLabel||it.status||'')+'</span></span></div>';
 document.getElementById('detailBody').innerHTML=h;
 var hs=state.detail.history||[];
-var hh='<b>Resolve / Thanh Lý (riêng, không đè người tạo):</b>';
-if(!hs.length)hh+='<div>Chưa có.</div>';
+var hh='';
+if(!hs.length)hh='<div class="rel-empty">Chưa có.</div>';
 hs.forEach(function(x){hh+='<div>'+esc(x.at)+' · '+esc(x.from)+' → '+esc(x.to)+' · '+esc(x.by)+' · '+esc(x.note||'')+'</div>';});
 document.getElementById('detailHist').innerHTML=hh;
+document.getElementById('histCnt').textContent=hs.length;
 document.getElementById('resolveBill').value='';
 try{if(!state.me)await loadMe();}catch(e){}
 var role=state.me&&state.me.role;
@@ -579,6 +592,7 @@ document.getElementById('btnBoxDone').onclick=submitCreate;
 document.getElementById('btnItemDone').onclick=function(){state.kind='Item';submitCreate();};
 document.getElementById('btnBoxPrint').onclick=function(){if(state.lastCreated)doPrint(state.lastCreated);};
 document.getElementById('btnItemPrint').onclick=function(){if(state.lastCreated)doPrint(state.lastCreated);};
+document.getElementById('btnWideDetail').onclick=function(){document.body.classList.toggle('wide');};
 document.getElementById('btnCloseDetail').onclick=function(){document.getElementById('detailModal').classList.remove('open');document.body.classList.remove('has-drawer');};
 document.getElementById('btnPrevDetail').onclick=function(){detailNav(-1);};
 document.getElementById('btnNextDetail').onclick=function(){detailNav(1);};
