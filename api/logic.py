@@ -136,12 +136,31 @@ def valid_liq_code(s):
     return bool(re.search(r"SPXVN[0-9A-Z]+", (s or "").upper()))
 
 
-def check_photos(count):
-    # Form +Create: tối đa 3 ô hiện dần, tối thiểu 1 mới Confirm được.
-    if not count:
-        return (False, "Cần ít nhất 1 ảnh mới Confirm được.")
-    if count > 3:
+def check_create_photos(kind, outer, product, n_extras=0):
+    # KHỚP Code.gs create_: Box cần đủ 2 ảnh, Item cần 1 ảnh sản phẩm, tổng <= 3.
+    if kind == "Box":
+        if not (outer and product):
+            return (False, "Box cần đủ Ảnh ngoại quan + Ảnh sản phẩm.")
+    elif not product:
+        return (False, "Item cần Ảnh sản phẩm.")
+    total = (1 if outer else 0) + (1 if product else 0) + (n_extras or 0)
+    if total > 3:
         return (False, "Tối đa 3 ảnh.")
+    return (True, "")
+
+
+def can_delete_user(user_rows, target_email, me_email):
+    # KHỚP Code.gs deleteUser: không tự xóa, không xóa ADMIN cuối.
+    target = (target_email or "").strip().lower()
+    me = (me_email or "").strip().lower()
+    if target == me:
+        return (False, "Không tự xóa chính mình.")
+    admins = sum(1 for _, r in (user_rows or []) if r == "ADMIN")
+    found = next(((e, r) for e, r in (user_rows or []) if e.strip().lower() == target), None)
+    if not found:
+        return (False, "Email không có trong danh sách.")
+    if found[1] == "ADMIN" and admins <= 1:
+        return (False, "Không thể xóa ADMIN cuối cùng.")
     return (True, "")
 
 

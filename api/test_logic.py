@@ -3,8 +3,8 @@ import unittest
 from datetime import datetime
 from api.logic import (
     gen_code, next_seq, storage_days, can_resolve, can_liquidate,
-    canonical_status, canonical_kind, valid_liq_code, can_admin_edit, check_photos,
-    extract_drive_id, can_edit, CODE_RE, TZ,
+    canonical_status, canonical_kind, valid_liq_code, can_admin_edit,
+    check_create_photos, can_delete_user, extract_drive_id, can_edit, CODE_RE, TZ,
 )
 
 
@@ -57,10 +57,19 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(can_admin_edit("thanh_ly", "ADMIN"), (True, ""))
 
     def test_photo_gate(self):
-        self.assertEqual(check_photos(0), (False, "Cần ít nhất 1 ảnh mới Confirm được."))
-        self.assertEqual(check_photos(4), (False, "Tối đa 3 ảnh."))
-        self.assertEqual(check_photos(1), (True, ""))
-        self.assertEqual(check_photos(3), (True, ""))
+        self.assertEqual(check_create_photos("Box", "", "", 0)[0], False)
+        self.assertEqual(check_create_photos("Box", "a", "", 0), (False, "Box cần đủ Ảnh ngoại quan + Ảnh sản phẩm."))
+        self.assertEqual(check_create_photos("Box", "a", "b", 1), (True, ""))
+        self.assertEqual(check_create_photos("Box", "a", "b", 2), (False, "Tối đa 3 ảnh."))
+        self.assertEqual(check_create_photos("Item", "", "", 0), (False, "Item cần Ảnh sản phẩm."))
+        self.assertEqual(check_create_photos("Item", "", "b", 0), (True, ""))
+
+    def test_delete_user_gate(self):
+        rows = [("a@x.com", "ADMIN"), ("b@x.com", "ADMIN")]
+        self.assertEqual(can_delete_user(rows, "b@x.com", "a@x.com"), (True, ""))
+        self.assertEqual(can_delete_user(rows, "a@x.com", "a@x.com"), (False, "Không tự xóa chính mình."))
+        self.assertEqual(can_delete_user([("a@x.com", "ADMIN")], "a@x.com", "z@x.com"), (False, "Không thể xóa ADMIN cuối cùng."))
+        self.assertEqual(can_delete_user(rows, "z@x.com", "a@x.com"), (False, "Email không có trong danh sách."))
 
     def test_edit_gate(self):
         self.assertEqual(can_edit("ADMIN"), (True, ""))

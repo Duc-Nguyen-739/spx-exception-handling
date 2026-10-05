@@ -314,15 +314,18 @@ function withLock_(fn) {
   finally { lock.releaseLock(); }
 }
 
-var CREATE_SLOTS = { Box: ['ngoai_quan', 'san_pham', 'bo_sung'], Item: ['san_pham', 'bo_sung_1', 'bo_sung_2'] };
-
 function create_(kind, p) {
   p = p || {};
   var desc = String(p.description || '').trim();
   if (!desc) throw new Error('Vui lòng nhập mô tả sản phẩm.');
-  var photos = (p.photos || []).filter(Boolean);
-  if (!photos.length) throw new Error('Cần ít nhất 1 ảnh mới Confirm được.');
-  if (photos.length > 3) throw new Error('Tối đa 3 ảnh.');
+  var outer = String(p.outer || '').trim();
+  var product = String(p.product || '').trim();
+  var extras = (p.extras || []).filter(Boolean);
+  if (kind === 'Box' && !(outer && product)) throw new Error('Box cần đủ Ảnh ngoại quan + Ảnh sản phẩm.');
+  if (kind === 'Item' && !product) throw new Error('Item cần Ảnh sản phẩm.');
+  var count = (outer ? 1 : 0) + (product ? 1 : 0) + extras.length;
+  if (!count) throw new Error('Cần ít nhất 1 ảnh mới Confirm được.');
+  if (count > 3) throw new Error('Tối đa 3 ảnh.');
 
   return withLock_(function () {
     var r = readAllItems_();
@@ -331,14 +334,21 @@ function create_(kind, p) {
     var at = nowStr_();
     var by = currentEmail_();
     var folder = monthFolder_();
-    var slots = CREATE_SLOTS[kind] || CREATE_SLOTS.Box;
+    var jobs = [];
+    if (outer) jobs.push(['ngoai_quan', outer]);
+    if (product) jobs.push(['san_pham', product]);
+    var usedExtra = 0;
+    for (var e = 0; e < extras.length; e++) {
+      usedExtra++;
+      jobs.push(['bo_sung' + (usedExtra > 1 ? '_' + usedExtra : ''), extras[e]]);
+    }
     var ids = {};
     var shareOk = true;
 
-    for (var s = 0; s < photos.length; s++) {
-      var f = folder.createFile(dataUrlToBlob_(photos[s], code + '.' + slots[s] + '.jpg'));
+    for (var s = 0; s < jobs.length; s++) {
+      var f = folder.createFile(dataUrlToBlob_(jobs[s][1], code + '.' + jobs[s][0] + '.jpg'));
       if (tryShareFile_(f) === 'none') shareOk = false;
-      ids[slots[s]] = f.getId();
+      ids[jobs[s][0]] = f.getId();
     }
     var outerId = ids['ngoai_quan'] || '', productId = ids['san_pham'] || '';
 
@@ -348,8 +358,8 @@ function create_(kind, p) {
     r.sh.getRange(2, 1, 1, row.length).setValues([row]);
 
     var ph = getSheet_('Photos', PHOTOS_HEADER);
-    for (var k = 0; k < slots.length; k++) {
-      if (ids[slots[k]]) ph.appendRow([code, slots[k], ids[slots[k]], at]);
+    for (var k = 0; k < jobs.length; k++) {
+      ph.appendRow([code, jobs[k][0], ids[jobs[k][0]], at]);
     }
 
     getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, '', 'chua_xu_ly', by, 'Tạo mới' + (shareOk ? '' : ' (ảnh chưa share được)')]);
@@ -497,11 +507,35 @@ function adminUpdateItem(code, p) {
         if (r.items[i].code === code) { idx = i; break; }
       }
       if (idx < 0) throw new Error('Không Có');
+      var kind = r.items[idx].kind === 'Item' ? 'Item' : 'Box';
+      var need = (kind === 'Box') ? ['ngoai_quan', 'san_pham'] : ['san_pham'];
       var cur = photosFor_(code);
       var keep = cur.filter(function (x) { return delSlots.indexOf(String(x.slot)) < 0; });
       var total = keep.length + adds.length;
-      if (total < 1) throw new Error('Task phải giữ ít nhất 1 ảnh.');
       if (total > 3) throw new Error('Tối đa 3 ảnh.');
+      var have = {};
+      keep.forEach(function (x) { have[String(x.slot)] = true; });
+      var placed = [];
+      for (var a = 0; a < adds.length; a++) {
+        var slot = '';
+        for (var q = 0; q < need.length; q++) {
+          if (!have[need[q]]) { slot = need[q]; break; }
+        }
+        if (!slot) {
+          var cands = ['bo_sung', 'bo_sung_1', 'bo_sung_2', 'bo_sung_3'];
+          for (var t = 0; t < cands.length; t++) {
+            if (!have[cands[t]]) { slot = cands[t]; break; }
+          }
+        }
+        if (!slot) slot = 'bo_sung_' + Date.now();
+        have[slot] = true;
+        placed.push([slot, adds[a]]);
+      }
+      for (var v = 0; v < need.length; v++) {
+        if (!have[need[v]]) {
+          throw new Error(kind === 'Box' ? 'Box cần đủ Ảnh ngoại quan + Ảnh sản phẩm.' : 'Item cần Ảnh sản phẩm.');
+        }
+      }
       var row = idx + 2;
       if (desc !== null) r.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
       if (note !== null) r.sh.getRange(row, 12, 1, 1).setValues([[note]]);
@@ -523,22 +557,15 @@ function adminUpdateItem(code, p) {
         if (String(x.slot) === 'ngoai_quan') outerId = x.fileId;
         if (String(x.slot) === 'san_pham') productId = x.fileId;
       });
-      if (adds.length) {
+      if (placed.length) {
         var folder = monthFolder_();
-        var used = {};
-        keep.forEach(function (x) { used[String(x.slot)] = true; });
-        var cands = ['bo_sung', 'bo_sung_1', 'bo_sung_2', 'bo_sung_3'];
         var ph2 = getSheet_('Photos', PHOTOS_HEADER);
-        for (var a = 0; a < adds.length; a++) {
-          var slot = '';
-          for (var q = 0; q < cands.length; q++) {
-            if (!used[cands[q]]) { slot = cands[q]; break; }
-          }
-          if (!slot) slot = 'bo_sung_' + Date.now();
-          used[slot] = true;
-          var f = folder.createFile(dataUrlToBlob_(adds[a], code + '.' + slot + '.jpg'));
+        for (var w = 0; w < placed.length; w++) {
+          var f = folder.createFile(dataUrlToBlob_(placed[w][1], code + '.' + placed[w][0] + '.jpg'));
           tryShareFile_(f);
-          ph2.appendRow([code, slot, f.getId(), at]);
+          ph2.appendRow([code, placed[w][0], f.getId(), at]);
+          if (placed[w][0] === 'ngoai_quan') outerId = f.getId();
+          if (placed[w][0] === 'san_pham') productId = f.getId();
         }
       }
       r.sh.getRange(row, 5, 1, 2).setValues([[outerId, productId]]);
@@ -607,28 +634,43 @@ function listUsers() {
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
-function setUserRole(email, role) {
+function addAdmin(email) {
   try {
     requireAdmin_();
     email = normEmail_(email);
-    role = (role === 'ADMIN') ? 'ADMIN' : 'STAFF';
-    if (!email || email.indexOf('@') < 0) throw new Error('Email chưa đúng.');
+    if (!email || email.indexOf('@') < 0) throw new Error('Nhập email cần thêm.');
     return ok(withLock_(function () {
       var u = readUsers_();
-      var idx = -1;
       for (var i = 0; i < u.rows.length; i++) {
-        if (normEmail_(u.rows[i][0]) === email) { idx = i; break; }
+        if (normEmail_(u.rows[i][0]) === email) throw new Error('Email đã có trong danh sách.');
       }
-      if (idx >= 0 && u.rows[idx][1] === 'ADMIN' && role !== 'ADMIN') {
-        var admins = 0;
-        for (var k = 0; k < u.rows.length; k++) if (u.rows[k][1] === 'ADMIN') admins++;
-        if (admins <= 1) throw new Error('Không thể hạ ADMIN cuối cùng.');
-        if (normEmail_(currentEmail_()) === email) throw new Error('Không tự hạ quyền chính mình.');
+      u.sh.appendRow([email, 'ADMIN', nowStr_(), currentEmail_()]);
+      return { email: email, role: 'ADMIN' };
+    }));
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function deleteUser(email) {
+  try {
+    requireAdmin_();
+    email = normEmail_(email);
+    if (!email) throw new Error('Thiếu email.');
+    if (normEmail_(currentEmail_()) === email) throw new Error('Không tự xóa chính mình.');
+    return ok(withLock_(function () {
+      var u = readUsers_();
+      var idx = -1, admins = 0;
+      for (var i = 0; i < u.rows.length; i++) {
+        if (u.rows[i][1] === 'ADMIN') admins++;
+        if (normEmail_(u.rows[i][0]) === email) idx = i;
       }
-      var at = nowStr_(), by = currentEmail_();
-      if (idx >= 0) u.sh.getRange(idx + 2, 2, 1, 3).setValues([[role, at, by]]);
-      else u.sh.appendRow([email, role, at, by]);
-      return { email: email, role: role };
+      if (idx < 0) throw new Error('Email không có trong danh sách.');
+      if (u.rows[idx][1] === 'ADMIN' && admins <= 1) throw new Error('Không thể xóa ADMIN cuối cùng.');
+      var last = u.sh.getLastRow();
+      var vals = u.sh.getRange(2, 1, last - 1, USERS_HEADER.length).getValues();
+      vals.splice(idx, 1);
+      u.sh.getRange(2, 1, last - 1, USERS_HEADER.length).clearContent();
+      if (vals.length) u.sh.getRange(2, 1, vals.length, USERS_HEADER.length).setValues(vals);
+      return { email: email };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
