@@ -237,7 +237,7 @@ function historyFor_(code) {
   for (var i = 0; i < vals.length; i++) {
     if (String(vals[i][iCode] || '').trim() !== want) continue;
     out.push({
-      at: iAt >= 0 ? vals[i][iAt] : '',
+      at: iAt >= 0 ? cellText_(vals[i][iAt]) : '',
       code: want,
       from: iFrom >= 0 ? String(vals[i][iFrom] || '') : '',
       to: iTo >= 0 ? String(vals[i][iTo] || '') : '',
@@ -617,7 +617,7 @@ function adminEditItem(p) {
         } else {
           r.sh.getRange(row, 7, 1, 3).setValues([[toStatus, r.items[idx].status_note || '', bill]]);
         }
-        getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, cur, toStatus, by, bill]);
+        getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, cur, toStatus, 'ADMIN đổi trạng thái', bill]);
         finalSt = toStatus;
       }
       if (changed.length) {

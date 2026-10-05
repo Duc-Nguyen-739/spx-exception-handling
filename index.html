@@ -418,8 +418,9 @@ function dropPending(code,e){state.pending[code]=(state.pending[code]||[]).filte
 function meEmail(){return (state.me&&state.me.email)||'';}
 function tlHTML(x){
 var isEdit=x.from===x.to;
+var adminBy=/^ADMIN/.test(x.by||'');
 return '<div class="tl-time">'+esc(fmtAt(x.at))+'</div>'
-+'<div class="tl-by'+(isEdit?' admin':'')+'">'+(isEdit?esc(x.note||x.by||''):esc(x.by||''))+'</div>'
++'<div class="tl-by'+((isEdit||adminBy)?' admin':'')+'">'+(isEdit?esc(x.note||x.by||''):esc(x.by||''))+'</div>'
 +'<span class="st '+stClass(x.to)+'">'+esc(stLabel(x.to))+'</span>'
 +(x.bill?'<div class="tl-bill">'+esc(x.bill)+'</div>':'');
 }
@@ -666,7 +667,7 @@ var it0=state.detail&&state.detail.item;
 var from0=(it0&&it0.status)||'chua_xu_ly';
 var to0=editStatusSel?EDIT_ST[editStatusSel]:from0;
 var entries=[];
-if(editStatusSel)entries.push({at:nowClientStr(),code:code,from:from0,to:to0,by:meEmail(),note:bill,bill:bill});
+if(editStatusSel)entries.push({at:nowClientStr(),code:code,from:from0,to:to0,by:'ADMIN đổi trạng thái',note:bill,bill:bill});
 if(changed.length)entries.push({at:nowClientStr(),code:code,from:to0,to:to0,by:'ADMIN chỉnh sửa '+changed.join(', '),note:'ADMIN chỉnh sửa '+changed.join(', '),bill:''});
 entries.forEach(function(e){pushPending(code,e);});
 var slots=((it0&&it0.slots)||[]).filter(function(s){return editDel.indexOf(String(s.slot))<0;});

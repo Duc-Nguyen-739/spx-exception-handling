@@ -160,6 +160,21 @@ test('edit: mở điền sẵn, đơn Resolve có 2 ô Lưu kho/Thanh Lý, bill 
   assert.strictEqual(last[1].description, 'Thùng 12 áo thun mới');
   assert.match(String(registry.msgEdit.textContent), /Đã lưu/);
   assert.strictEqual(registry.editModal._has('open'), false);
+  const eh = registry.detailHist.innerHTML;
+  assert.match(eh, /ADMIN đổi trạng thái/);
+  assert.ok(!eh.includes('a@spxexpress.com'));
+});
+
+test('timeline: moc doi trang thai trong Edit hien ADMIN; moc nut thuong hien email', async () => {
+  const { sandbox, listeners } = makeEnv(ITEM, []);
+  await listeners.DOMContentLoaded();
+  const h = sandbox.tlHTML({ at: '06/10/2026 03:32:00', from: 'da_tim_bill', to: 'chua_xu_ly', by: 'ADMIN đổi trạng thái', note: '', bill: '' });
+  assert.match(h, /ADMIN đổi trạng thái/);
+  assert.match(h, /tl-by admin/);
+  assert.ok(!h.includes('@'));
+  const h2 = sandbox.tlHTML({ at: '06/10/2026 18:01:00', from: 'chua_xu_ly', to: 'da_tim_bill', by: 'son.nguyenngoc@spxexpress.com', note: 'SPXVN1', bill: 'SPXVN1' });
+  assert.match(h2, /son\.nguyenngoc@spxexpress\.com/);
+  assert.ok(!/tl-by admin/.test(h2));
 });
 
 test('optimistic: timeline hien truoc tu cache, server ve sau van giu', async () => {
