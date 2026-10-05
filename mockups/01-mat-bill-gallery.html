@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup Webapp [HN2] Mất bill — SPX Exception Handling</title>
+<style>
+  :root {
+    --spx: #ee4d2d; --spx-dark: #d73211; --spx-soft: #fff1ed;
+    --ink: #1f1f1f; --mut: #5f6368; --bd: #e2e6ec; --bg: #eef0f4; --card: #fff;
+    --ok: #188038; --ok-bg: #e6f4ea; --warn: #e65100; --warn-bg: #fff3e0;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.5; }
+  .gal-head { background: #0d111a; color: #e2e8f0; padding: 22px 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .gal-logo .spx-badge { background: linear-gradient(135deg, #ff5f2e, var(--spx)); color: #fff; font-size: 13px; font-weight: 800; padding: 5px 11px; border-radius: 7px; }
+  .gal-head h1 { font-size: 17px; }
+  .gal-head p { color: #9aa7bd; font-size: 13px; }
+  .gal-nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--bd); display: flex; gap: 6px; padding: 10px 24px; overflow-x: auto; }
+  .gal-nav a { text-decoration: none; color: #303844; font-size: 12.5px; font-weight: 600; border: 1px solid var(--bd); border-radius: 999px; padding: 5px 12px; white-space: nowrap; }
+  .gal-nav a:hover { border-color: var(--spx); color: var(--spx); }
+  main { max-width: 1180px; margin: 0 auto; padding: 14px 20px 80px; display: grid; gap: 26px; }
+  .sample-head { display: flex; gap: 14px; padding: 4px 2px; }
+  .sample-num { flex: 0 0 auto; width: 42px; height: 42px; border-radius: 12px; background: #0d111a; color: #ff8a5c; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .sample-head h2 { font-size: 17px; }
+  .sample-head p { color: var(--mut); font-size: 13px; max-width: 780px; }
+  .sample-head .tag { display: inline-block; font-size: 11px; font-weight: 700; background: #e7f4ea; color: #1e6b33; border: 1px solid #bcddbb; border-radius: 999px; padding: 2px 10px; margin-top: 6px; }
+  .stage { border-radius: 18px; padding: 28px 20px; display: flex; justify-content: center; border: 1px solid var(--bd); background: #f8f9fb; }
+  .app { width: 100%; max-width: 980px; border-radius: 16px; background: var(--card); box-shadow: 0 18px 50px rgba(10,20,45,.16); overflow: hidden; border: 1px solid var(--bd); }
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--spx); color: #fff; }
+  .topbar .logo { background: #fff; color: var(--spx); font-weight: 800; font-size: 12px; padding: 3px 8px; border-radius: 6px; }
+  .topbar b { font-size: 14.5px; }
+  .topbar small { opacity: .85; font-size: 11.5px; }
+  .searchrow { display: flex; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--bd); }
+  .searchrow input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--bd); border-radius: 10px; font-size: 13.5px; font-family: inherit; }
+  .searchrow input:focus { outline: none; border-color: var(--spx); box-shadow: 0 0 0 3px rgba(238,77,45,.15); }
+  .btn { border: none; border-radius: 10px; padding: 0 16px; min-height: 40px; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; background: var(--spx); color: #fff; }
+  .btn.ghost { background: #fff; color: var(--spx); border: 1.5px solid var(--spx); }
+  .chips { display: flex; gap: 6px; padding: 10px 14px 0; flex-wrap: wrap; }
+  .chip { border: 1px solid var(--bd); background: #fff; border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; color: var(--mut); cursor: pointer; font-family: inherit; }
+  .chip.on { background: var(--spx); border-color: var(--spx); color: #fff; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px 14px 16px; }
+  .card { border: 1px solid var(--bd); border-radius: 12px; overflow: hidden; cursor: pointer; background: #fff; }
+  .card.sel { outline: 2px solid var(--spx); }
+  .card img { width: 100%; height: 110px; object-fit: cover; display: block; background: #dfe3e8; }
+  .card .code { font-size: 11.5px; font-weight: 700; padding: 6px 8px 2px; font-family: Consolas, monospace; }
+  .card .desc { font-size: 11px; color: var(--mut); padding: 0 8px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card .st { display: inline-block; font-size: 10px; font-weight: 700; border-radius: 999px; padding: 1px 8px; margin: 0 8px 8px; }
+  .st.todo { background: #f1f3f4; color: var(--mut); }
+  .st.done { background: var(--ok-bg); color: var(--ok); }
+  .st.liq { background: var(--warn-bg); color: var(--warn); }
+  .phone { max-width: 380px; }
+  .phone .grid { grid-template-columns: repeat(2, 1fr); }
+  .bottomnav { display: flex; border-top: 1px solid var(--bd); background: #fff; }
+  .bottomnav div { flex: 1; text-align: center; font-size: 11px; color: var(--mut); padding: 8px 0 10px; font-weight: 600; }
+  .bottomnav div.on { color: var(--spx); }
+  .fab { position: relative; margin: -22px auto 0; width: 52px; height: 52px; border-radius: 50%; background: var(--spx); color: #fff; font-size: 22px; border: 3px solid #fff; box-shadow: 0 6px 18px rgba(238,77,45,.45); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .sheet { border-top: 1px solid var(--bd); background: #141a26; color: #e2e8f0; padding: 14px; display: none; }
+  .sheet.open { display: block; }
+  .finder { position: relative; border-radius: 12px; overflow: hidden; background: #000; height: 190px; display: flex; align-items: center; justify-content: center; }
+  .finder .frame { width: 200px; height: 120px; border: 2px solid #4caf50; border-radius: 8px; position: relative; }
+  .finder .frame::after { content: ""; position: absolute; left: 6px; right: 6px; top: 50%; height: 2px; background: #ff5252; animation: scan 1.6s linear infinite; }
+  @keyframes scan { 0% { top: 8px; } 50% { top: calc(100% - 10px); } 100% { top: 8px; } }
+  .sheet .row { display: flex; gap: 8px; margin-top: 10px; }
+  .sheet input { flex: 1; padding: 9px 12px; border-radius: 10px; border: 1px solid #3a4358; background: #1e2637; color: #fff; font-family: Consolas, monospace; font-size: 13px; }
+  .sheet .note { font-size: 11.5px; color: #9aa7bd; margin-top: 8px; }
+  .pane2 { display: grid; grid-template-columns: 1fr 320px; gap: 0; }
+  .pane2 .left { border-right: 1px solid var(--bd); }
+  .pane2 .left .grid { grid-template-columns: repeat(2, 1fr); }
+  .detail { padding: 14px; font-size: 13px; }
+  .detail h3 { font-size: 14px; font-family: Consolas, monospace; margin-bottom: 10px; }
+  .detail img { width: 100%; border-radius: 10px; margin-bottom: 8px; background: #dfe3e8; }
+  .kv { display: grid; grid-template-columns: 92px 1fr; gap: 4px 8px; margin: 8px 0; }
+  .kv span { color: var(--mut); font-size: 12px; }
+  .kv b { font-size: 12.5px; font-weight: 600; }
+  .gunbar { display: flex; gap: 8px; padding: 10px 14px; background: #0d111a; align-items: center; }
+  .gunbar .dot { width: 9px; height: 9px; border-radius: 50%; background: #4caf50; box-shadow: 0 0 8px #4caf50; }
+  .gunbar input { flex: 1; padding: 9px 12px; border-radius: 10px; border: 1px solid #3a4358; background: #1e2637; color: #7CFC00; font-family: Consolas, monospace; font-size: 14px; font-weight: 700; }
+  .gunbar input:focus { outline: none; border-color: #4caf50; }
+  .gunbar small { color: #9aa7bd; font-size: 11px; }
+  .stamp { border-radius: 10px; padding: 10px 12px; margin-top: 8px; font-size: 12.5px; font-weight: 700; display: none; }
+  .stamp.show { display: block; animation: pop .3s ease; }
+  .stamp.ok { background: var(--ok-bg); color: var(--ok); border: 1.5px solid var(--ok); }
+  @keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .actions { display: grid; gap: 8px; margin-top: 10px; }
+  .actions .btn { width: 100%; }
+  .tl { margin-top: 10px; border-left: 2px solid var(--bd); padding-left: 12px; display: grid; gap: 8px; font-size: 12px; }
+  .tl b { display: block; font-size: 12px; }
+  .tl small { color: var(--mut); }
+  @media (max-width: 720px) { .pane2 { grid-template-columns: 1fr; } .pane2 .left { border-right: none; } .grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="gal-head">
+  <div class="gal-logo"><span class="spx-badge">SPX</span></div>
+  <div><h1>Mockup Webapp [HN2] Mất bill — 3 mẫu duyệt giao diện</h1>
+  <p>SPX Exception Handling · dữ liệu demo từ CSV thật · bấm tương tác thử: tìm kiếm, chip lọc, quét, chọn thẻ</p></div>
+</div>
+<nav class="gal-nav"><a href="#m1">1 · Mobile quét camera</a><a href="#m2">2 · PC + súng quét</a><a href="#m3">3 · Chi tiết + cập nhật</a></nav>
+<main>
+
+<!-- ================= MẪU 1 ================= -->
+<section class="sample" id="m1">
+  <div class="sample-head"><div class="sample-num">1</div>
+    <div><h2>Mobile — quét QR / Code 128 bằng camera</h2>
+    <p>Nhân viên kho mở trên điện thoại, bấm nút quét giữa → bottom-sheet camera (khung ngắm + vạch laser demo). Engine thật sẽ là ZXing đa bậc fallback như <b>spx-diem-danh</b>: full-frame → downscale → crop → TRY_HARDER → Quagga fallback Code128.</p>
+    <span class="tag">MOBILE · CAMERA · QR + CODE128</span></div></div>
+  <div class="stage"><div class="app phone">
+    <div class="topbar"><span class="logo">SPX</span><div><b>[HN2] Mất bill</b><br><small>Exception Handling · HN2 SOC</small></div></div>
+    <div class="searchrow"><input id="q1" placeholder="Tìm mã / mô tả… (vd BOX.0203)"><button class="btn" onclick="document.getElementById('sheet1').classList.toggle('open')">Quét</button></div>
+    <div class="chips" id="chips1">
+      <button class="chip on">Tất cả</button><button class="chip">Box</button><button class="chip">Item</button><button class="chip">Chưa xử lý</button><button class="chip">Thanh lý</button>
+    </div>
+    <div class="grid" id="grid1"></div>
+    <div class="fab" onclick="document.getElementById('sheet1').classList.toggle('open')">⌖</div>
+    <div class="sheet" id="sheet1">
+      <div class="finder"><div class="frame"></div></div>
+      <div class="row"><input id="camIn" placeholder="QR / Code128…" value="BOX.05032026.003"><button class="btn" onclick="fakeScan('camIn','grid1')">✓ Nhận</button></div>
+      <div class="note">Demo: camera thật dùng ZXing (QR + Code 128). Trên iOS mở popup top-level vì GAS iframe chặn getUserMedia — theo kiến trúc camera spx-diem-danh.</div>
+    </div>
+    <div class="bottomnav"><div class="on">▦ Kho bill</div><div>＋ Nhập mới</div><div>◷ Lịch sử</div></div>
+  </div></div>
+</section>
+
+<!-- ================= MẪU 2 ================= -->
+<section class="sample" id="m2">
+  <div class="sample-head"><div class="sample-num">2</div>
+    <div><h2>PC web — quét bằng súng (keyboard wedge)</h2>
+    <p>Bố cục 2 pane như AppSheet bạn đang dùng: trái lưới ảnh, phải chi tiết. Ô súng luôn giữ focus — súng bắn = gõ mã + Enter → thẻ chi tiết cập nhật ngay, có tiếng bíp + stamp xanh. Thử gõ mã bất kỳ vào ô xanh rồi Enter.</p>
+    <span class="tag">PC · SÚNG QUÉT · LAYOUT APPSHEET</span></div></div>
+  <div class="stage"><div class="app">
+    <div class="topbar"><span class="logo">SPX</span><div><b>[HN2] Mất bill</b><br><small>PC Trạm TBS · súng quét luôn sẵn sàng</small></div></div>
+    <div class="gunbar"><span class="dot"></span><input id="gun" value="" placeholder="Súng quét tại đây — bắn mã rồi Enter…" autofocus><small>wedge · Enter = nhận</small></div>
+    <div class="pane2"><div class="left"><div class="grid" id="grid2"></div></div>
+      <div class="detail" id="detail2"><h3 id="dCode">ITEM.05102026.95</h3>
+        <img src="https://picsum.photos/seed/spx95/400/260" alt="Ảnh ngoại quan">
+        <div class="kv"><span>Mô tả</span><b>Đá bể cá</b></div>
+        <div class="kv"><span>Loại hàng</span><b>Item</b></div>
+        <div class="kv"><span>Người nhập</span><b>quang.trannhat@spxexpress.com</b></div>
+        <div class="kv"><span>Hướng xử lý</span><b style="color:var(--warn)">Chưa xử lý</b></div>
+        <div class="stamp ok" id="stamp2">✓ ĐÃ NHẬN MÃ — thẻ đã cập nhật</div>
+      </div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ================= MẪU 3 ================= -->
+<section class="sample" id="m3">
+  <div class="sample-head"><div class="sample-num">3</div>
+    <div><h2>Chi tiết + cập nhật hướng xử lý</h2>
+    <p>Chuẩn thao tác TBS: 2 ảnh (ngoại quan + sản phẩm với Box), nút hành động 1 chạm (Đã tìm bill / Thanh lý / Cho đi theo mã), timeline lịch sử. Bấm thử các nút để xem stamp + timeline thêm dòng.</p>
+    <span class="tag">DETAIL · CẬP NHẬT · TIMELINE</span></div></div>
+  <div class="stage"><div class="app phone" style="max-width:420px">
+    <div class="topbar"><span class="logo">SPX</span><div><b>BOX.05032026.003</b><br><small>Hộp xà phòng Lilac Rose · Box</small></div></div>
+    <div class="detail">
+      <img src="https://picsum.photos/seed/spxbox3/400/240" alt="Ảnh ngoại quan"><small style="color:var(--mut)">Ảnh ngoại quan</small>
+      <img src="https://picsum.photos/seed/spxbox3b/400/240" alt="Ảnh sản phẩm" style="margin-top:6px"><small style="color:var(--mut)">Ảnh sản phẩm</small>
+      <div class="kv"><span>Mã SP</span><b>BOX.05032026.003</b></div>
+      <div class="kv"><span>Trạng thái</span><b style="color:var(--warn)" id="st3">Chưa xử lý</b></div>
+      <div class="actions">
+        <button class="btn" onclick="resolve3('Đã tìm bill — cho đi theo SPXVN062229122302')">✓ Đã tìm bill</button>
+        <button class="btn ghost" onclick="resolve3('Thanh lý')">Thanh lý</button>
+        <button class="btn ghost" onclick="resolve3('Cho đi theo mã SPXVN…')">Cho đi theo mã ↗</button>
+      </div>
+      <div class="stamp ok" id="stamp3"></div>
+      <div class="tl" id="tl3">
+        <div><b>Nhập kho TBS</b><small>05/10/2026 · quang.trannhat@spxexpress.com</small></div>
+      </div>
+    </div>
+  </div></div>
+</section>
+</main>
+<script>
+var ITEMS = [
+  {c:'BOX.02032026.01', d:'Giày channel size 38', t:'Box', s:'liq', sl:'Thanh lý'},
+  {c:'BOX.05032026.003', d:'Hộp xà phòng Lilac Rose', t:'Box', s:'todo', sl:'Chưa xử lý'},
+  {c:'ITEM.05102026.95', d:'Đá bể cá', t:'Item', s:'todo', sl:'Chưa xử lý'},
+  {c:'ITEM.05102026.64', d:'Ống hút nhựa', t:'Item', s:'done', sl:'Đã cho đi SPXVN…'},
+  {c:'ITEM.05032026.95', d:'Chai xịt vệ sinh', t:'Item', s:'done', sl:'Cho đi SPXVN068252935875'},
+  {c:'BOX.05102026.24', d:'Thùng đồ ăn vặt 7kg', t:'Box', s:'todo', sl:'Chưa xử lý'}
+];
+function cardHTML(it, i){
+  return '<div class="card" data-i="'+i+'"><img loading="lazy" src="https://picsum.photos/seed/'+it.c.replace(/\./g,'')+'/400/260" alt="">'
+    +'<div class="code">'+it.c+'</div><div class="desc">'+it.d+'</div>'
+    +'<span class="st '+it.s+'">'+it.sl+'</span></div>';
+}
+function renderGrid(id, filter){
+  var el = document.getElementById(id);
+  el.innerHTML = ITEMS.map(cardHTML).join('');
+  el.querySelectorAll('.card').forEach(function(cd){
+    cd.onclick = function(){
+      el.querySelectorAll('.card').forEach(function(x){x.classList.remove('sel')});
+      cd.classList.add('sel');
+      var it = ITEMS[+cd.dataset.i];
+      var dc = document.getElementById('dCode'); if (dc) dc.textContent = it.c;
+    };
+  });
+}
+renderGrid('grid1'); renderGrid('grid2');
+document.getElementById('q1').oninput = function(e){
+  var q = e.target.value.toLowerCase();
+  document.querySelectorAll('#grid1 .card').forEach(function(cd){
+    cd.style.display = cd.textContent.toLowerCase().indexOf(q) > -1 ? '' : 'none';
+  });
+};
+document.querySelectorAll('#chips1 .chip').forEach(function(ch){
+  ch.onclick = function(){
+    document.querySelectorAll('#chips1 .chip').forEach(function(x){x.classList.remove('on')});
+    ch.classList.add('on');
+    var t = ch.textContent;
+    document.querySelectorAll('#grid1 .card').forEach(function(cd){
+      var show = t === 'Tất cả' || cd.textContent.indexOf(t) > -1 ||
+        (t === 'Chưa xử lý' && cd.textContent.indexOf('Chưa xử lý') > -1);
+      cd.style.display = show ? '' : 'none';
+    });
+  };
+});
+function fakeScan(inputId){
+  var v = document.getElementById(inputId).value || 'BOX.05032026.003';
+  var st = document.getElementById('stamp2');
+  document.getElementById('dCode').textContent = v;
+  st.textContent = '✓ ĐÃ NHẬN MÃ ' + v + ' — thẻ đã cập nhật';
+  st.classList.add('show');
+  document.getElementById('sheet1').classList.remove('open');
+  document.getElementById('m2').scrollIntoView({behavior:'smooth'});
+  keepGunFocus();
+}
+document.getElementById('gun').addEventListener('keydown', function(e){
+  if (e.key === 'Enter' && this.value.trim()) {
+    var v = this.value.trim().toUpperCase();
+    document.getElementById('dCode').textContent = v;
+    var st = document.getElementById('stamp2');
+    st.textContent = '✓ ĐÃ NHẬN MÃ ' + v + ' — thẻ đã cập nhật';
+    st.classList.add('show');
+    try { var ctx = new (window.AudioContext||window.webkitAudioContext)(); var o = ctx.createOscillator(); o.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + .08); } catch(_){}
+    this.select();
+  }
+});
+function keepGunFocus(){ var g = document.getElementById('gun'); if (g && document.activeElement !== g && window.innerWidth > 720) g.focus(); }
+setInterval(keepGunFocus, 3000);
+function resolve3(text){
+  document.getElementById('st3').textContent = text;
+  document.getElementById('st3').style.color = 'var(--ok)';
+  var st = document.getElementById('stamp3');
+  st.textContent = '✓ Đã lưu: ' + text; st.classList.add('show');
+  var tl = document.getElementById('tl3');
+  var div = document.createElement('div');
+  div.innerHTML = '<b>'+text+'</b><small>Vừa xong · demo</small>';
+  tl.prepend(div);
+}
+</script>
+</body>
+</html>
