@@ -244,6 +244,9 @@ header{flex-wrap:wrap}
 <select id="newRole" style="flex:1"><option value="STAFF">STAFF</option><option value="ADMIN">ADMIN</option></select>
 <button id="btnAddUser" class="primary">Thêm</button>
 </div>
+<div class="row" style="margin-top:8px">
+<button id="btnFixShare" style="flex:1">Sửa share ảnh cũ</button>
+</div>
 </div>
 <div id="usersTable" style="margin-top:8px"></div>
 </main>
@@ -614,6 +617,16 @@ document.getElementById('usersTable').innerHTML='';
 msg('msgAccess',e.message||'Lỗi tải danh sách');
 }
 }
+async function fixSharing(){
+msg('msgAccess','Đang sửa share ảnh…',true);
+try{
+var r=await gs('fixPhotoSharing',[]);
+if(!r.ok)throw new Error(r.error);
+var f=r.data.failed&&r.data.failed.length?(' Lỗi '+r.data.failed.length+' file.'):'';
+msg('msgAccess','Đã share '+r.data.shared+'/'+r.data.total+' ảnh.'+f+' Mở lại Danh sách để kiểm tra.',true);
+await loadGrid();
+}catch(e){msg('msgAccess',e.message||'Lỗi sửa share');}
+}
 async function setRole(email,role){
 msg('msgAccess','Đang xử lý…',true);
 try{var r=await gs('setUserRole',[email,role]);if(!r.ok)throw new Error(r.error);msg('msgAccess','Đã cập nhật '+email+' → '+role,true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi cập nhật');}
@@ -689,6 +702,7 @@ document.getElementById('btnPrintDetail').onclick=function(){if(state.detail)doP
 document.getElementById('navMain').onclick=function(){showLiq(false);};
 document.getElementById('navLiq').onclick=function(){showLiq(true);};
 document.getElementById('navAccess').onclick=function(){showAccess();};
+document.getElementById('btnFixShare').onclick=fixSharing;
 document.getElementById('btnAddUser').onclick=function(){var em=document.getElementById('newEmail').value.trim();var ro=document.getElementById('newRole').value;if(!em){msg('msgAccess','Nhập email cần thêm.');return;}setRole(em,ro);document.getElementById('newEmail').value='';};
 document.getElementById('btnReopen').onclick=doReopen;
 document.getElementById('scanMain').addEventListener('keydown',function(e){if(e.key==='Enter'){var v=e.target.value.trim();state.filter='';renderGrid();openDetail(v);}});

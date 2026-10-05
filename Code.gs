@@ -109,10 +109,19 @@ function toClient_(o, days, extras) {
   };
 }
 
+function driveIdFromUrl_(v) {
+  var m = String(v || '').match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if (m) return m[1];
+  m = String(v || '').match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+  return m ? m[1] : '';
+}
+
 function thumbUrl_(v) {
   v = String(v || '').trim();
   if (!v) return '';
   if (/^[a-zA-Z0-9_-]{10,}$/.test(v)) return 'https://drive.google.com/thumbnail?id=' + v + '&sz=w400';
+  var id = driveIdFromUrl_(v);
+  if (id) return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400';
   if (/^https?:/.test(v)) return v;
   return '';
 }
@@ -237,16 +246,26 @@ function nextSeq_(items, kind, datePart) {
 }
 
 function dataUrlToBlob_(dataUrl, name) {
-  var m = String(dataUrl || '').match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/);
+  var m = String(dataUrl || '').match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=\s]+)$/);
   if (!m) throw new Error('Ảnh không đúng định dạng (cần JPG/PNG chụp từ máy).');
-  if (m[2].length > 8 * 1024 * 1024) throw new Error('Ảnh quá lớn, vui lòng chụp lại.');
-  return Utilities.newBlob(Utilities.base64Decode(m[2]), m[1], name);
+  var b64 = m[2].replace(/\s/g, '');
+  if (b64.length > 8 * 1024 * 1024) throw new Error('Ảnh quá lớn, vui lòng chụp lại.');
+  try {
+    return Utilities.newBlob(Utilities.base64Decode(b64), m[1], name);
+  } catch (e) {
+    throw new Error('Không giải mã được ảnh chụp, vui lòng chụp lại.');
+  }
 }
 
 function monthFolder_() {
-  var rootId = PropertiesService.getScriptProperties().getProperty(PROP_FOLDER);
+  var rootId = String(PropertiesService.getScriptProperties().getProperty(PROP_FOLDER) || '').trim();
   if (!rootId) throw new Error('Thiếu FOLDER_ID trong Script Properties (nơi lưu ảnh).');
-  var root = DriveApp.getFolderById(rootId);
+  var root;
+  try {
+    root = DriveApp.getFolderById(rootId);
+  } catch (e) {
+    throw new Error('FOLDER_ID không đúng (chỉ dán ID thư mục, không dán cả URL).');
+  }
   var name = Utilities.formatDate(new Date(), TZ, 'yyyy-MM');
   var it = root.getFoldersByName(name);
   if (it.hasNext()) return it.next();
@@ -282,7 +301,11 @@ function create_(kind, p) {
 
     for (var s = 0; s < photos.length; s++) {
       var f = folder.createFile(dataUrlToBlob_(photos[s], code + '.' + slots[s] + '.jpg'));
-      f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      try {
+        f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      } catch (e) {
+        throw new Error('Không mở share ảnh được — Drive công ty có thể chặn share ngoài, nhờ ADMIN kiểm tra.');
+      }
       ids[slots[s]] = f.getId();
     }
     var outerId = ids['ngoai_quan'] || '', productId = ids['san_pham'] || '';
@@ -345,7 +368,7 @@ function liquidateBatch(codes, liqCode) {
     liqCode = String(liqCode || '').trim().toUpperCase();
     codes = (codes || []).map(function (c) { return String(c).trim(); }).filter(Boolean);
     if (!codes.length) return fail('Chưa scan mã nào.');
-    if (!liqCode) return fail('Bắt buộc phải có mã thanh lý mới có thể Hoàn Thành.');
+    if (!liqCode) return fail('Vui lòng nhập mã thanh lý.');
     if (!/SPXVN[0-9A-Z]+/.test(liqCode)) return fail('Mã thanh lý phải chứa SPXVN (vd SPXVN...).');
     return ok(withLock_(function () {
       var r = readAllItems_();
@@ -381,6 +404,44 @@ function liquidateBatch(codes, liqCode) {
       return { count: codes.length, at: at, by: by, liqCode: liqCode };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function fixPhotoSharing() {
+  try {
+    requireAdmin_();
+    var ids = {};
+    var ph = readPhotosAll_();
+    for (var i = 0; i < ph.length; i++) {
+      var id = String(ph[i][2] || '').trim() || driveIdFromUrl_(ph[i][2]);
+      if (id) ids[id] = true;
+    }
+    var r = readAllItems_();
+    for (var j = 0; j < r.items.length; j++) {
+      var a = String(r.items[j].photo_path_outer || '').trim();
+      var b = String(r.items[j].photo_path_product || '').trim();
+      var ia = (/^[a-zA-Z0-9_-]{10,}$/.test(a) ? a : driveIdFromUrl_(a));
+      var ib = (/^[a-zA-Z0-9_-]{10,}$/.test(b) ? b : driveIdFromUrl_(b));
+      if (ia) ids[ia] = true;
+      if (ib) ids[ib] = true;
+    }
+    var shared = 0, failed = [];
+    for (var fid in ids) {
+      try {
+        DriveApp.getFileById(fid).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        shared++;
+      } catch (e) {
+        failed.push(fid);
+      }
+    }
+    return ok({ total: Object.keys(ids).length, shared: shared, failed: failed });
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function readPhotosAll_() {
+  var sh = getSheet_('Photos', PHOTOS_HEADER);
+  var last = sh.getLastRow();
+  if (last < 2) return [];
+  return sh.getRange(2, 1, last - 1, PHOTOS_HEADER.length).getValues();
 }
 
 function normEmail_(s) {

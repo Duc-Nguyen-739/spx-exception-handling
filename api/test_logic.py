@@ -3,7 +3,8 @@ import unittest
 from datetime import datetime
 from api.logic import (
     gen_code, next_seq, storage_days, can_resolve, can_liquidate,
-    canonical_status, canonical_kind, valid_liq_code, can_admin_edit, check_photos, CODE_RE, TZ,
+    canonical_status, canonical_kind, valid_liq_code, can_admin_edit, check_photos,
+    extract_drive_id, CODE_RE, TZ,
 )
 
 
@@ -60,6 +61,13 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(check_photos(4), (False, "Tối đa 3 ảnh."))
         self.assertEqual(check_photos(1), (True, ""))
         self.assertEqual(check_photos(3), (True, ""))
+
+    def test_extract_drive_id(self):
+        self.assertEqual(extract_drive_id("1AbCdefGhIjKlMnOp"), "1AbCdefGhIjKlMnOp")
+        self.assertEqual(extract_drive_id("https://drive.google.com/file/d/1AbCdefGhIjKlMnOp/view"), "1AbCdefGhIjKlMnOp")
+        self.assertEqual(extract_drive_id("https://drive.google.com/thumbnail?id=1AbCdefGhIjKlMnOp&sz=w400"), "1AbCdefGhIjKlMnOp")
+        self.assertEqual(extract_drive_id(""), "")
+        self.assertEqual(extract_drive_id("https://example.com/a.jpg"), "")
 
     def test_storage_days(self):
         now = datetime(2026, 10, 6, 10, 0, 0, tzinfo=TZ)

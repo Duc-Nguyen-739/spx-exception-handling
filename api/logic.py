@@ -119,6 +119,19 @@ def can_liquidate(status):
     return (False, STATUS_LABEL.get(status, "Không cho phép"))
 
 
+def extract_drive_id(s):
+    # KHỚP Code.gs driveIdFromUrl_: nhận file ID trần hoặc link Drive (?id= / /d/).
+    import re as _re
+    s = (s or "").strip()
+    if _re.match(r"^[A-Za-z0-9_-]{10,}$", s):
+        return s
+    m = _re.search(r"[?&]id=([A-Za-z0-9_-]{10,})", s)
+    if m:
+        return m.group(1)
+    m = _re.search(r"/d/([A-Za-z0-9_-]{10,})", s)
+    return m.group(1) if m else ""
+
+
 def valid_liq_code(s):
     return bool(re.search(r"SPXVN[0-9A-Z]+", (s or "").upper()))
 
