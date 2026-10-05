@@ -69,7 +69,9 @@ function canonicalStatus_(raw) {
 function getSpreadsheet_() {
   var id = PropertiesService.getScriptProperties().getProperty(PROP_SHEET);
   if (id) return SpreadsheetApp.openById(id);
-  return SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error('Chưa cấu hình SPREADSHEET_ID (Apps Script > Project settings > Script properties).');
+  return ss;
 }
 
 function getSheet_(name, header) {
@@ -82,10 +84,15 @@ function getSheet_(name, header) {
   return sh;
 }
 
+function cellText_(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, TZ, 'dd/MM/yyyy HH:mm:ss');
+  return v === null || v === undefined ? '' : String(v);
+}
+
 function rowsToItems_(rows) {
   return rows.map(function (r) {
     var o = {};
-    for (var i = 0; i < ITEMS_HEADER.length; i++) o[ITEMS_HEADER[i]] = r[i] || '';
+    for (var i = 0; i < ITEMS_HEADER.length; i++) o[ITEMS_HEADER[i]] = cellText_(r[i]);
     return o;
   });
 }
