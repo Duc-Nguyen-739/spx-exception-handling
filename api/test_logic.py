@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime
 from api.logic import (
     gen_code, next_seq, storage_days, can_resolve, can_liquidate,
-    canonical_status, canonical_kind, valid_liq_code, can_admin_edit, CODE_RE, TZ,
+    canonical_status, canonical_kind, valid_liq_code, can_admin_edit, check_photos, CODE_RE, TZ,
 )
 
 
@@ -54,6 +54,12 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(can_admin_edit("chua_xu_ly", "ADMIN"), (False, "Đơn đang Lưu kho, không cần mở lại."))
         self.assertEqual(can_admin_edit("da_tim_bill", "ADMIN"), (True, ""))
         self.assertEqual(can_admin_edit("thanh_ly", "ADMIN"), (True, ""))
+
+    def test_photo_gate(self):
+        self.assertEqual(check_photos(0), (False, "Cần ít nhất 1 ảnh mới Confirm được."))
+        self.assertEqual(check_photos(4), (False, "Tối đa 3 ảnh."))
+        self.assertEqual(check_photos(1), (True, ""))
+        self.assertEqual(check_photos(3), (True, ""))
 
     def test_storage_days(self):
         now = datetime(2026, 10, 6, 10, 0, 0, tzinfo=TZ)

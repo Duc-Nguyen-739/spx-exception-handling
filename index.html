@@ -58,11 +58,13 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 .pills span{font-size:11px;font-weight:700;color:var(--mut);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:6px 12px}
 
 /* ===== gallery grid (kiểu AppSheet: ảnh vuông + caption) ===== */
-#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+#grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:480px) and (max-width:899px){#grid{grid-template-columns:repeat(3,1fr)}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative}
 .card img,.card .noimg{cursor:pointer}
 .card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:linear-gradient(135deg,#f1f3f7,#e6eaf1)}
-.card .noimg{width:100%;aspect-ratio:1/1;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,#eef1f6,#e2e8f1)}
+.card .noimg{width:100%;aspect-ratio:1/1;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;font-size:30px;background:linear-gradient(135deg,#eef1f6,#e2e8f1)}
+.card .noimg small{font-size:9.5px;font-weight:700;color:var(--mut)}
 .card .cap{padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--bg)}
 .card .code{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:700;color:var(--mut);word-break:break-all}
 .card.sel{outline:2px solid var(--o);outline-offset:-2px}
@@ -105,12 +107,9 @@ html[data-theme=dark] .cnt small{color:#a4573d}
 .sheet .pcard h4{margin:12px 0 2px;font-size:13px;color:var(--navy);display:flex;align-items:center;gap:8px}
 .sheet .pcard h4 .cnt{background:var(--bg);color:var(--mut);font-size:10.5px;font-weight:800;border-radius:7px;padding:2px 8px}
 .kv .val{flex:1;min-width:0}
-img.thumb{width:128px;height:96px;object-fit:cover;border-radius:9px;background:linear-gradient(135deg,#eef1f6,#e2e8f1)}
 .rel-empty{text-align:center;padding:20px 0;color:var(--mut)}
 .field{margin:10px 0}
 .field label{display:block;font-weight:800;margin-bottom:5px;font-size:10.5px;letter-spacing:.4px;color:var(--navy)}
-.photoBox{border:1.5px dashed #ffd0c0;border-radius:13px;background:var(--tint);padding:9px;text-align:center;font-size:10.5px;font-weight:700;color:#d4573a}
-.photoBox img{max-width:100%;max-height:170px;display:none;margin-top:6px;border-radius:10px}
 .hist{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:9px 11px;font-size:11.5px;margin-top:10px;line-height:1.7;color:var(--mut)}
 .hist b{color:var(--navy)}
 .seg{display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;margin:10px 0}
@@ -162,6 +161,27 @@ header{padding:12px 22px}
 #createModal{align-items:center;justify-content:center;padding:0 16px}
 #createModal .sheet{max-width:440px;width:100%;height:auto;max-height:92%;border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(23,43,72,.35)}
 
+/* ===== mobile-fix (mockup v2-v6) ===== */
+@media(max-width:899px){
+header{flex-wrap:wrap}
+#hdrSummary{flex-basis:100%;order:9;max-width:none;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+.kv>b{flex-basis:32%;font-size:11.5px;padding-top:1px}
+.kv .val{word-break:break-word}
+.kv .val.mono{font-size:11.5px}
+.kv .sub{display:block;font-size:10.5px;color:var(--mut);font-weight:600;margin-top:2px}
+.kvImg{display:block;padding:10px 0;border-bottom:1px solid var(--bg)}
+.kvImg>b{display:block;color:var(--mut);font-weight:700;font-size:11px;margin-bottom:8px}
+.ph{position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#eef1f6,#e2e8f1);border:1px solid var(--line)}
+.ph img{width:100%;height:210px;object-fit:cover;display:block}
+.ph .fb{display:flex;flex-direction:column;align-items:center;gap:6px;padding:26px 12px;text-align:center;color:var(--mut);font-size:11.5px;font-weight:600}
+.ph .fb .big{font-size:28px}
+.ph .fb button{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:7px 12px;font-size:11.5px;font-weight:700;color:var(--navy)}
+.ph .badge{position:absolute;left:8px;bottom:8px;background:rgba(23,43,72,.75);color:#fff;font-size:10px;font-weight:700;border-radius:7px;padding:3px 8px}
+.camSlot{width:100%;padding:24px 12px;border:1.5px dashed #ffd0c0;border-radius:13px;background:var(--tint);display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#d4573a}
+.camSlot .big{font-size:30px}
+.billrow{display:flex;gap:8px}.billrow input{flex:1}.billrow button{flex:none;width:auto;white-space:nowrap}
+
 /* ===== print 4x6 ===== */
 #printArea{display:none}
 @page{size:4in 6in;margin:0}
@@ -187,7 +207,7 @@ header{padding:12px 22px}
 <main id="viewMain">
 <div class="scanbar">
 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></svg>
-<input id="scanMain" placeholder="Quét mã VTCode hoặc nhập tay…" inputmode="text">
+<input id="scanMain" placeholder="Quét mã hoặc nhập tay…" inputmode="text">
 <button id="camMain">📷 Quét</button>
 </div>
 <div id="reader" style="display:none"></div>
@@ -212,7 +232,7 @@ header{padding:12px 22px}
 <div class="field"><label>MÃ THANH LÝ (từ phiếu bàn giao) *</label>
 <input id="liqCode" class="mono" placeholder="SPXVN…">
 </div>
-<button id="btnLiqDone" class="primary" style="width:100%">✓ Hoàn thành lô</button>
+<button id="btnLiqDone" class="primary" style="width:100%">Confirm</button>
 </div>
 </main>
 
@@ -239,16 +259,20 @@ header{padding:12px 22px}
 </div>
 <div class="pcard" id="detailBody"></div>
 <div class="pcard"><h4>Resolve / Thanh Lý (riêng, không đè người tạo) <span class="cnt" id="histCnt">0</span></h4><div class="hist" id="detailHist"></div></div>
-<div class="pcard">
-<div class="field"><label>MÃ BILL XỬ LÝ (VTCODE)</label>
-<input id="resolveBill" class="mono" placeholder="Vui lòng nhập mã bill xử lý…">
-</div>
-<div class="btnrow">
-<button id="btnResolve" class="primary">Hoàn thành Resolve</button>
-</div>
+<div class="pcard" id="resolveCard">
+<div id="rsStep1">
+<div class="btnrow"><button id="btnGoResolve" class="primary">Resolve</button></div>
 <div class="btnrow">
 <button id="btnPrintDetail">🖨 In mã QR</button>
 <button id="btnReopen" style="display:none">↺ Mở lại (ADMIN)</button>
+</div>
+</div>
+<div id="rsStep2" style="display:none">
+<div class="field"><label>Mã bill</label>
+<div class="billrow"><input id="resolveBill" class="mono" placeholder="Nhập hoặc quét mã bill…"><button id="btnScanBill" type="button">📷 Quét</button></div>
+</div>
+<div class="btnrow"><button id="btnConfirmResolve" class="primary">Confirm</button></div>
+<button id="btnCancelResolve" class="lnk">Hủy</button>
 </div>
 <div class="msg" id="msgDetail"></div>
 </div></div></div>
@@ -267,17 +291,16 @@ header{padding:12px 22px}
 <div id="stepForm" style="display:none">
 <div id="formBox">
 <div class="field"><label>MÃ BOX (server cấp khi lưu)</label><input id="boxCode" class="mono" readonly placeholder="Box.(ngày-tháng-năm).(số tự sinh)"></div>
-<div class="field"><label>ẢNH NGOẠI QUAN *</label><div class="photoBox"><input type="file" id="boxOuter" accept="image/*" capture="environment"><img id="boxOuterPrev"></div></div>
-<div class="field"><label>ẢNH SẢN PHẨM *</label><div class="photoBox"><input type="file" id="boxProduct" accept="image/*" capture="environment"><img id="boxProductPrev"></div></div>
+<div class="field"><label>Ảnh *</label><div id="boxSlots"></div></div>
 <div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea id="boxDesc" rows="2" placeholder="VD: Thùng 12 áo thun hoàn, seal còn nguyên…"></textarea></div>
 <div class="field"><label>GHI CHÚ</label><input id="boxNote" placeholder="Nơi để, bù đơn hàng…"></div>
-<div class="row"><button id="btnBoxPrint">🖨 In Mã</button><button id="btnBoxDone" class="primary">✓ Hoàn Thành</button></div>
+<div class="row"><button id="btnBoxPrint">🖨 In Mã</button><button id="btnBoxDone" class="primary">Confirm</button></div>
 </div>
 <div id="formItem" style="display:none">
 <div class="field"><label>MÃ ITEM (server cấp khi lưu)</label><input id="itemCode" class="mono" readonly placeholder="Item.(ngày-tháng-năm).(số tự sinh)"></div>
-<div class="field"><label>ẢNH SẢN PHẨM *</label><div class="photoBox"><input type="file" id="itemProduct" accept="image/*" capture="environment"><img id="itemProductPrev"></div></div>
+<div class="field"><label>Ảnh *</label><div id="itemSlots"></div></div>
 <div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea id="itemDesc" rows="2"></textarea></div>
-<div class="row"><button id="btnItemPrint">🖨 In Mã</button><button id="btnItemDone" class="primary">✓ Hoàn Thành</button></div>
+<div class="row"><button id="btnItemPrint">🖨 In Mã</button><button id="btnItemDone" class="primary">Confirm</button></div>
 </div>
 <div class="msg" id="msgCreate"></div>
 </div>
@@ -302,7 +325,7 @@ function msg(id,t,ok){var e=document.getElementById(id);e.textContent=t||'';e.cl
 function todayPart(){try{return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date()).replace(/\//g,'-');}catch(e){var d=new Date();return('0'+d.getDate()).slice(-2)+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+d.getFullYear();}}
 function parseCreated(s){var m=String(s||'').match(/(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?/);if(!m)return null;return new Date(+m[3],+m[2]-1,+m[1],+(m[4]||0),+(m[5]||0));}
 function daysOf(c){var d=parseCreated(c);if(!d)return 0;return Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));}
-function thumb(it){return it.imgProduct||it.imgOuter||'';}
+function thumb(it){return it.imgProduct||it.imgOuter||(it.extras&&it.extras[0])||'';}
 function stClass(s){return s==='da_tim_bill'?'Resolve':(s==='thanh_ly'?'thanhly':'');}
 
 async function loadGrid(){
@@ -340,16 +363,28 @@ visibleItems().forEach(function(it){
 var d=document.createElement('div');d.className='card';
 var src=thumb(it);
 var hot=(+it.days>3&&it.status==='chua_xu_ly')?' hot':'';
-d.innerHTML=(src?'<img alt="" src="'+esc(src)+'">':'<div class="noimg">📦</div>')
+d.innerHTML=(src?'<img loading="lazy" alt="" src="'+esc(src)+'">':'<div class="noimg">📦<small>Không có ảnh</small></div>')
 +'<span class="ovst '+stClass(it.status)+'">'+esc(it.statusLabel||it.status)+'</span>'
 +'<div class="cap"><span class="code">'+esc(it.code)+'</span><span class="days'+hot+'">'+esc(it.days)+'N</span></div>';
 var im=d.querySelector('img');
-if(im){im.onerror=function(){var n=document.createElement('div');n.className='noimg';n.textContent='📦';n.onclick=function(){openDetail(it.code);};im.replaceWith(n);};im.onclick=function(){openDetail(it.code);};}
+if(im){im.onerror=function(){var n=document.createElement('div');n.className='noimg';n.innerHTML='📦<small>Không tải được ảnh</small>';n.onclick=function(){openDetail(it.code);};im.replaceWith(n);};im.onclick=function(){openDetail(it.code);};}
 else{var nz=d.querySelector('.noimg');if(nz)nz.onclick=function(){openDetail(it.code);};}
 d.querySelector('.cap').onclick=function(){msg('msgMain','Bấm vào ẢNH mới mở chi tiết — dòng mã/ngày chỉ để xem nhanh.');};
 g.appendChild(d);
 });
 }
+
+function phBox(label,url){
+if(!url)return '<div class="kvImg"><b>'+esc(label)+'</b><div class="ph"><div class="fb"><span class="big">\uD83D\uDCC6</span><span>Không có ảnh</span></div></div></div>';
+return '<div class="kvImg"><b>'+esc(label)+'</b><div class="ph" data-url="'+esc(url)+'"><a href="'+esc(url)+'" target="_blank" rel="noopener"><img data-ph loading="lazy" src="'+esc(url)+'"></a></div></div>';
+}
+function bindPhotoFallback(){
+document.getElementById('detailBody').querySelectorAll('img[data-ph]').forEach(function(im){
+im.onerror=function(){
+var ph=im.closest('.ph');
+ph.innerHTML='<div class="fb"><span class="big">\uD83D\uDDBC</span><span>Không tải được ảnh</span><button type="button">Thử lại</button></div>';
+ph.querySelector('button').onclick=function(){if(state.detail&&state.detail.item)openDetail(state.detail.item.code);};
+};});}
 
 async function openDetail(code){
 msg('msgDetail','Đang tải…',true);
@@ -369,17 +404,18 @@ var vis=visibleItems(),vi=-1;
 vis.forEach(function(x,j){if(x.code===it.code)vi=j;});
 document.getElementById('btnPrevDetail').disabled=vi<=0;
 document.getElementById('btnNextDetail').disabled=vi<0||vi>=vis.length-1;
-function thumbImg(url){return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener"><img class="thumb" loading="lazy" src="'+esc(url)+'"></a>':'—';}
 var h='<div class="kv"><b>Mã sản phẩm</b><span class="val mono">'+esc(it.code||'')+'</span></div>'+
-'<div class="kv"><b>Ảnh Ngoại Quan</b><span class="val">'+thumbImg(it.imgOuter)+'</span></div>'+
-'<div class="kv"><b>Ảnh Sản Phẩm</b><span class="val">'+thumbImg(it.imgProduct)+'</span></div>'+
-'<div class="kv"><b>Loại</b><span class="val">'+esc(it.kind||'')+'</span></div>'+
-'<div class="kv"><b>Ngày tạo</b><span class="val">'+esc(it.createdAt||'')+' · '+esc(daysOf(it.createdAt)+' ngày lưu kho')+'</span></div>'+
+phBox('ẢNH NGOẠI QUAN',it.imgOuter)+
+phBox('ẢNH SẢN PHẨM',it.imgProduct);
+(it.extras||[]).forEach(function(u,i){h+=phBox('ẢNH BỔ SUNG '+(i+1),u);});
+h+='<div class="kv"><b>Loại</b><span class="val">'+esc(it.kind||'')+'</span></div>'+
+'<div class="kv"><b>Ngày tạo</b><span class="val">'+esc(it.createdAt||'')+'<span class="sub">'+esc(daysOf(it.createdAt)+' ngày lưu kho')+'</span></span></div>'+
 '<div class="kv"><b>Người tạo</b><span class="val">'+esc(it.createdBy||'')+'</span></div>'+
 '<div class="kv"><b>Mô tả</b><span class="val">'+esc(it.description||'')+'</span></div>'+
 '<div class="kv"><b>Ghi chú</b><span class="val">'+esc(it.note||'—')+'</span></div>'+
 '<div class="kv"><b>Trạng thái</b><span class="val"><span class="st '+stClass(it.status)+'">'+esc(it.statusLabel||it.status||'')+'</span></span></div>';
 document.getElementById('detailBody').innerHTML=h;
+bindPhotoFallback();
 var hs=state.detail.history||[];
 var hh='';
 if(!hs.length)hh='<div class="rel-empty">Chưa có.</div>';
@@ -387,10 +423,11 @@ hs.forEach(function(x){hh+='<div>'+esc(x.at)+' · '+esc(x.from)+' → '+esc(x.to
 document.getElementById('detailHist').innerHTML=hh;
 document.getElementById('histCnt').textContent=hs.length;
 document.getElementById('resolveBill').value='';
+document.getElementById('rsStep2').style.display='none';
 try{if(!state.me)await loadMe();}catch(e){}
 var role=state.me&&state.me.role;
 var done=it.status&&it.status!=='chua_xu_ly';
-document.getElementById('btnResolve').style.display=done?'none':'';
+document.getElementById('btnGoResolve').style.display=done?'none':'';
 document.getElementById('btnReopen').style.display=(done&&role==='ADMIN')?'':'none';
 msg('msgDetail','',true);
 }
@@ -422,25 +459,48 @@ try{if(typeof QRCode!=='undefined'){new QRCode(q,{text:code,width:320,height:320
 setTimeout(function(){window.print();},150);
 }
 
-function bindFile(inputId,prevId,store){
-var inp=document.getElementById(inputId);
-inp.onchange=function(){
+var boxPhotos=[],itemPhotos=[];
+var SLOT_LABELS={Box:['Ảnh ngoại quan','Ảnh sản phẩm','Ảnh bổ sung'],Item:['Ảnh sản phẩm','Ảnh bổ sung 1','Ảnh bổ sung 2']};
+function slotArr(kind){return kind==='Box'?boxPhotos:itemPhotos;}
+function renderSlots(kind){
+var arr=slotArr(kind),labels=SLOT_LABELS[kind];
+var wrap=document.getElementById(kind==='Box'?'boxSlots':'itemSlots');
+wrap.innerHTML='';
+var filled=arr.filter(Boolean).length;
+arr.forEach(function(du,i){
+if(!du)return;
+var box=document.createElement('div');box.style.marginBottom='10px';
+box.innerHTML='<div class="ph"><img src="'+du+'"><span class="badge">'+esc(labels[i])+' · '+(i+1)+' / 3</span></div>';
+var del=document.createElement('button');del.style.cssText='width:100%;margin-top:6px';del.textContent='Xóa '+labels[i];
+del.onclick=(function(idx){return function(){arr.splice(idx,1);renderSlots(kind);};})(i);
+box.appendChild(del);wrap.appendChild(box);
+});
+if(filled<3){
+var idx=filled;
+var b=document.createElement('button');b.type='button';b.className='camSlot';
+b.innerHTML='<span class="big">\uD83D\uDCF7</span><span>'+esc(labels[idx])+'</span><span>'+(idx+1)+' / 3</span>';
+var inp=document.createElement('input');
+inp.type='file';inp.accept='image/*';inp.setAttribute('capture','environment');inp.style.display='none';
+inp.onchange=function(){slotFile(inp,arr,idx,kind);};
+b.onclick=function(){inp.click();};
+wrap.appendChild(b);wrap.appendChild(inp);
+}else{
+var m=document.createElement('div');m.className='hist';m.textContent='Đã đủ 3 ảnh.';wrap.appendChild(m);
+}}
+function slotFile(inp,arr,idx,kind){
 var f=inp.files&&inp.files[0];if(!f)return;
 var img=new Image();
 var url=URL.createObjectURL(f);
 img.onload=function(){
 var max=1280,sc=Math.min(1,max/Math.max(img.width,img.height));
-var c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
-c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-var du=c.toDataURL('image/jpeg',0.82);
-store.dataUrl=du;
-var p=document.getElementById(prevId);p.src=du;p.style.display='block';
+var cv=document.createElement('canvas');cv.width=Math.round(img.width*sc);cv.height=Math.round(img.height*sc);
+cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+arr[idx]=cv.toDataURL('image/jpeg',0.82);
 URL.revokeObjectURL(url);
+renderSlots(kind);
 };
 img.src=url;
-};
 }
-var boxOuter={dataUrl:''},boxProduct={dataUrl:''},itemProduct={dataUrl:''};
 
 async function refreshPreview(){
 var dp=todayPart();
@@ -457,18 +517,19 @@ document.getElementById('itemCode').value='Item.'+dp+'.(tự sinh)';
 
 async function submitCreate(){
 var isBox=state.kind==='Box';
-var payload;
-if(isBox){payload={description:document.getElementById('boxDesc').value.trim(),note:document.getElementById('boxNote').value.trim(),outerDataUrl:boxOuter.dataUrl,productDataUrl:boxProduct.dataUrl};}
-else{payload={description:document.getElementById('itemDesc').value.trim(),note:'',productDataUrl:itemProduct.dataUrl};}
-if(!payload.description){msg('msgCreate','Vui lòng nhập mô tả sản phẩm.');return;}
-if(isBox&&!payload.outerDataUrl){msg('msgCreate','Box cần Ảnh Ngoại Quan.');return;}
-if(!payload.productDataUrl){msg('msgCreate',isBox?'Box cần Ảnh Sản Phẩm.':'Item cần Ảnh Sản Phẩm.');return;}
+var photos=(isBox?boxPhotos:itemPhotos).filter(Boolean);
+var desc=(isBox?document.getElementById('boxDesc'):document.getElementById('itemDesc')).value.trim();
+var note=isBox?document.getElementById('boxNote').value.trim():'';
+if(!desc){msg('msgCreate','Vui lòng nhập mô tả sản phẩm.');return;}
+if(!photos.length){msg('msgCreate','Cần ít nhất 1 ảnh mới Confirm được.');return;}
+if(photos.length>3){msg('msgCreate','Tối đa 3 ảnh.');return;}
 msg('msgCreate','Đang tạo…',true);
 try{
-var r=await gs(isBox?'createBox':'createItem',[payload]);
+var r=await gs(isBox?'createBox':'createItem',[{description:desc,note:note,photos:photos}]);
 if(!r.ok)throw new Error(r.error);
 state.lastCreated=r.data.code;
 msg('msgCreate','Đã tạo '+r.data.code,true);
+boxPhotos=[];itemPhotos=[];renderSlots('Box');renderSlots('Item');
 await loadGrid();await refreshPreview();
 doPrint(r.data.code);
 }catch(e){msg('msgCreate',e.message||'Lỗi tạo mã');}
@@ -507,7 +568,7 @@ msg('msgLiq','Thành công: '+code,true);
 }
 async function liqDone(){
 var liqCode=document.getElementById('liqCode').value.trim();
-if(!liqCode){msg('msgLiq','Bắt buộc phải có mã thanh lý mới có thể Hoàn Thành.');return;}
+if(!liqCode){msg('msgLiq','Vui lòng nhập mã thanh lý.');return;}
 msg('msgLiq','Đang xử lý…',true);
 try{
 var r=await gs('liquidateBatch',[state.liq,liqCode]);
@@ -573,7 +634,7 @@ if(typeof Html5Qrcode==='undefined'){msg('msgMain','Không tải được camera
 qr=new Html5Qrcode('reader');
 qr.start({facingMode:'environment'},{fps:10,qrbox:250},
 function(txt){document.getElementById(inputId).value=txt;
-if(inputId==='scanLiq')liqAdd(txt);else openDetail(txt);
+if(inputId==='scanLiq')liqAdd(txt);else if(inputId==='resolveBill'){document.getElementById('resolveBill').focus();}else openDetail(txt);
 try{qr.stop();}catch(e){}rd.style.display='none';},
 function(){}).catch(function(){msg('msgMain','Không mở được camera (cần HTTPS). Nhập tay hoặc dùng súng.');});
 }
@@ -589,9 +650,7 @@ applyTheme(savedTheme==='dark'?'dark':'light');
 
 window.addEventListener('DOMContentLoaded',function(){
 loadGrid();loadMe();
-bindFile('boxOuter','boxOuterPrev',boxOuter);
-bindFile('boxProduct','boxProductPrev',boxProduct);
-bindFile('itemProduct','itemProductPrev',itemProduct);
+renderSlots('Box');renderSlots('Item');
 document.getElementById('btnTheme').onclick=function(){
 applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 };
@@ -608,8 +667,8 @@ document.getElementById('btnBackCreate').style.display=n===1?'none':'';
 }
 document.getElementById('optLiqGo').onclick=function(){document.getElementById('createModal').classList.remove('open');showLiq(true);};
 document.getElementById('optNonAwb').onclick=function(){showCreateStep(2);};
-document.getElementById('optBox').onclick=function(){state.kind='Box';document.getElementById('formBox').style.display='block';document.getElementById('formItem').style.display='none';showCreateStep(3);};
-document.getElementById('optItem').onclick=function(){state.kind='Item';document.getElementById('formBox').style.display='none';document.getElementById('formItem').style.display='block';showCreateStep(3);};
+document.getElementById('optBox').onclick=function(){state.kind='Box';document.getElementById('formBox').style.display='block';document.getElementById('formItem').style.display='none';showCreateStep(3);renderSlots('Box');};
+document.getElementById('optItem').onclick=function(){state.kind='Item';document.getElementById('formBox').style.display='none';document.getElementById('formItem').style.display='block';showCreateStep(3);renderSlots('Item');};
 document.getElementById('btnBackCreate').onclick=function(){showCreateStep(state.createStep===3?2:1);};
 document.getElementById('btnCloseCreate').onclick=function(){document.getElementById('createModal').classList.remove('open');};
 document.getElementById('btnBoxDone').onclick=submitCreate;
@@ -621,7 +680,11 @@ document.getElementById('btnCloseDetail').onclick=function(){document.getElement
 document.getElementById('btnPrevDetail').onclick=function(){detailNav(-1);};
 document.getElementById('btnNextDetail').onclick=function(){detailNav(1);};
 document.getElementById('scanMain').addEventListener('input',function(){state.filter=this.value.trim();renderGrid();});
-document.getElementById('btnResolve').onclick=doResolve;
+document.getElementById('btnGoResolve').onclick=function(){document.getElementById('rsStep2').style.display='block';document.getElementById('btnGoResolve').style.display='none';document.getElementById('resolveBill').focus();};
+document.getElementById('btnCancelResolve').onclick=function(){document.getElementById('rsStep2').style.display='none';document.getElementById('btnGoResolve').style.display='';};
+document.getElementById('btnConfirmResolve').onclick=doResolve;
+document.getElementById('btnScanBill').onclick=function(){toggleCam('resolveBill');};
+document.getElementById('resolveBill').addEventListener('keydown',function(e){if(e.key==='Enter')doResolve();});
 document.getElementById('btnPrintDetail').onclick=function(){if(state.detail)doPrint(state.detail.item.code);};
 document.getElementById('navMain').onclick=function(){showLiq(false);};
 document.getElementById('navLiq').onclick=function(){showLiq(true);};

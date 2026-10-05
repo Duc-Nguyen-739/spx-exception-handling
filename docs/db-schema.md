@@ -42,7 +42,7 @@ Spreadsheet ID để ở Script Properties `SPREADSHEET_ID` (không hardcode —
 
 ### `Photos`
 
-| `code` | `slot` (`ngoai_quan`/`san_pham`) | `drive_file_id` | `uploaded_at` |
+| `code` | `slot` (`ngoai_quan`/`san_pham`/`bo_sung`/`bo_sung_1`/`bo_sung_2`) | `drive_file_id` | `uploaded_at` |
 
 ### `ActivityLog` (append-only, ai đổi trạng thái)
 
@@ -69,7 +69,7 @@ Matbill/
 ```
 
 - Import ảnh: upload theo thư mục tháng của `created_at`, đặt tên `<CODE>.<slot>.jpg`.
-- WebApp đọc ảnh qua `DriveApp.getFileById()` → thumbnail (`=s800`) cho gallery, full cho detail.
+- WebApp đọc ảnh qua thumbnail `sz=w400` cho gallery + detail (file share công khai `ANYONE_WITH_LINK` khi upload nên mở được không cần đăng nhập).
 - Scriplet ảnh cũ `Data_Images_Matbill/…` chỉ là tên file nội bộ — import xong bỏ, dùng file ID.
 
 ## 5. Quy ước GAS (kế thừa spx-diem-danh)

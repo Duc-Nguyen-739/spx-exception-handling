@@ -1,5 +1,7 @@
 """Pure logic mirror cho WebApp (.gs) — test offline, không gọi Sheet/Drive.
 
+KHỚP create: Code.gs CREATE_SLOTS + check tối thiểu 1 / tối đa 3 ảnh.
+
 KHỚP server: Code.gs (GEN_CODE_FMT, STATUS_LABEL, canResolve/canLiquidate)
 KHỚP import: scripts/import-csv.js (STATUS_RULES, canonicalKind).
 """
@@ -119,6 +121,15 @@ def can_liquidate(status):
 
 def valid_liq_code(s):
     return bool(re.search(r"SPXVN[0-9A-Z]+", (s or "").upper()))
+
+
+def check_photos(count):
+    # Form +Create: tối đa 3 ô hiện dần, tối thiểu 1 mới Confirm được.
+    if not count:
+        return (False, "Cần ít nhất 1 ảnh mới Confirm được.")
+    if count > 3:
+        return (False, "Tối đa 3 ảnh.")
+    return (True, "")
 
 
 def can_admin_edit(status, role):
