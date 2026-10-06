@@ -29,8 +29,9 @@ html[data-theme=dark] header .mark>span,html[data-theme=dark] header #hdrSummary
 .mark{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:var(--navy)}
 .mark svg.spxlogo{height:24px;width:auto;display:block;flex:none}
 #hdrSummary{margin-left:auto;font-size:10.5px;color:var(--mut);font-weight:600;text-align:right;line-height:1.4;max-width:180px}
-#btnTheme{border-radius:9px;padding:8px 11px;font-size:11px}
-#whoChip{display:none;align-items:center;gap:6px;font-size:10.5px;font-weight:700;color:var(--navy);background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:4px 10px 4px 4px}
+#btnTheme{border-radius:9px;padding:8px 11px;font-size:11px;margin-left:auto}
+#whoChip{display:none;align-items:center;gap:6px;flex:none;font-size:10.5px;font-weight:700;color:var(--navy);background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:4px 10px 4px 4px}
+#whoChip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
 #whoChip i{width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:800}
 html[data-theme=dark] #whoChip{background:rgba(255,255,255,.12);border-color:transparent;color:#fff}
 
@@ -50,7 +51,9 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 /* ===== scan bar ===== */
 .scanbar{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 13px;margin-bottom:10px}
 .scanbar svg{color:var(--o);flex:none}
-.scanbar input{border:none;background:transparent;padding:9px 0;font-size:14px;font-weight:600}
+.scanbar input{border:none;background:transparent;padding:9px 0;font-size:14px;font-weight:600;flex:0 1 440px;min-width:0;margin:0 auto}
+.scanbar .create-big{padding:12px 22px;font-size:14px;white-space:nowrap}
+#btnCreateTop,.createrow{display:none!important}
 .scanbar input:focus{outline:none}
 .scanbar input::placeholder{color:var(--mut);font-weight:500}
 #reader{width:100%;max-width:420px;margin:8px auto}
@@ -211,7 +214,8 @@ header{padding:12px 22px}
 @media(max-width:899px){
 header{flex-wrap:wrap}
 #btnTheme{margin-left:auto}
-#hdrSummary{flex-basis:100%;order:9;max-width:none;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hdrSummary{display:none}
+#whoChip{display:flex}
 }
 .kv>b{flex-basis:32%;font-size:11.5px;padding-top:1px}
 .kv .val{word-break:break-word}
@@ -237,6 +241,7 @@ header{flex-wrap:wrap}
 .tl-by.admin{color:var(--navy);font-weight:800}
 .tl-bill{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;font-weight:700;color:var(--navy);margin-top:5px;word-break:break-all}
 @media(max-width:899px){.printOnly{display:none!important}}
+@media(max-width:480px){.head-brand span:last-child{display:none}}
 .tl.pending{opacity:.72}
 .tl.pending .tl-time::after{content:' · đang đồng bộ';font-weight:600;color:var(--amber,#f79009)}
 .createrow{display:flex;justify-content:flex-end;margin:2px 0 10px}
@@ -270,10 +275,10 @@ header{flex-wrap:wrap}
     <path d="M3.33578 25.8334H8.7915L5.53379 30H0L3.33578 25.8334Z" fill="#EE4D2D"/>
     <path d="M6.91737 30L10.1751 25.8334H18.9126L15.6549 30H6.91737Z" fill="#EE4D2D"/>
     </svg><span>Exception Handling</span></span>
-<div id="whoChip" title="Tài khoản đăng nhập"><i id="whoIni">?</i><span id="whoTxt"></span></div>
 <div id="hdrSummary"></div>
 <button id="btnTheme" type="button">☾ Tối</button>
-<button id="btnCreateTop" class="primary">＋ Create</button>
+<div id="whoChip" title="Tài khoản đăng nhập"><i id="whoIni">?</i><span id="whoTxt"></span></div>
+<button id="btnCreateTop" class="primary" style="display:none">＋ Create</button>
 </header>
 
 <nav class="bnav">
@@ -311,6 +316,7 @@ header{flex-wrap:wrap}
 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
 <input id="scanMain" placeholder="Nhập mã để tìm kiếm…" inputmode="text">
 <button id="camMain">📷 Quét</button>
+<button id="btnCreateMain" class="primary create-big">＋ Create</button>
 </div>
 <div id="reader" style="display:none"></div>
 <div class="createrow"><button id="btnCreate" class="primary">＋ Create</button></div>
@@ -989,7 +995,7 @@ chip.style.display='';
 document.getElementById('navAccess').style.display=(e.role==='ADMIN')?'':'none';
 try{renderRail();}catch(err){}
 document.getElementById('whoIni').textContent=String(e.email).charAt(0).toUpperCase();
-document.getElementById('whoTxt').textContent=String(e.email).split('@')[0]+' · '+(e.role||'STAFF');
+document.getElementById('whoTxt').textContent=String(e.email).split('@')[0];
 try{renderSummary();}catch(err){}
 }
 async function loadUsers(){
@@ -1060,6 +1066,7 @@ applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':
 };
 document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';};
 document.getElementById('btnCreateTop').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';};
+document.getElementById('btnCreateMain').onclick=document.getElementById('btnCreateTop').onclick;
 function showCreateStep(n){
 state.createStep=n;
 document.getElementById('stepTask').style.display=n===1?'block':'none';
