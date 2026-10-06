@@ -40,7 +40,7 @@ body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f4f7;color:#2
 .railbox button:hover{color:#fff;background:rgba(255,95,46,.1)}
 .railbox button.on{color:#fff;border-left-color:var(--spx);background:rgba(255,95,46,.12)}
 .railbox .expand{margin-top:auto;width:40px;height:40px;font-size:18px;border:none;background:transparent;color:#8b98ab}
-.bottom-row{display:flex;gap:8px;margin-top:auto;align-items:center}
+.bottom-row{display:flex;gap:8px;margin-top:auto;align-items:center;justify-content:flex-end}
 .bottom-row .dash-clear{margin-top:0;flex:1}
 .edge-toggle{width:40px;height:40px;margin:0;border:none;background:transparent;color:#8b98ab;font-size:18px;cursor:pointer;display:grid;place-items:center;flex:none}
 .dash-collapse{display:none}
@@ -157,7 +157,7 @@ table.users th{font-size:10px;color:#97a0ad}
 <button type="button" class="dash-fhead" onclick="toggleGroup(this)"><span>📋 Loại</span><span>▾</span></button>
 <div class="dash-body" id="fKind"></div>
 </div>
-<div class="bottom-row"><button type="button" class="dash-clear" onclick="clearFilters()">✕ Xóa tất cả lọc</button><button class="edge-toggle" id="edgeToggle" onclick="toggleSide()" title="Thu/Mở">☰</button></div>
+<div class="bottom-row"><button class="edge-toggle" id="edgeToggle" onclick="toggleSide()" title="Thu/Mở">☰</button></div>
 </div>
 <div class="railbox" id="railbox" aria-label="Ray icon"></div>
 </aside>
