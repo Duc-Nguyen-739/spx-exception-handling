@@ -246,6 +246,11 @@ async function main() {
     const draft = await evalIn(ws, `JSON.stringify({open: document.getElementById('rsStep2').style.display, bill: document.getElementById('resolveBill').value})`);
     const DF = JSON.parse(draft.value);
     check('Fetch nen khong day form Resolve', DF.open === 'block' && DF.bill === 'SPXVN9', draft.value);
+    const g1 = await evalIn(ws, `(window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getItem';}).length`);
+    await evalIn(ws, `openDetail('Item.06-10-2026.2')`);
+    await sleep(400);
+    const g2 = await evalIn(ws, `(window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getItem';}).length`);
+    check('Don tuoi mo lai zero call', g2.value === g1.value, g1.value + '->' + g2.value);
     await evalIn(ws, `document.getElementById('scanMain').value='SPXVN1'; document.getElementById('scanMain').dispatchEvent(new Event('input'))`);
     const scShow = await evalIn(ws, `document.getElementById('scanClear').classList.contains('show')`);
     check('Nut xoa hien khi co chu', scShow.value === true, String(scShow.value));

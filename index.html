@@ -489,7 +489,8 @@ var DEMO=[
 {code:'Box.01-10-2026.21',kind:'Box',createdAt:'01/10/2026 09:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo box',note:'',status:'chua_xu_ly',statusLabel:'Lưu kho',bill:'',days:5},
 {code:'Item.01-10-2026.3',kind:'Item',createdAt:'01/10/2026 10:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo item',note:'',status:'da_tim_bill',statusLabel:'Resolve',bill:'SPXVN1',days:5}
 ];
-var state={items:[],itemMap:{},detailCache:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{}};
+var DETAIL_TTL_MS=5*60*1000;
+var state={items:[],itemMap:{},detailCache:{},detailAt:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{}};
 function hasGs(){return typeof google!=='undefined'&&google.script&&google.script.run;}
 function gs(fn,args){return new Promise(function(res,rej){
 if(!hasGs()){rej(new Error('LOCAL'));return;}
@@ -561,7 +562,7 @@ function findCached(code){return state.itemMap[code]||null;}
 async function refreshDetail(code){
 try{
 var r=await gs('getItem',[code]);
-if(r&&r.ok){state.detailCache[code]=r.data;upsertItem(r.data.item);if(state.detail&&state.detail.item&&state.detail.item.code===code){state.detail=r.data;paintDetail(code,'');}return true;}
+if(r&&r.ok){state.detailCache[code]=r.data;state.detailAt[code]=Date.now();upsertItem(r.data.item);if(state.detail&&state.detail.item&&state.detail.item.code===code){state.detail=r.data;paintDetail(code,'');}return true;}
 }catch(e){}
 return false;
 }
@@ -720,8 +721,9 @@ var cached=state.detailCache[code];
 if(cached){
 state.detail=cached;
 paintDetail(code,'');
+if(Date.now()-((state.detailAt||{})[code]||0)<DETAIL_TTL_MS)return;
 gs('getItem',[code]).then(function(r){
-if(r&&r.ok){state.detailCache[code]=r.data;upsertItem(r.data.item);if(state.detail&&state.detail.item&&state.detail.item.code===code){state.detail=r.data;paintDetail(code,'');}}
+if(r&&r.ok){state.detailCache[code]=r.data;state.detailAt[code]=Date.now();upsertItem(r.data.item);if(state.detail&&state.detail.item&&state.detail.item.code===code){state.detail=r.data;paintDetail(code,'');}}
 }).catch(function(){});
 return;
 }
@@ -735,6 +737,7 @@ var r=await gs('getItem',[code]);
 if(!r.ok)throw new Error(r.error);
 state.detail=r.data;
 state.detailCache[code]=r.data;
+state.detailAt[code]=Date.now();
 upsertItem(r.data.item);
 paintDetail(code,'');
 }catch(e){
@@ -749,6 +752,7 @@ var r=await gs('getItem',[code]);
 if(!r.ok)throw new Error(r.error);
 state.detail=r.data;
 state.detailCache[code]=r.data;
+state.detailAt[code]=Date.now();
 upsertItem(r.data.item);
 }catch(e){
 var f=findCached(code)||state.items.filter(function(x){return x.code===code;})[0]||{code:code};
