@@ -116,7 +116,7 @@ html[data-theme=dark] .cnt small{color:#a4573d}
 .modal.open{display:flex}
 .sheet{background:var(--card);border-radius:20px 20px 0 0;max-width:640px;width:100%;padding:16px 16px 20px;max-height:92%;overflow:auto}
 .sheet h2{margin:0 0 10px;font-size:15.5px;color:var(--navy)}
-.dhead{display:flex;align-items:center;gap:8px;padding-bottom:10px;margin:-2px 0 6px;border-bottom:1px solid var(--line)}
+.dhead{display:flex;align-items:center;gap:8px;margin:0 -24px 6px;padding:12px 24px 10px;border-bottom:1px solid var(--line);position:sticky;top:-22px;z-index:5;background:var(--card)}
 .dhead .dt{font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:800;color:var(--navy);word-break:break-all}
 .iconBtn{border:none!important;background:transparent!important;color:var(--mut);font-size:17px;line-height:1;padding:5px 10px!important;font-weight:800;border-radius:8px}
 .iconBtn:hover{background:var(--bg);color:var(--navy)}
@@ -266,6 +266,10 @@ header{flex-wrap:wrap}
 #lbImg{max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
 #lbCap{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#fff;font-size:12px;font-weight:600}
 .ph img[data-ph]{cursor:zoom-in}
+.phstrip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.thumb{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:linear-gradient(135deg,#eef1f6,#e2e8f1)}
+.thumb img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+.thumb .cap{position:absolute;left:0;right:0;bottom:0;background:rgba(23,43,72,.72);color:#fff;font-size:9px;font-weight:700;padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* ===== print 4x6 ===== */
 #printArea{display:none}
 @page{size:4in 6in;margin:0}
@@ -694,9 +698,9 @@ im.addEventListener('pointercancel',function(){lbDrag=null;});
 }
 function bindPhotoFallback(){
 document.getElementById('detailBody').querySelectorAll('img[data-ph]').forEach(function(im){
-im.onclick=function(){openLightbox(im.src||im.getAttribute('src'));};
+im.onclick=function(){var t=im.parentNode,cp=t?t.querySelector('.cap'):null;openLightbox(im.src||im.getAttribute('src'),cp?cp.textContent:'');};
 im.onerror=function(){
-var ph=im.closest('.ph'),url=im.src;
+var ph=im.closest('.ph')||im.closest('.thumb'),url=im.src;
 photoFallback(im,url,function(){
 ph.innerHTML='<div class="fb"><span class="big">\uD83D\uDDBC</span><span>Không tải được ảnh</span><button type="button">Thử lại</button></div>';
 ph.querySelector('button').onclick=function(){if(state.detail&&state.detail.item)openDetail(state.detail.item.code);};
@@ -766,11 +770,23 @@ var done=it.status&&it.status!=='chua_xu_ly';
 document.getElementById('btnGoResolve').style.display=done?'none':'';
 if(loadErr)msg('msgDetail',loadErr);else msg('msgDetail','',true);
 }
+function detailPhotos_(it){
+var arr=[];
+if(it.kind==='Box'||it.imgOuter)arr.push(['Ngoại quan',it.imgOuter]);
+arr.push(['Sản phẩm',it.imgProduct]);
+(it.extras||[]).forEach(function(u,i){arr.push(['Bổ sung '+(i+1),u]);});
+return arr.filter(function(p){return !!p[1];});
+}
+function phStrip(photos){
+if(!photos.length)return '<div class="kvImg"><b>ẢNH</b><div class="ph"><div class="fb"><span class="big">\uD83D\uDCC6</span><span>Không có ảnh</span></div></div></div>';
+var h='<div class="kvImg"><b>ẢNH ('+photos.length+')</b><div class="phstrip">';
+photos.forEach(function(p){
+h+='<div class="thumb" data-url="'+esc(p[1])+'"><img data-ph loading="lazy" src="'+esc(p[1])+'"><span class="cap">'+esc(p[0])+'</span></div>';});
+return h+'</div></div>';
+}
 function detailBodyHTML(it){
 var h='<div class="kv"><b>Mã sản phẩm</b><span class="val mono">'+esc(it.code||'')+'</span></div>'+
-((it.kind==='Box'||it.imgOuter)?phBox('ẢNH NGOẠI QUAN',it.imgOuter):'')+
-phBox('ẢNH SẢN PHẨM',it.imgProduct);
-(it.extras||[]).forEach(function(u,i){h+=phBox('ẢNH BỔ SUNG '+(i+1),u);});
+phStrip(detailPhotos_(it));
 h+='<div class="kv"><b>Loại</b><span class="val">'+esc(it.kind||'')+'</span></div>'+
 '<div class="kv"><b>Ngày tạo</b><span class="val">'+esc(it.createdAt||'')+'<span class="sub">'+esc(daysOf(it.createdAt)+' ngày lưu kho')+'</span></span></div>'+
 '<div class="kv"><b>Người tạo</b><span class="val">'+esc(it.createdBy||'')+'</span></div>'+

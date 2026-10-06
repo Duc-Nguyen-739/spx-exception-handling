@@ -239,6 +239,8 @@ async function main() {
     const lbClosed = await evalIn(ws, `!document.getElementById('lightbox').classList.contains('open')`);
     check('Lightbox dong bang nut X', lbClosed.value === true, String(lbClosed.value));
 
+    const dh = await evalIn(ws, `getComputedStyle(document.querySelector('.dhead')).position`);
+    check('Detail header dinh khi cuon', dh.value === 'sticky', String(dh.value));
     const fs = await evalIn(ws, `parseFloat(getComputedStyle(document.getElementById('resolveBill')).fontSize)`);
     check('O bill du 16px (iOS khong tu zoom)', fs.value >= 16, String(fs.value));
 

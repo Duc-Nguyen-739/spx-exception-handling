@@ -12,7 +12,8 @@ test('instant-detail: Item khong hien ngoai quan, Box hien, Item legacy co anh t
   assert.strictEqual(shouldShowOuter('Box', ''), true);
   assert.strictEqual(shouldShowOuter('Item', 'https://x'), true);
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes("(it.kind==='Box'||it.imgOuter)?phBox('ẢNH NGOẠI QUAN'"));
+  assert.ok(html.includes("if(it.kind==='Box'||it.imgOuter)arr.push(['Ngoại quan'"));
+  assert.ok(html.includes('function detailPhotos_(it){'));
 });
 
 test('instant-detail: miss detailCache nhung list co san -> ve ngay roi moi fetch', () => {
