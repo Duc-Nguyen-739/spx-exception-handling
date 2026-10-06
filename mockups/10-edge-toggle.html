@@ -39,10 +39,11 @@ body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f4f7;color:#2
 .railbox button{width:56px;height:52px;border:none;background:transparent;color:#8b98ab;font-size:24px;cursor:pointer;border-radius:10px;border-left:3px solid transparent}
 .railbox button:hover{color:#fff;background:rgba(255,95,46,.1)}
 .railbox button.on{color:#fff;border-left-color:var(--spx);background:rgba(255,95,46,.12)}
-.railbox .expand{margin-top:auto;color:var(--spx-peach)}
-.edge-toggle{width:32px;height:32px;margin:10px 2px 0 auto;border-radius:50%;border:1px solid rgba(255,95,46,.5);background:#1a2230;color:var(--spx-peach);font-size:14px;cursor:pointer;display:grid;place-items:center;flex:none}
+.railbox .expand{margin-top:auto;width:40px;height:40px;font-size:16px;border-radius:50%;border:1px solid rgba(255,95,46,.5);background:#1a2230;color:var(--spx-peach)}
+.bottom-row{display:flex;gap:8px;margin-top:auto;align-items:center}
+.bottom-row .dash-clear{margin-top:0;flex:1}
+.edge-toggle{width:40px;height:40px;margin:0;border-radius:50%;border:1px solid rgba(255,95,46,.5);background:#1a2230;color:var(--spx-peach);font-size:14px;cursor:pointer;display:grid;place-items:center;flex:none}
 .dash-collapse{display:none}
-.railbox .expand{display:none}
 @media(min-width:901px){.dash-side{overflow:visible}}
 @media(max-width:900px){.edge-toggle{display:none}}
 @media(min-width:1400px){.dash-side{flex-basis:300px;width:300px;max-width:300px}.app.rail .dash-side{flex-basis:64px;width:64px;max-width:64px;min-width:64px}}
@@ -156,10 +157,9 @@ table.users th{font-size:10px;color:#97a0ad}
 <button type="button" class="dash-fhead" onclick="toggleGroup(this)"><span>📋 Loại</span><span>▾</span></button>
 <div class="dash-body" id="fKind"></div>
 </div>
-<button type="button" class="dash-clear" onclick="clearFilters()">✕ Xóa tất cả lọc</button>
+<div class="bottom-row"><button type="button" class="dash-clear" onclick="clearFilters()">✕ Xóa tất cả lọc</button><button class="edge-toggle" id="edgeToggle" onclick="toggleSide()" title="Thu/Mở">«</button></div>
 </div>
 <div class="railbox" id="railbox" aria-label="Ray icon"></div>
-<button class="edge-toggle" id="edgeToggle" onclick="toggleSide()" title="Thu/Mở">«</button>
 </aside>
 <div class="maincol">
 <div class="topbar">
