@@ -259,6 +259,24 @@ async function main() {
     const scGone = await evalIn(ws, `JSON.stringify({v: document.getElementById('scanMain').value, show: document.getElementById('scanClear').classList.contains('show')})`);
     const SG = JSON.parse(scGone.value);
     check('Bam nut xoa -> sach + an nut', SG.v === '' && SG.show === false, scGone.value);
+    await evalIn(ws, `document.getElementById('btnPrintMain').click()`);
+    const pkOpen = await waitUntil(ws, "document.getElementById('printKindModal').classList.contains('open')", 3000);
+    check('Nut In Ma mo bang chon Box/Item', !!pkOpen, String(pkOpen));
+    await evalIn(ws, `document.getElementById('optPrintBox').click()`);
+    const pvOk = await waitUntil(ws, "document.getElementById('viewPrint').style.display === 'block'"
+      + " && document.getElementById('printTitleKind').textContent === 'Box'", 3000);
+    check('Chon Box vao tab In Ma', !!pvOk, String(pvOk));
+    await evalIn(ws, `document.getElementById('btnBulkPrint').click()`);
+    const bkOk = await waitUntil(ws, "document.querySelectorAll('#bulkList li').length === 10", 8000);
+    const bk = await evalIn(ws, `JSON.stringify({
+      n: document.querySelectorAll('#bulkList li').length,
+      first: (document.querySelector('#bulkList li span') || {textContent: ''}).textContent,
+      calls: (window.__MOCK_CALLS__ || []).filter(function(c){return c[0]==='previewBulkCodes';}).length
+    })`);
+    check('Bulk sinh 10 ma lien tuc (mock)', !!(bkOk && bk.value && JSON.parse(bk.value).calls >= 1), bk.value);
+    await evalIn(ws, `document.getElementById('btnBackPrint').click()`);
+    const bkMain = await evalIn(ws, `document.getElementById('viewMain').style.display`);
+    check('Tab In Ma quay ve man hinh chinh', bkMain.value === 'block', String(bkMain.value));
     const dh = await evalIn(ws, `getComputedStyle(document.querySelector('.dhead')).position`);
     check('Detail header dinh khi cuon', dh.value === 'sticky', String(dh.value));
     const fs = await evalIn(ws, `parseFloat(getComputedStyle(document.getElementById('resolveBill')).fontSize)`);

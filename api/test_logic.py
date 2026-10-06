@@ -2,7 +2,8 @@
 import unittest
 from datetime import datetime
 from api.logic import (
-    gen_code, next_seq, storage_days, can_resolve, can_liquidate,
+    gen_code, next_seq, next_seq_reserved, bulk_codes, BULK_MAX,
+    storage_days, can_resolve, can_liquidate,
     canonical_status, canonical_kind, valid_liq_code, can_edit_status,
     history_bill, map_history_row,
     check_create_photos, can_delete_user, extract_drive_id, can_edit, CODE_RE, TZ,
@@ -110,6 +111,27 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(storage_days("01/10/2026 10:00:00", now), 5)
         self.assertEqual(storage_days("06/10/2026 10:00:00", now), 0)
         self.assertEqual(storage_days("khong-phai-ngay", now), 0)
+
+    def test_bulk_codes_continuous(self):
+        dt = datetime(2026, 10, 6, 10, 0, 0, tzinfo=TZ)
+        got = bulk_codes(["Box.06-10-2026.1", "Box.06-10-2026.2"], [], "Box", dt, 10)
+        self.assertEqual(len(got), 10)
+        self.assertEqual(got[0], "Box.06-10-2026.3")
+        self.assertEqual(got[-1], "Box.06-10-2026.12")
+
+    def test_bulk_codes_skip_reserved(self):
+        dt = datetime(2026, 10, 6, 10, 0, 0, tzinfo=TZ)
+        printed = ["Box.06-10-2026.%d" % i for i in range(3, 13)]
+        got = bulk_codes(["Box.06-10-2026.1", "Box.06-10-2026.2"], printed, "Box", dt, 10)
+        self.assertEqual(got[0], "Box.06-10-2026.13")
+        self.assertEqual(next_seq_reserved(["Item.06-10-2026.1"], printed, "Item", dt), 2)
+
+    def test_bulk_codes_count_clamped(self):
+        dt = datetime(2026, 10, 6, 10, 0, 0, tzinfo=TZ)
+        self.assertEqual(len(bulk_codes([], [], "Item", dt, 99)), BULK_MAX)
+        self.assertEqual(len(bulk_codes([], [], "Item", dt, 0)), BULK_MAX)
+        self.assertEqual(bulk_codes([], [], "Item", dt, 3),
+                         ["Item.06-10-2026.1", "Item.06-10-2026.2", "Item.06-10-2026.3"])
 
 
 if __name__ == "__main__":

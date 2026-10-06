@@ -53,13 +53,14 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 #viewMain .scanbar{background:none;border:none;padding:0;position:relative;justify-content:center}
 #viewMain .search-group{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 13px;flex:0 1 600px;min-width:0}
 #viewMain .search-group input{flex:1;min-width:0;margin:0;text-align:center}
-@media(min-width:600px){#viewMain #btnCreateMain{position:absolute;right:0;top:50%;transform:translateY(-50%)}}
+#viewMain .topbtns{display:flex;gap:8px;flex:none}
+@media(min-width:600px){#viewMain .topbtns{position:absolute;right:0;top:50%;transform:translateY(-50%)}}
 #scanClear{display:none;width:30px;height:30px;flex:none;border:none;border-radius:50%;background:#e8ecf1;color:#5b6572;font-size:13px;font-weight:800;line-height:1;padding:0}
 #scanClear.show{display:block}
 .scanbar svg{color:var(--o);flex:none}
 .scanbar input{border:none;background:transparent;padding:9px 0;font-size:14px;font-weight:600;flex:0 1 480px;min-width:0;margin:0 auto;text-align:center}
 .scanbar .create-big{padding:12px 22px;font-size:14px;white-space:nowrap}
-#btnCreateTop,.createrow{display:none!important}
+#btnCreateTop,#btnPrintTop,.createrow{display:none!important}
 .scanbar input:focus{outline:none}
 .scanbar input::placeholder{color:var(--mut);font-weight:500}
 #reader{width:100%;max-width:420px;margin:8px auto}
@@ -106,10 +107,10 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 .cnt b{font-size:30px;font-weight:800;color:var(--o);line-height:1}
 .cnt small{font-size:10.5px;color:#b06a52;font-weight:600;line-height:1.5}
 html[data-theme=dark] .cnt small{color:#a4573d}
-#liqList{list-style:none;padding:0;margin:0 0 12px}
-#liqList li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;font-size:12px;font-weight:600;color:var(--navy)}
-#liqList li span{flex:1;font-family:ui-monospace,Menlo,monospace;font-size:11px;word-break:break-all}
-#liqList li button{padding:5px 10px;font-size:10.5px;color:var(--mut);border-color:var(--line)}
+#liqList,#bulkList{list-style:none;padding:0;margin:0 0 12px}
+#liqList li,#bulkList li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;font-size:12px;font-weight:600;color:var(--navy)}
+#liqList li span,#bulkList li span{flex:1;font-family:ui-monospace,Menlo,monospace;font-size:11px;word-break:break-all}
+#liqList li button,#bulkList li button{padding:5px 10px;font-size:10.5px;color:var(--mut);border-color:var(--line)}
 .row{display:flex;gap:8px}.row>*{flex:1}
 .backrow{display:flex;margin-bottom:2px}
 
@@ -212,10 +213,10 @@ header{padding:12px 22px}
 }
 
 /* ===== createModal luôn là dialog nhỏ giữa màn hình (detail giữ drawer phải) ===== */
-#createModal,#editModal{align-items:center;justify-content:center;padding:0 16px}
+#createModal,#editModal,#printKindModal{align-items:center;justify-content:center;padding:0 16px}
 #leaveModal{align-items:center;justify-content:center;padding:0 16px}
 #leaveModal .sheet{height:auto}
-#createModal .sheet,#editModal .sheet{max-width:440px;width:100%;height:auto;max-height:92%;border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(23,43,72,.35)}
+#createModal .sheet,#editModal .sheet,#printKindModal .sheet{max-width:440px;width:100%;height:auto;max-height:92%;border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(23,43,72,.35)}
 
 /* ===== mobile-fix (mockup v2-v6) ===== */
 @media(max-width:899px){
@@ -255,7 +256,7 @@ header{flex-wrap:wrap}
 .createrow{display:flex;justify-content:flex-end;margin:2px 0 10px}
 #btnCreate{font-size:14px;padding:12px 22px;border-radius:12px}
 #btnCreateTop{display:none}
-@media(min-width:900px){#btnCreateTop{display:block}.createrow{display:none}}
+@media(min-width:900px){#btnCreateTop,#btnPrintTop{display:block}.createrow{display:none}}
 @media(min-width:900px){#camMain,#camLiq,#btnScanBill{display:none}}
 
 /* ===== lightbox (kieu AppSheet: nen den, giua man hinh) ===== */
@@ -305,6 +306,7 @@ header{flex-wrap:wrap}
 <button id="btnTheme" type="button">☾ Tối</button>
 <div id="whoChip" title="Tài khoản đăng nhập"><i id="whoIni">?</i><span id="whoTxt"></span></div>
 <button id="btnCreateTop" class="primary" style="display:none">＋ Create</button>
+<button id="btnPrintTop" style="display:none">🖨 In Mã</button>
 </header>
 
 <nav class="bnav">
@@ -345,7 +347,7 @@ header{flex-wrap:wrap}
 <button id="scanClear" title="Xóa tìm kiếm">✕</button>
 <button id="camMain">📷 Quét</button>
 </div>
-<button id="btnCreateMain" class="primary create-big">＋ Create</button>
+<span class="topbtns"><button id="btnCreateMain" class="primary create-big">＋ Create</button><button id="btnPrintMain" class="create-big">🖨 In Mã</button></span>
 </div>
 <div id="reader" style="display:none"></div>
 <div class="createrow"><button id="btnCreate" class="primary">＋ Create</button></div>
@@ -373,6 +375,23 @@ header{flex-wrap:wrap}
 </div>
 <button id="btnLiqDone" class="primary" style="width:100%">Confirm</button>
 </div>
+</main>
+
+<main id="viewPrint" style="display:none">
+<div class="backrow"><button id="btnBackPrint" class="lnk">‹ Màn hình chính</button></div>
+<h2 style="margin:6px 0 2px;font-size:16px;color:var(--navy)">In Mã — <span id="printTitleKind">Box</span></h2>
+<div class="csub">Chọn Box/Item rồi in theo 1 trong 2 cách dưới đây.</div>
+<div class="seg" id="printKindSeg"><button type="button" data-kind="Box" class="on">BOX</button><button type="button" data-kind="Item">ITEM</button></div>
+<div class="msg" id="msgPrint"></div>
+<div class="field"><label>1 — SCAN MÃ RỒI IN</label>
+<div class="billrow"><button id="btnScanPrint" type="button">📷 Quét</button><input id="scanPrint" class="mono" placeholder="Quét hoặc nhập mã…"></div>
+</div>
+<div class="btnrow"><button id="btnSinglePrint" class="primary">🖨 In mã này</button></div>
+<div class="field" style="margin-top:14px"><label>2 — IN MÃ HÀNG LOẠT (SERVER TỰ SINH 10 MÃ)</label>
+<div class="csub">Mã sinh ra được giữ chỗ trong sheet PrintedCodes nên lần in sau không trùng.</div>
+</div>
+<div class="btnrow"><button id="btnBulkPrint" class="primary">⚡ Sinh &amp; in 10 mã</button></div>
+<ul id="bulkList"></ul>
 </main>
 
 <main id="viewAccess" style="display:none">
@@ -474,6 +493,14 @@ header{flex-wrap:wrap}
 </div>
 <button id="btnBackCreate" class="lnk" style="display:none">‹ Quay lại</button>
 <button id="btnCloseCreate" class="lnk" style="margin-top:8px">Đóng</button>
+</div></div>
+
+<div class="modal" id="printKindModal"><div class="sheet">
+<h2>In Mã — chọn loại</h2>
+<div class="csub">Chọn loại mã để vào tab In Mã.</div>
+<div class="opt" id="optPrintBox"><div><b>BOX</b><small>Nguyên thùng — mã Box.…</small></div><span class="chev">›</span></div>
+<div class="opt" id="optPrintItem"><div><b>ITEM</b><small>Tách lẻ — mã Item.…</small></div><span class="chev">›</span></div>
+<button id="btnClosePrintKind" class="lnk" style="width:100%">Đóng</button>
 </div></div>
 
 <div class="modal" id="leaveModal"><div class="sheet" style="max-width:360px;text-align:center"><p id="leaveText" style="font-size:13.5px;font-weight:700">Bạn muốn hủy task này chứ?</p><div class="btnrow"><button id="btnLeaveOk" class="primary">Confirm</button><button id="btnLeaveCancel">Cancel</button></div></div></div>
@@ -1098,6 +1125,46 @@ setCreateDoneUI(false);
 await refreshPreview();
 }
 
+function setActive(id){['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.toggle('on',n===id);});curNav=id;renderRail();}
+function setPrintKind(k){
+state.printKind=(k==='Item')?'Item':'Box';
+var lbl=document.getElementById('printTitleKind');if(lbl)lbl.textContent=state.printKind;
+var seg=document.getElementById('printKindSeg');
+if(seg)Array.prototype.forEach.call(seg.children,function(b){b.classList.toggle('on',b.getAttribute('data-kind')===state.printKind);});
+document.getElementById('bulkList').innerHTML='';
+msg('msgPrint','');
+}
+function showPrint(on,kind){
+document.getElementById('viewPrint').style.display=on?'block':'none';
+document.getElementById('viewMain').style.display=on?'none':'block';
+document.getElementById('viewLiq').style.display='none';
+document.getElementById('viewAccess').style.display='none';
+if(on){if(kind)setPrintKind(kind);['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.remove('on');});curNav='';renderRail();}
+else{setActive('navMain');}
+}
+function renderBulkList(codes){
+var ul=document.getElementById('bulkList');ul.innerHTML='';
+(codes||[]).forEach(function(c){
+var li=document.createElement('li');
+li.innerHTML='<span>'+esc(c)+'</span>';
+var b=document.createElement('button');b.type='button';b.textContent='🖨 In';
+b.onclick=(function(code){return function(){doPrint(code);};})(c);
+li.appendChild(b);ul.appendChild(li);
+});
+}
+async function bulkPrint(){
+var kind=state.printKind||'Box';
+var b=document.getElementById('btnBulkPrint');
+var old=b.textContent;b.disabled=true;b.textContent='Server đang sinh mã…';
+msg('msgPrint','Server đang sinh 10 mã…',true);
+try{
+var r=await gs('previewBulkCodes',[kind,10]);
+if(!r.ok)throw new Error(r.error);
+renderBulkList(r.data.codes||[]);
+msg('msgPrint','Đã giữ chỗ '+(r.data.codes||[]).length+' mã '+kind+' (lần in sau không trùng). Bấm In từng mã.',true);
+}catch(e){msg('msgPrint',(e&&e.message)||'Lỗi sinh mã');}
+b.disabled=false;b.textContent=old;
+}
 function renderLiq(){
 var ul=document.getElementById('liqList');ul.innerHTML='';
 state.liq.forEach(function(c,i){
@@ -1219,7 +1286,7 @@ if(typeof Html5Qrcode==='undefined'){msg('msgMain','Không tải được camera
 qr=new Html5Qrcode('reader');
 qr.start({facingMode:'environment'},{fps:10,qrbox:250},
 function(txt){document.getElementById(inputId).value=txt;
-if(inputId==='scanLiq')liqAdd(txt);else if(inputId==='resolveBill'){document.getElementById('resolveBill').focus();}else openDetail(txt);
+if(inputId==='scanLiq')liqAdd(txt);else if(inputId==='resolveBill'){document.getElementById('resolveBill').focus();}else if(inputId==='scanPrint'){}else openDetail(txt);
 try{qr.stop();}catch(e){}rd.style.display='none';},
 function(){}).catch(function(){msg('msgMain','Không mở được camera (cần HTTPS). Nhập tay hoặc dùng súng.');});
 }
@@ -1245,6 +1312,11 @@ applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':
 document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';setCreateDoneUI(false);};
 document.getElementById('btnCreateTop').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';setCreateDoneUI(false);};
 document.getElementById('btnCreateMain').onclick=document.getElementById('btnCreateTop').onclick;
+document.getElementById('btnPrintTop').onclick=function(){document.getElementById('printKindModal').classList.add('open');};
+document.getElementById('btnPrintMain').onclick=document.getElementById('btnPrintTop').onclick;
+document.getElementById('btnClosePrintKind').onclick=function(){document.getElementById('printKindModal').classList.remove('open');};
+document.getElementById('optPrintBox').onclick=function(){document.getElementById('printKindModal').classList.remove('open');showPrint(true,'Box');};
+document.getElementById('optPrintItem').onclick=function(){document.getElementById('printKindModal').classList.remove('open');showPrint(true,'Item');};
 function showCreateStep(n){
 state.createStep=n;
 document.getElementById('stepTask').style.display=n===1?'block':'none';
@@ -1307,9 +1379,18 @@ document.getElementById('btnLiqDone').onclick=liqDone;
 document.getElementById('camMain').onclick=function(){toggleCam('scanMain');};
 document.getElementById('scanClear').onclick=function(){var s=document.getElementById('scanMain');s.value='';state.filter='';syncScanClear();renderGrid();s.focus();};
 document.getElementById('camLiq').onclick=function(){toggleCam('scanLiq');};
-function setActive(id){['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.toggle('on',n===id);});curNav=id;renderRail();}
-function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';setActive(on?'navLiq':'navMain');}
-async function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';setActive('navAccess');try{await loadMe();}catch(e){}
+document.getElementById('btnBackPrint').onclick=function(){showPrint(false);};
+document.getElementById('btnScanPrint').onclick=function(){toggleCam('scanPrint');};
+document.getElementById('scanPrint').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('btnSinglePrint').click();});
+document.getElementById('btnSinglePrint').onclick=function(){
+var c=document.getElementById('scanPrint').value.trim();
+if(!c){msg('msgPrint','Quét hoặc nhập mã trước khi in.');return;}
+msg('msgPrint','Đã gửi lệnh in '+c+' (khổ 4x6in).',true);
+doPrint(c);};
+document.getElementById('btnBulkPrint').onclick=bulkPrint;
+Array.prototype.forEach.call(document.getElementById('printKindSeg').children,function(b){b.onclick=function(){setPrintKind(b.getAttribute('data-kind'));};});
+function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';document.getElementById('viewPrint').style.display='none';setActive(on?'navLiq':'navMain');}
+async function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';document.getElementById('viewPrint').style.display='none';setActive('navAccess');try{await loadMe();}catch(e){}
 var e=state.me||{};
 var dl=document.getElementById('msgDeploy');
 if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?');

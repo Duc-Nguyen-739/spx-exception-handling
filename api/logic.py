@@ -66,17 +66,41 @@ def gen_code(kind, dt=None, seq=1):
     return f"{prefix}.{date_part(dt)}.{seq}"
 
 
-def next_seq(existing_codes, kind, dt=None):
-    prefix = f"{'Box' if kind == 'Box' else 'Item'}.{date_part(dt)}."
+def _max_seq(codes, prefix):
     best = 0
-    for c in existing_codes or []:
+    for c in codes or []:
         if c.startswith(prefix):
             try:
-                n = int(c.rsplit(".", 1)[1])
-                best = max(best, n)
+                best = max(best, int(c.rsplit(".", 1)[1]))
             except ValueError:
                 pass
-    return best + 1
+    return best
+
+
+def next_seq(existing_codes, kind, dt=None):
+    prefix = f"{'Box' if kind == 'Box' else 'Item'}.{date_part(dt)}."
+    return _max_seq(existing_codes, prefix) + 1
+
+
+BULK_MAX = 10
+
+
+def next_seq_reserved(existing_codes, printed_codes, kind, dt=None):
+    # KHỚP Code.gs nextSeqBoth_: seq tính trên cả Items + tab PrintedCodes
+    # (mã bulk đã giữ chỗ thì Create sau nhảy qua, không cấp lại).
+    prefix = f"{'Box' if kind == 'Box' else 'Item'}.{date_part(dt)}."
+    return max(_max_seq(existing_codes, prefix), _max_seq(printed_codes, prefix)) + 1
+
+
+def bulk_codes(existing_codes, printed_codes, kind, dt=None, count=10):
+    # KHỚP Code.gs previewBulkCodes: sinh dãy liên tục, count chặn 1..BULK_MAX.
+    try:
+        n = int(count or 10)
+    except (ValueError, TypeError):
+        n = 10
+    n = max(1, min(n, BULK_MAX))
+    start = next_seq_reserved(existing_codes, printed_codes, kind, dt)
+    return [gen_code("Box" if kind == "Box" else "Item", dt, start + i) for i in range(n)]
 
 
 def parse_created_at(s):

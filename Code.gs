@@ -15,6 +15,7 @@ var ITEMS_HEADER = ['code', 'created_at', 'description', 'kind', 'photo_path_out
   'photo_path_product', 'status', 'status_note', 'mvdn', 'trip', 'reporter', 'note'];
 var PHOTOS_HEADER = ['code', 'slot', 'drive_file_id', 'uploaded_at'];
 var LOG_HEADER = ['at', 'code', 'from_status', 'to_status', 'by', 'note'];
+var PRINTED_HEADER = ['code', 'printed_at', 'printed_by', 'kind'];
 
 // KHỚP import: scripts/import-csv.js STATUS_RULES (copy, không tự bịa thêm).
 var STATUS_RULES = [
@@ -311,22 +312,68 @@ function previewCode(kind) {
   try {
     var k = kind === 'Item' ? 'Item' : 'Box';
     var r = readAllItems_();
-    var seq = nextSeq_(r.items, k, todayPart_());
+    var seq = nextSeqBoth_(r.items, readPrintedCodes_(), k, todayPart_());
     return ok({ code: prefix_(k) + todayPart_() + '.' + seq, datePart: todayPart_(), seq: seq });
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function previewBulkCodes(kind, count) {
+  try {
+    var k = kind === 'Item' ? 'Item' : 'Box';
+    var n = Math.min(Math.max(parseInt(count, 10) || 10, 1), 10);
+    return ok(withLock_(function () {
+      var r = readAllItems_();
+      var datePart = todayPart_();
+      var start = nextSeqBoth_(r.items, readPrintedCodes_(), k, datePart);
+      var codes = [];
+      for (var i = 0; i < n; i++) codes.push(prefix_(k) + datePart + '.' + (start + i));
+      var at = nowStr_(), by = currentEmail_();
+      var rows = codes.map(function (c) { return [c, at, by, k]; });
+      var sh = getSheet_('PrintedCodes', PRINTED_HEADER);
+      sh.getRange(sh.getLastRow() + 1, 1, rows.length, PRINTED_HEADER.length).setValues(rows);
+      return { codes: codes, kind: k };
+    }));
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
 function prefix_(kind) { return kind === 'Item' ? 'Item.' : 'Box.'; }
 
+function seqNum_(code, prefix) {
+  var c = String(code || '');
+  if (c.indexOf(prefix) !== 0) return 0;
+  var n = parseInt(c.slice(prefix.length), 10);
+  return isNaN(n) ? 0 : n;
+}
+
 function nextSeq_(items, kind, datePart) {
   var p = prefix_(kind) + datePart + '.';
   var best = 0;
   for (var i = 0; i < items.length; i++) {
-    var c = String(items[i].code || '');
-    if (c.indexOf(p) === 0) {
-      var n = parseInt(c.slice(p.length), 10);
-      if (n > best) best = n;
-    }
+    var n = seqNum_(items[i].code, p);
+    if (n > best) best = n;
+  }
+  return best + 1;
+}
+
+function readPrintedCodes_() {
+  var sh = getSheet_('PrintedCodes', PRINTED_HEADER);
+  var last = sh.getLastRow();
+  if (last < 2) return [];
+  return sh.getRange(2, 1, last - 1, 1).getValues()
+    .map(function (r) { return String(r[0] || ''); })
+    .filter(Boolean);
+}
+
+function nextSeqBoth_(items, printed, kind, datePart) {
+  var p = prefix_(kind) + datePart + '.';
+  var best = 0;
+  for (var i = 0; i < items.length; i++) {
+    var a = seqNum_(items[i].code, p);
+    if (a > best) best = a;
+  }
+  for (var j = 0; j < printed.length; j++) {
+    var b = seqNum_(printed[j], p);
+    if (b > best) best = b;
   }
   return best + 1;
 }
@@ -393,7 +440,7 @@ function create_(kind, p) {
   return withLock_(function () {
     var r = readAllItems_();
     var datePart = todayPart_();
-    var code = prefix_(kind) + datePart + '.' + nextSeq_(r.items, kind, datePart);
+    var code = prefix_(kind) + datePart + '.' + nextSeqBoth_(r.items, readPrintedCodes_(), kind, datePart);
     var at = nowStr_();
     var by = currentEmail_();
     var folder = monthFolder_();

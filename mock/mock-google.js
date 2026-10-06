@@ -68,6 +68,14 @@
       var k = kind === 'Item' ? 'Item' : 'Box';
       return { ok: true, data: { code: (k === 'Item' ? 'Item.' : 'Box.') + '06-10-2026.9' } };
     },
+    previewBulkCodes: function (kind, count) {
+      var k = kind === 'Item' ? 'Item.' : 'Box.';
+      var n = Math.min(Math.max(parseInt(count, 10) || 10, 1), 10);
+      var start = k === 'Item.' ? 3 : 21;
+      var codes = [];
+      for (var i = 0; i < n; i++) codes.push(k + '06-10-2026.' + (start + i));
+      return { ok: true, data: { codes: codes, kind: kind === 'Item' ? 'Item' : 'Box' } };
+    },
     createBox: function (p) { return create_('Box', p); },
     createItem: function (p) { return create_('Item', p); },
     resolveItem: function (code, bill) {
