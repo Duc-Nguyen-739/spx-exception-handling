@@ -477,6 +477,10 @@ function todayPart(){try{return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/
 function parseCreated(s){var m=String(s||'').match(/(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?/);if(!m)return null;return new Date(+m[3],+m[2]-1,+m[1],+(m[4]||0),+(m[5]||0));}
 function daysOf(c){var d=parseCreated(c);if(!d)return 0;return Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));}
 function thumb(it){return it.imgProduct||it.imgOuter||(it.extras&&it.extras[0])||'';}
+function extractDriveId(u){var s=String(u||'');var m=s.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);if(m)return m[1];m=s.match(/\/d\/([a-zA-Z0-9_-]{10,})/);return m?m[1]:'';}
+var photoCache={},photoLoading={};
+function serverPhoto(id){if(photoCache[id])return Promise.resolve(photoCache[id]);if(photoLoading[id])return photoLoading[id];photoLoading[id]=gs('getPhoto',[id]).then(function(r){delete photoLoading[id];if(!r||!r.ok||!r.data||!r.data.b64)throw new Error((r&&r.error)||'loi');var u='data:'+(r.data.mime||'image/jpeg')+';base64,'+r.data.b64;photoCache[id]=u;return u;}).catch(function(e){delete photoLoading[id];throw e;});return photoLoading[id];}
+function photoFallback(im,url,showNo){var id=extractDriveId(url||im.src||'');if(id&&!im.dataset.sv){im.dataset.sv='1';serverPhoto(id).then(function(u){im.src=u;}).catch(function(){showNo();});}else{showNo();}}
 function stClass(s){return s==='da_tim_bill'?'Resolve':(s==='thanh_ly'?'thanhly':'');}
 var STATUS_LABEL={chua_xu_ly:'Lưu kho',da_tim_bill:'Resolve',da_cho_di:'Đã cho đi',thanh_ly:'Thanh Lý',tieu_huy:'Tiêu hủy'};
 function stLabel(s){return STATUS_LABEL[s]||s||'';}
@@ -610,7 +614,7 @@ d.innerHTML=(src?'<img loading="lazy" alt="" src="'+esc(src)+'">':'<div class="n
 +'<span class="ovst '+stClass(it.status)+'">'+esc(it.statusLabel||it.status)+'</span>'
 +'<div class="cap"><span class="code">'+esc(it.code)+'</span><span class="days'+hot+'">'+esc(it.days)+' Ngày</span></div>';
 var im=d.querySelector('img');
-if(im){im.onerror=function(){var n=document.createElement('div');n.className='noimg';n.innerHTML='📦<small>Không tải được ảnh</small>';n.onclick=function(){openDetail(it.code);};im.replaceWith(n);};im.onclick=function(){openDetail(it.code);};}
+if(im){im.onerror=function(){photoFallback(im,src,function(){var n=document.createElement('div');n.className='noimg';n.innerHTML='📦<small>Không tải được ảnh</small>';n.onclick=function(){openDetail(it.code);};im.replaceWith(n);});};im.onclick=function(){openDetail(it.code);};}
 else{var nz=d.querySelector('.noimg');if(nz)nz.onclick=function(){openDetail(it.code);};}
 d.querySelector('.cap').onclick=function(){msg('msgMain','Bấm vào ẢNH mới mở chi tiết — dòng mã/ngày chỉ để xem nhanh.');};
 g.appendChild(d);
@@ -624,9 +628,11 @@ return '<div class="kvImg"><b>'+esc(label)+'</b><div class="ph" data-url="'+esc(
 function bindPhotoFallback(){
 document.getElementById('detailBody').querySelectorAll('img[data-ph]').forEach(function(im){
 im.onerror=function(){
-var ph=im.closest('.ph');
+var ph=im.closest('.ph'),url=im.src;
+photoFallback(im,url,function(){
 ph.innerHTML='<div class="fb"><span class="big">\uD83D\uDDBC</span><span>Không tải được ảnh</span><button type="button">Thử lại</button></div>';
 ph.querySelector('button').onclick=function(){if(state.detail&&state.detail.item)openDetail(state.detail.item.code);};
+});
 };});}
 
 async function openDetail(code){

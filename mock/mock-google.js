@@ -111,7 +111,11 @@
     listUsers: function () { return { ok: true, data: [{ email: ME, role: 'ADMIN' }] }; },
     addAdmin: function (email) { return { ok: true, data: { email: email, role: 'ADMIN' } }; },
     deleteUser: function (email) { return { ok: true, data: { email: email } }; },
-    fixPhotoSharing: function () { return { ok: true, data: { total: 0, shared: 0, failed: [], domainOnly: false } }; }
+    fixPhotoSharing: function () { return { ok: true, data: { total: 0, shared: 0, failed: [], domainOnly: false } }; },
+    getPhoto: function (fileId) {
+      if (!/^[a-zA-Z0-9_-]{10,}$/.test(String(fileId || ''))) return { ok: false, error: 'Ảnh không hợp lệ.' };
+      return { ok: true, data: { mime: 'image/png', b64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' } };
+    }
   };
 
   function create_(kind, p) {

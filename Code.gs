@@ -126,6 +126,39 @@ function thumbUrl_(v) {
   return '';
 }
 
+function photoIds_() {
+  var ids = {};
+  var ph = readPhotosAll_();
+  for (var i = 0; i < ph.length; i++) {
+    var pid = String(ph[i][2] || '').trim() || driveIdFromUrl_(ph[i][2]);
+    if (pid) ids[pid] = true;
+  }
+  var r = readAllItems_();
+  for (var j = 0; j < r.items.length; j++) {
+    var cols = [r.items[j].photo_path_outer, r.items[j].photo_path_product];
+    for (var k = 0; k < cols.length; k++) {
+      var t = String(cols[k] || '').trim();
+      var cid = (/^[a-zA-Z0-9_-]{10,}$/.test(t) ? t : driveIdFromUrl_(t));
+      if (cid) ids[cid] = true;
+    }
+  }
+  return ids;
+}
+
+function getPhoto(fileId) {
+  try {
+    fileId = String(fileId || '').trim();
+    if (!/^[a-zA-Z0-9_-]{10,}$/.test(fileId)) return fail('Ảnh không hợp lệ.');
+    if (!photoIds_()[fileId]) return fail('Không xem được ảnh.');
+    var blob = DriveApp.getFileById(fileId).getBlob();
+    var ct = String(blob.getContentType() || '');
+    if (ct.indexOf('image/') !== 0) return fail('Không xem được ảnh.');
+    var bytes = blob.getBytes();
+    if (bytes.length > 8 * 1024 * 1024) return fail('Ảnh quá lớn.');
+    return ok({ mime: ct, b64: Utilities.base64Encode(bytes) });
+  } catch (e) { Logger.log(e); return fail('Không xem được ảnh.'); }
+}
+
 function parseCreated_(s) {
   var m = String(s || '').match(/(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?/);
   if (!m) return null;
