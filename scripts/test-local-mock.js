@@ -239,6 +239,14 @@ async function main() {
     const lbClosed = await evalIn(ws, `!document.getElementById('lightbox').classList.contains('open')`);
     check('Lightbox dong bang nut X', lbClosed.value === true, String(lbClosed.value));
 
+    await evalIn(ws, `document.getElementById('scanMain').value='SPXVN1'; document.getElementById('scanMain').dispatchEvent(new Event('input'))`);
+    const scShow = await evalIn(ws, `document.getElementById('scanClear').classList.contains('show')`);
+    check('Nut xoa hien khi co chu', scShow.value === true, String(scShow.value));
+    await evalIn(ws, `document.getElementById('scanClear').click()`);
+    await sleep(200);
+    const scGone = await evalIn(ws, `JSON.stringify({v: document.getElementById('scanMain').value, show: document.getElementById('scanClear').classList.contains('show')})`);
+    const SG = JSON.parse(scGone.value);
+    check('Bam nut xoa -> sach + an nut', SG.v === '' && SG.show === false, scGone.value);
     const dh = await evalIn(ws, `getComputedStyle(document.querySelector('.dhead')).position`);
     check('Detail header dinh khi cuon', dh.value === 'sticky', String(dh.value));
     const fs = await evalIn(ws, `parseFloat(getComputedStyle(document.getElementById('resolveBill')).fontSize)`);

@@ -54,6 +54,8 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 #viewMain .search-group{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 13px;flex:0 1 600px;min-width:0}
 #viewMain .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 @media(min-width:600px){#viewMain #btnCreateMain{position:absolute;right:0;top:50%;transform:translateY(-50%)}}
+#scanClear{display:none;width:30px;height:30px;flex:none;border:none;border-radius:50%;background:#e8ecf1;color:#5b6572;font-size:13px;font-weight:800;line-height:1;padding:0}
+#scanClear.show{display:block}
 .scanbar svg{color:var(--o);flex:none}
 .scanbar input{border:none;background:transparent;padding:9px 0;font-size:14px;font-weight:600;flex:0 1 480px;min-width:0;margin:0 auto;text-align:center}
 .scanbar .create-big{padding:12px 22px;font-size:14px;white-space:nowrap}
@@ -340,6 +342,7 @@ header{flex-wrap:wrap}
 <div class="search-group">
 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
 <input id="scanMain" placeholder="Nhập mã để tìm kiếm…" inputmode="text">
+<button id="scanClear" title="Xóa tìm kiếm">✕</button>
 <button id="camMain">📷 Quét</button>
 </div>
 <button id="btnCreateMain" class="primary create-big">＋ Create</button>
@@ -1220,6 +1223,7 @@ window.addEventListener('DOMContentLoaded',function(){
 loadGrid();loadMe();
 try{if(!state._poll)state._poll=setInterval(function(){if(!document.hidden)loadGrid({silent:true});},300000);}catch(e){}
 try{initLightbox();}catch(e){}
+try{syncScanClear();}catch(e){}
 renderSlots('Box');renderSlots('Item');
 document.getElementById('btnTheme').onclick=function(){
 applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
@@ -1253,7 +1257,8 @@ document.getElementById('btnWideDetail').onclick=function(){document.body.classL
 document.getElementById('btnCloseDetail').onclick=function(){document.getElementById('detailModal').classList.remove('open');document.body.classList.remove('has-drawer');};
 document.getElementById('btnPrevDetail').onclick=function(){detailNav(-1);};
 document.getElementById('btnNextDetail').onclick=function(){detailNav(1);};
-document.getElementById('scanMain').addEventListener('input',function(){state.filter=this.value.trim();renderGrid();});
+function syncScanClear(){var s=document.getElementById('scanMain'),b=document.getElementById('scanClear');if(s&&b)b.classList.toggle('show',s.value.trim().length>0);}
+document.getElementById('scanMain').addEventListener('input',function(){state.filter=this.value.trim();syncScanClear();renderGrid();});
 document.getElementById('btnGoResolve').onclick=function(){document.getElementById('rsStep2').style.display='block';document.getElementById('btnGoResolve').style.display='none';document.getElementById('resolveBill').focus();};
 document.getElementById('btnCancelResolve').onclick=function(){document.getElementById('rsStep2').style.display='none';document.getElementById('btnGoResolve').style.display='';};
 document.getElementById('btnConfirmResolve').onclick=doResolve;
@@ -1285,6 +1290,7 @@ document.getElementById('scanLiq').addEventListener('keydown',function(e){if(e.k
 document.getElementById('btnNext').onclick=function(){document.getElementById('liqCodeWrap').style.display='block';};
 document.getElementById('btnLiqDone').onclick=liqDone;
 document.getElementById('camMain').onclick=function(){toggleCam('scanMain');};
+document.getElementById('scanClear').onclick=function(){var s=document.getElementById('scanMain');s.value='';state.filter='';syncScanClear();renderGrid();s.focus();};
 document.getElementById('camLiq').onclick=function(){toggleCam('scanLiq');};
 function setActive(id){['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.toggle('on',n===id);});curNav=id;renderRail();}
 function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';setActive(on?'navLiq':'navMain');}
