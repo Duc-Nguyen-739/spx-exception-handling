@@ -245,7 +245,7 @@ if(VIEW===o[0])b.classList.add('on');
 b.onclick=function(){goView(o[0]);};
 r.appendChild(b);});
 var e=document.createElement('button');e.className='expand';e.textContent='☰';e.title='Mở lại';
-e.onclick=function(){document.getElementById('app').classList.remove('rail');};
+e.onclick=function(){toggleSide();};
 r.appendChild(e);
 }
 function renderFilters(){
