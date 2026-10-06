@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 01 — Logo SPX + Sidebar thu/mở</title>
+<style>
+:root{--o:#ee4d2d;--navy:#172b48;--ink:#303844;--mut:#97a0ad;--line:#eef0f3;--bg:#f5f6f9;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;font-family:Roboto,system-ui,Arial;background:var(--bg);color:var(--ink)}
+.bar{background:var(--card);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;gap:10px;align-items:center;position:sticky;top:0;z-index:5}
+.bar h1{font-size:13px;margin:0;color:var(--navy)}
+.bar .ctl{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+button{cursor:pointer;font-family:inherit;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;color:var(--navy)}
+button.primary{background:var(--o);border-color:var(--o);color:#fff}
+button:focus-visible{outline:2px solid var(--o);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding:14px}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.sec h2{margin:0 0 4px;font-size:14px;color:var(--navy)}
+.sec p{margin:0 0 10px;font-size:12px;color:var(--mut)}
+.logorow{display:flex;gap:18px;align-items:center;flex-wrap:wrap;background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:14px}
+.spxlogo{height:26px;width:auto;display:block}
+.spxlogo.sm{height:17px}
+.tag{font-size:10px;font-weight:800;background:var(--navy);color:#fff;border-radius:7px;padding:2px 8px}
+/* ===== demo app ===== */
+.demo{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card)}
+.demo header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--card)}
+.mark{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:var(--navy);white-space:nowrap}
+.mark small{font-weight:600;color:var(--mut);font-size:11px}
+.who{font-size:10.5px;font-weight:700;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:4px 10px 4px 4px;display:flex;gap:6px;align-items:center}
+.who i{width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-style:normal;font-size:10px}
+#hdrE{margin-left:auto;font-size:10.5px;color:var(--mut);font-weight:600}
+.dbody{display:flex;min-height:340px}
+nav.side{width:216px;flex:none;border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:2px;transition:width .2s ease}
+nav.side button{border:none;background:transparent;color:var(--mut);display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;font-size:13px;width:100%;text-align:left}
+nav.side button.on{color:var(--o);background:#fff5f0}
+nav.side button svg{width:18px;height:18px;flex:none}
+nav.side .lbl{white-space:nowrap;overflow:hidden}
+#navToggle{margin-top:auto;border:1px solid var(--line)}
+main.grid{flex:1;padding:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-content:start;background:var(--bg)}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.card .im{aspect-ratio:1/1;background:linear-gradient(135deg,#f1f3f7,#e6eaf1);display:grid;place-items:center;font-size:28px}
+.card .cap{padding:8px 10px;font-size:10.5px;font-weight:700;color:var(--mut);display:flex;justify-content:space-between}
+body.collapsed nav.side{width:64px;padding:14px 8px}
+body.collapsed nav.side .lbl{display:none}
+body.collapsed nav.side button{justify-content:center;padding:11px 0}
+body.collapsed #logoFull{display:none}
+body.collapsed #logoColl{display:block!important}
+body.collapsed #hdrE{display:none}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:12px;font-weight:700;border-radius:10px;padding:10px 16px;display:none;z-index:9}
+#spin{position:fixed;inset:0;background:rgba(23,43,72,.3);display:none;place-items:center;z-index:8}
+#spin div{background:#fff;border-radius:12px;padding:16px 22px;font-weight:800;font-size:13px}
+body.dark{background:#dde3ec}
+body.dark .sec,body.dark .demo,body.dark .bar{background:#f7f9fc}
+@media(max-width:700px){main.grid{grid-template-columns:repeat(2,1fr)}nav.side{width:64px}nav.side .lbl{display:none}}
+</style>
+</head>
+<body>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 65 26" fill="none" id="icon-spx-sea-logo">
+<path d="M41.9507 0H47.6843L52.2804 9.66069L39.476 26H34.188L46.8435 9.94131L41.9507 0Z" fill="#EE4D2D"></path>
+<path d="M54.6719 0H60.0463L52.9572 8.81883L50.9875 4.67879L54.6719 0Z" fill="#EE4D2D"></path>
+<path d="M35.6811 22.3889L32.8577 26L14.7667 26L17.59 22.3889H35.6811Z" fill="#EE4D2D"></path>
+<path d="M49.3294 14.9925L52.7503 10.6483L57.6487 20.9444H52.2588L49.3294 14.9925Z" fill="#EE4D2D"></path>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M31.3142 13.9708C36.4532 13.9708 40.0942 11.2998 40.8193 6.99053C41.4915 2.99594 38.7865 0 33.2245 0H26.228L22.9474 20.9444L27.5823 20.9716L28.6317 13.9708H31.3142ZM32.2483 3.93185C35.3227 3.99459 35.9775 4.94569 35.6723 6.75894C35.3529 8.65453 33.5685 9.80561 30.9956 9.80561H29.3744L30.2057 3.93217L32.2483 3.93185Z" fill="#EE4D2D"></path>
+<path d="M22.0059 2.21683C21.7637 1.97377 21.4428 1.72681 21.0564 1.4892C20.6472 1.21657 20.1592 0.970156 19.6188 0.76044C19.0784 0.529753 18.454 0.346251 17.7772 0.220422C17.0951 0.0736209 16.3448 0.000220405 15.5421 0.000220405C14.3353 0.000220405 13.244 0.173236 12.3048 0.508781C11.3867 0.823355 10.5892 1.25327 9.93856 1.7828C9.28797 2.31234 8.75804 2.91003 8.36454 3.57063C7.99727 4.20502 7.75067 4.85514 7.64049 5.49477C7.47784 6.49092 7.53031 7.36649 7.79264 8.09525C8.05498 8.81877 8.45898 9.44792 8.99415 9.96172C9.53981 10.4703 10.1799 10.9054 10.8987 11.2672C11.6018 11.5975 12.3258 11.9121 13.0394 12.2057L14.0835 12.6775C14.4875 12.8296 14.86 13.0236 15.201 13.249L15.264 13.291C15.6155 13.5007 15.9041 13.7471 16.114 14.025L16.1507 14.0669C16.3711 14.3238 16.4498 14.6017 16.3816 14.9372C16.3396 15.2203 16.2242 15.4563 16.0248 15.6607C15.8149 15.8757 15.5526 16.0644 15.2325 16.2165C14.9125 16.3581 14.5452 16.4682 14.1517 16.5468C13.7739 16.6097 13.3804 16.6359 12.9712 16.6359C11.99 16.615 11.0824 16.4419 10.2691 16.1169C9.47685 15.7708 8.69508 15.2675 7.9448 14.6174L7.8375 14.5242L5.1537 17.9322C6.0547 18.8608 7.11944 19.6097 8.32257 20.1487C9.53981 20.6939 11.0404 20.9718 12.7771 20.9718C14.0677 20.9718 15.2063 20.8093 16.1717 20.4947C17.1318 20.1591 17.9661 19.7083 18.6377 19.1578C19.3145 18.6073 19.8497 17.9729 20.2274 17.2703C20.6052 16.552 20.8518 15.8128 20.9567 15.0683C21.0931 14.1088 21.0144 13.2647 20.7259 12.5622C20.4635 11.8387 20.049 11.199 19.5034 10.6695L19.5086 10.68C18.9682 10.1295 18.3229 9.66287 17.5883 9.28014C16.8852 8.88693 16.1455 8.52517 15.3899 8.21059L15.0069 8.05855L13.8841 7.56047C13.5378 7.39794 13.2178 7.22493 12.9449 7.04667C12.6774 6.84744 12.457 6.63248 12.2943 6.40179C12.1422 6.18159 12.0845 5.94566 12.1265 5.66255C12.1579 5.30079 12.4098 4.96 12.8715 4.66115C13.3699 4.34658 14.115 4.21026 15.0751 4.24696C15.4581 4.26794 15.8569 4.32037 16.2556 4.39901C16.6544 4.47765 17.0479 4.58251 17.4204 4.7031C17.7929 4.82368 18.1392 4.96 18.4488 5.10156C18.7531 5.24311 19.0049 5.38992 19.1991 5.5472L19.3131 5.63636L22.0059 2.21683Z" fill="#EE4D2D"></path>
+<path d="M2.89101 22.3889H7.6193L4.79595 26H0L2.89101 22.3889Z" fill="#EE4D2D"></path>
+<path d="M5.99505 26L8.8184 22.3889H16.3909L13.5676 26H5.99505Z" fill="#EE4D2D"></path>
+</symbol>
+<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 43 17" fill="none" id="icon-spx-logo-sea-collapse">
+<path d="M27.4293 0H31.1782L34.1834 6.31661L25.8113 17H22.3537L30.6284 6.50009L27.4293 0Z" fill="#EE4D2D"></path>
+<path d="M35.747 0H39.2611L34.6258 5.76616L33.338 3.05921L35.747 0Z" fill="#EE4D2D"></path>
+<path d="M23.33 14.6389L21.4839 17L9.65513 17L11.5012 14.6389H23.33Z" fill="#EE4D2D"></path>
+<path d="M32.2539 9.80276L34.4906 6.96237L37.6934 13.6944H34.1692L32.2539 9.80276Z" fill="#EE4D2D"></path>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M20.4747 9.13473C23.8348 9.13473 26.2154 7.38832 26.6895 4.57073C27.129 1.95888 25.3604 0 21.7237 0H17.1491L15.0041 13.6944L18.0346 13.7122L18.7207 9.13473H20.4747ZM21.0854 2.57082C23.0956 2.61185 23.5237 3.23372 23.3242 4.41931C23.1153 5.65873 21.9487 6.41136 20.2663 6.41136H19.2064L19.7499 2.57104L21.0854 2.57082Z" fill="#EE4D2D"></path>
+<path d="M1.89027 14.6389H4.98185L3.13581 17H0L1.89027 14.6389Z" fill="#EE4D2D"></path>
+<path d="M3.91984 17L5.76588 14.6389H10.7171L8.8711 17H3.91984Z" fill="#EE4D2D"></path>
+</symbol>
+</svg>
+<div class="bar">
+<h1>Mockup 01 — Logo SPX + Sidebar thu/mở (gallery 1 file)</h1>
+<div class="ctl">
+<button id="btnExpand" type="button">Mở sidebar</button>
+<button id="btnCollapse" type="button">Thu sidebar</button>
+<button id="btnTheme" type="button">Tối/Sáng</button>
+<button id="btnToast" type="button" class="primary">Toast demo</button>
+</div>
+</div>
+<div class="wrap">
+<div class="sec">
+<h2>1. Logo thật từ sprite SPX <span class="tag">SVG gốc</span></h2>
+<p>Mở rộng dùng <b>#icon-spx-sea-logo</b> (65×26) · thu gọn dùng <b>#icon-spx-logo-sea-collapse</b> (43×17). Bấm Thu/Mở ở trên để xem logo đổi trong demo bên dưới.</p>
+<div class="logorow">
+<div><svg class="spxlogo"><use href="#icon-spx-sea-logo"/></svg><p>Bản mở rộng</p></div>
+<div><svg class="spxlogo sm"><use href="#icon-spx-logo-sea-collapse"/></svg><p>Bản thu gọn</p></div>
+</div>
+</div>
+<div class="sec">
+<h2>2. Demo app — sidebar thu/mở giống SPX</h2>
+<p>Sidebar mở 216px full label · thu 64px icons-only · nút toggle cuối sidebar · nhớ trạng thái · mobile tự thu.</p>
+<div class="demo">
+<header>
+<span class="mark">
+<svg id="logoFull" class="spxlogo" style="height:22px"><use href="#icon-spx-sea-logo"/></svg>
+<svg id="logoColl" class="spxlogo sm" style="height:17px;display:none"><use href="#icon-spx-logo-sea-collapse"/></svg>
+<span>Exception Handling</span>
+</span>
+<span class="who"><i>D</i>duc.nguyenvan05 · ADMIN</span>
+<span id="hdrE">minh họa PC (sẽ ẩn sau fix)</span>
+<button type="button">☾ Tối</button>
+<button type="button" class="primary">＋ Create</button>
+</header>
+<div class="dbody">
+<nav class="side" aria-label="Điều hướng chính">
+<button class="on" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="lbl">Danh sách</span></button>
+<button type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg><span class="lbl">Thanh lý</span></button>
+<button type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="lbl">Role</span></button>
+<button id="navToggle" type="button" aria-expanded="true" title="Thu/mở sidebar">⇔ <span class="lbl">Thu gọn</span></button>
+</nav>
+<main class="grid">
+<div class="card"><div class="im">📦</div><div class="cap"><span>Box.06-10-2026.1</span><span>118 Ngày</span></div></div>
+<div class="card"><div class="im">📦</div><div class="cap"><span>Item.06-10-2026.2</span><span>118 Ngày</span></div></div>
+<div class="card"><div class="im">📦</div><div class="cap"><span>Box.05-10-2026.2</span><span>148 Ngày</span></div></div>
+</main>
+</div>
+</div>
+</div>
+</div>
+<div id="toast"></div>
+<div id="spin"><div>Đang tải…</div></div>
+<script>
+var t=document.getElementById('navToggle');
+function setNav(c){
+document.body.classList.toggle('collapsed',c);
+document.getElementById('logoFull').style.display=c?'none':'';
+document.getElementById('logoColl').style.display=c?'block':'none';
+t.setAttribute('aria-expanded',String(!c));
+t.querySelector('.lbl').textContent=c?'Mở rộng':'Thu gọn';
+try{localStorage.setItem('mock_nav',c?'1':'0');}catch(e){}
+}
+t.onclick=function(){
+var sp=document.getElementById('spin');sp.style.display='grid';
+setTimeout(function(){sp.style.display='none';setNav(!document.body.classList.contains('collapsed'));toast(document.body.classList.contains('collapsed')?'Đã thu sidebar (64px)':'Đã mở sidebar (216px)');},250);
+};
+document.getElementById('btnCollapse').onclick=function(){setNav(true);toast('Đã thu sidebar (64px)');};
+document.getElementById('btnExpand').onclick=function(){setNav(false);toast('Đã mở sidebar (216px)');};
+document.getElementById('btnTheme').onclick=function(){document.body.classList.toggle('dark');};
+function toast(s){var e=document.getElementById('toast');e.textContent=s;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(function(){e.style.display='none';},1800);}
+document.getElementById('btnToast').onclick=function(){toast('Demo toast — không gọi API thật');};
+try{if(localStorage.getItem('mock_nav')==='1')setNav(true);}catch(e){}
+</script>
+</body>
+</html>
