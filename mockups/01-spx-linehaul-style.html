@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPX Exception Handling — Mockup Linehaul style</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f4f7;color:#2b3440;font-size:13px}
+.layout{display:flex;min-height:100vh}
+/* sidebar */
+.sidebar{width:216px;flex:none;background:#1d2b3c;color:#aeb9c6;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:6px;padding:14px 14px 10px}
+.spx{font-weight:900;font-style:italic;font-size:22px;color:#ee4d2d;letter-spacing:.5px}
+.live{font-size:10px;font-weight:800;background:#2f80ed;color:#fff;border-radius:4px;padding:2px 5px}
+.soc{margin:0 12px 10px;font-size:12px;font-weight:700;color:#fff;text-align:center}
+.search{margin:0 10px 10px;background:#101b28;border:1px solid #2e3f54;border-radius:6px;padding:7px 9px;color:#7d8da1;font-size:12px}
+.menu{flex:1;overflow:auto;padding-bottom:12px}
+.mi{display:flex;align-items:center;gap:9px;padding:9px 14px;font-size:12.5px;color:#aeb9c6;cursor:pointer}
+.mi .ic{width:16px;text-align:center}
+.mi.active{background:#0f1a28;color:#fff;border-left:3px solid #ee4d2d}
+.mi.sub{padding-left:34px}
+.mi.sub.active{color:#fff}
+/* main */
+.main{flex:1;min-width:0;background:#fff}
+.topbar{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid #eef0f3;flex-wrap:wrap}
+.crumb{font-size:12.5px;color:#5b6b7f}
+.crumb b{color:#2b3440}
+.topbar input[type=text]{border:1px solid #dfe3e9;border-radius:6px;padding:6px 9px;font-size:12px}
+.pillbtn{border:none;border-radius:6px;padding:7px 11px;font-size:11.5px;font-weight:800;color:#fff;cursor:pointer}
+.p-blue{background:#2f80ed}.p-green{background:#12a56b}.p-orange{background:#ee4d2d}.p-amber{background:#e8710a}
+.toggle{width:34px;height:18px;border-radius:99px;background:#2f80ed;position:relative;display:inline-block}
+.toggle::after{content:'';position:absolute;right:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff}
+.user{margin-left:auto;display:flex;align-items:center;gap:8px;color:#5b6b7f;font-size:12px}
+.avatar{width:26px;height:26px;border-radius:50%;background:#c3ccd6;display:grid;place-items:center;color:#fff}
+/* stats */
+.stats{display:flex;align-items:flex-end;gap:26px;padding:12px 16px 6px;flex-wrap:wrap}
+.stat{text-align:center;border-top:3px solid transparent;padding-top:4px;min-width:76px}
+.stat .lb{font-size:10px;font-weight:800;color:#5b6b7f}
+.stat .big{font-size:22px;font-weight:900;line-height:1}
+.stat .sub{font-size:11px;font-weight:800;color:#ee4d2d}
+.c-total{border-color:#b26a00}.c-total .big{color:#b00000}
+.c-load{border-color:#d9a400}.c-dep{border-color:#5b2ec5}.c-dep .big{color:#2b2b8f}
+.c-arr{border-color:#12a56b}.c-un{border-color:#5b6b7f}
+.upd{font-size:11px;color:#8a97a8;margin-left:6px}
+.dashbtn{background:#101f31;color:#fff;border:none;border-radius:6px;padding:7px 12px;font-size:11.5px;font-weight:800}
+/* tabs */
+.tabs{display:flex;gap:18px;padding:10px 16px 0;border-bottom:1px solid #eef0f3;font-size:12.5px}
+.tab{padding:8px 2px;cursor:pointer;color:#5b6b7f}
+.tab.on{color:#ee4d2d;border-bottom:2px solid #ee4d2d;font-weight:800}
+.subtabs{display:flex;gap:8px;padding:10px 16px}
+.subtabs button{border:1px solid #e2e6ec;background:#fff;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer}
+.subtabs button.on{color:#ee4d2d;border-color:#ee4d2d}
+/* banner */
+.banner{margin:0 16px 10px;background:#eef4ff;border:1px solid #d3e2ff;border-radius:6px;padding:9px 12px;font-size:12px;color:#3b4d63}
+.banner a{color:#2f80ed;text-decoration:none;font-weight:700}
+/* filters */
+.filters{padding:0 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.frow{display:flex;align-items:center;gap:8px;border:1px solid #e8ebf0;border-radius:6px;padding:6px 10px;background:#fff;font-size:12px;min-width:0}
+.frow label{color:#5b6b7f;white-space:nowrap}
+.frow input,.frow select{border:none;outline:none;flex:1;font-size:12px;color:#8a97a8}
+.checks{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px}
+.ck{color:#ee4d2d;font-weight:800}
+.actions{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px}
+.btn{border-radius:6px;padding:8px 18px;font-size:12px;font-weight:800;cursor:pointer;border:1px solid #e2e6ec;background:#fff}
+.btn.primary{background:#ee4d2d;border-color:#ee4d2d;color:#fff}
+.toolbar{display:flex;gap:8px;padding:6px 16px 10px;align-items:center}
+.toolbar .btn{padding:7px 14px}
+.right{margin-left:auto;color:#5b6b7f;font-size:12px;border:1px solid #e2e6ec;border-radius:6px;padding:7px 12px;background:#fff}
+/* table */
+.tblwrap{margin:0 16px 20px;border:1px solid #eef0f3;border-radius:8px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:980px}
+th{background:#f7f8fb;text-align:left;padding:10px;color:#2b3440;font-size:11.5px;white-space:nowrap}
+td{padding:10px;border-top:1px solid #f0f2f5;vertical-align:top}
+.mono{font-family:Consolas,monospace}
+.st{font-size:11px;color:#5b6b7f}
+.act{color:#2f80ed;cursor:pointer;white-space:nowrap}
+.act:hover{text-decoration:underline}
+.station{color:#5b6b7f;font-size:11.5px;line-height:1.7}
+.station b{color:#111}
+/* toast + spinner */
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1d2b3c;color:#fff;padding:10px 16px;border-radius:9px;font-size:12.5px;display:none;z-index:50}
+#spin{position:fixed;inset:0;background:rgba(20,30,45,.35);display:none;align-items:center;justify-content:center;z-index:40;color:#fff;font-weight:800}
+@media(max-width:900px){.sidebar{display:none}.filters{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="spin">Đang tải…</div>
+<div class="layout">
+<div class="sidebar">
+<div class="brand"><span class="spx">SPX</span><span class="live">LIVE</span></div>
+<div class="soc">HN2 SOC ▾</div>
+<div class="search">⌕ Search Menu</div>
+<div class="menu">
+<div class="mi"><span class="ic">▦</span>Dashboard ⌄</div>
+<div class="mi"><span class="ic">📦</span>Pickup ⌄</div>
+<div class="mi"><span class="ic">◷</span>Smart Pickup Planning ⌄</div>
+<div class="mi"><span class="ic">📥</span>Inbound ⌄</div>
+<div class="mi"><span class="ic">📤</span>Outbound ⌄</div>
+<div class="mi"><span class="ic">🛡</span>Audit Management ⌄</div>
+<div class="mi"><span class="ic">↩</span>Return ⌄</div>
+<div class="mi"><span class="ic">🎫</span>Ticket Management ⌄</div>
+<div class="mi active"><span class="ic">❗</span>Exception Handling ⌄</div>
+<div class="mi"><span class="ic">🏠</span>Station Management ⌄</div>
+<div class="mi"><span class="ic">🛠</span>Operation Support ⌄</div>
+<div class="mi"><span class="ic">📋</span>Case Management ⌄</div>
+<div class="mi"><span class="ic">💰</span>Finance ⌄</div>
+<div class="mi"><span class="ic">🧾</span>Order Management ⌄</div>
+<div class="mi"><span class="ic">🚚</span>LineHaul ⌃</div>
+<div class="mi sub">Linehaul Trips</div>
+<div class="mi sub">Onsite Registration</div>
+</div>
+</div>
+<div class="main">
+<div class="topbar">
+<span class="crumb">Exception Handling / <b>Danh sách ngoại lệ</b></span>
+<span style="flex-basis:100%;height:0"></span>
+<input type="text" value="10/06/2026 08:00 AM">
+<input type="text" value="10/06/2026 10:00 PM">
+<span class="st">Auto (10m)</span><span class="toggle"></span>
+<button class="pillbtn p-blue">Ongoing</button>
+<button class="pillbtn p-green">Completed</button>
+<button class="pillbtn p-blue">Sync All</button>
+<button class="pillbtn p-orange">Outbound</button>
+<button class="pillbtn p-amber">📦 Backlog</button>
+<span class="user"><span>🔔</span><span>English ▾</span><span class="avatar">D</span><span>duc.nguyenvan05 ▾</span></span>
+</div>
+<div class="stats">
+<div class="stat c-total"><div class="lb">TOTAL</div><div class="big">107</div><div class="sub">88,351</div></div>
+<div class="stat c-load"><div class="lb">LƯU KHO</div><div class="big">15</div><div class="sub">13,998</div></div>
+<div class="stat c-dep"><div class="lb">RESOLVE</div><div class="big">82</div><div class="sub">57,814</div></div>
+<div class="stat c-arr"><div class="lb">THANH LÝ</div><div class="big">3</div><div class="sub">36</div></div>
+<div class="stat c-un"><div class="lb">TỒN &gt;3 NGÀY</div><div class="big">7</div><div class="sub">6,503</div></div>
+<span class="upd">Cập nhật 13:38:03</span>
+<button class="dashbtn" onclick="toast('Mở Dashboard tổng quan (demo)')">◼ Dashboard</button>
+</div>
+<div class="tabs"><div class="tab on">Pending</div><div class="tab" onclick="toast('Tab Handedover (demo)')">Handedover</div><div class="tab" onclick="toast('Tab Ended (demo)')">Ended</div></div>
+<div class="subtabs"><button>All</button><button class="on">Box / Item tồn</button><button>Outbound</button></div>
+<div class="banner">ⓘ STA Range: 2026/10/05 13:37-2026/10/07 13:37 <a href="#" onclick="toast('Mở chọn nhanh thời gian (demo)');return false">Edit</a><br>Dữ liệu làm mới mỗi 10 phút. Mockup tĩnh — bấm Search để xem spinner + toast demo.</div>
+<div class="filters">
+<div class="frow" style="grid-column:1/-1"><label>From</label><span class="checks"><span class="ck">☑ All</span><span class="ck">☑ SOC</span><span>☑ LM Hub</span><span>☑ FM Hub</span><span>☑ AM Hub</span><span>☑ WH</span><span>☑ Operator Hub</span><span>☑ FBS Warehouse</span></span></div>
+<div class="frow"><label>Mã Box/Item</label><input placeholder="Please Input" id="fCode"></div>
+<div class="frow"><label>Người tạo</label><select><option>Please Select</option><option>duc.nguyenvan05</option></select></div>
+<div class="frow"><label>Bill xử lý</label><input placeholder="SPXVN…"></div>
+<div class="frow"><label>Loại</label><select><option>Please Select</option><option>Box</option><option>Item</option></select></div>
+<div class="frow"><label>Trạng thái</label><select><option>Lưu kho ×</option><option>Resolve</option><option>Thanh lý</option></select></div>
+<div class="frow"><label>Kệ / Ghi chú</label><select><option>Please Select</option></select></div>
+</div>
+<div class="actions"><button class="btn primary" onclick="demoSearch()">Search</button><button class="btn" onclick="toast('Đã reset bộ lọc (demo)')">Reset</button><button class="btn" style="border:none;color:#2f80ed" onclick="toast('Mở thêm bộ lọc (demo)')">More ⌄</button></div>
+<div class="toolbar"><button class="btn" onclick="toast('Bật TV Mode (demo)')">🖵 TV Mode</button><button class="btn" onclick="toast('Mở TV Mode Setting (demo)')">TV Mode Setting</button><button class="btn" onclick="toast('Xuất Excel (demo)')">Export</button><button class="btn" onclick="toast('Lịch sử export (demo)')">Export History</button><span class="right">Automatic Unloading Log</span></div>
+<div class="tblwrap">
+<table>
+<tr><th>⚙ Mã Box/Item</th><th>Tên / Mô tả</th><th>Trạm / Kệ</th><th>Loại</th><th>Ngày tạo</th><th>Lưu kho</th><th>Bill</th><th>Dock</th><th>Loading</th><th>Status</th><th>Action</th></tr>
+<tr><td class="mono">Box.06-10-2026.1</td><td>20261004SPX1T9C0 T TC Pick Hòa Bình-Hòa Bình 2-Kỳ Sơn-MEGA SOC 18:3001</td><td class="station">[330]06-HBH Hòa Bình Hub<br>[1856]06-HBH Hòa Bình 2 Hub<br>[1485]06-HBY Kỳ Sơn Hub<br>[1701]BN A Mega SOC<br>[1959]BN B Mega SOC<br><b>[2029]HN2 SOC</b></td><td>Truck_1T9</td><td>10-05 16:52</td><td style="color:#0d9a50;font-weight:800">10-04 22:54</td><td class="st">-</td><td class="st">-</td><td class="st">-</td><td>Lưu kho</td><td><span class="act" onclick="toast('Mở chi tiết Box.06-10-2026.1 (demo)')">View</span> <span class="act" onclick="toast('Mở Resolve Box.06-10-2026.1 (demo)')">Resolve</span></td></tr>
+<tr><td class="mono">Item.06-10-2026.3</td><td>Khăn màu đỏ — không bill</td><td class="station">[974]14-BKN Bắc Kạn Hub<br><b>[2029]HN2 SOC — Kệ B2</b></td><td>Item</td><td>10-06 09:15</td><td>0 ngày</td><td class="mono">SPXVN123456789</td><td class="st">-</td><td class="st">-</td><td>Resolve</td><td><span class="act" onclick="toast('Mở chi tiết Item.06-10-2026.3 (demo)')">View</span></td></tr>
+<tr><td class="mono">Box.05-10-2026.21</td><td>Thùng 12 áo thun hoàn, seal còn nguyên</td><td class="station">[2029]HN2 SOC — Kệ B2</td><td>Box</td><td>10-05 08:02</td><td>1 ngày</td><td class="st">-</td><td class="st">-</td><td class="st">-</td><td>Thanh lý</td><td><span class="act" onclick="toast('Mở chi tiết Box.05-10-2026.21 (demo)')">View</span></td></tr>
+</table>
+</div>
+</div>
+</div>
+<div id="toast"></div>
+<script>
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none';},2200);}
+function demoSearch(){var s=document.getElementById('spin');var c=document.getElementById('fCode');s.style.display='flex';setTimeout(function(){s.style.display='none';toast(c&&c.value?('Tìm: '+c.value+' — 3 kết quả demo'):('Đã tìm — 3 kết quả demo'));},700);}
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&document.activeElement&&document.activeElement.id==='fCode')demoSearch();});
+</script>
+</body>
+</html>
