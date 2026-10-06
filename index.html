@@ -2,7 +2,7 @@
 <html lang="vi" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>SPX Exception Handling</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -256,7 +256,7 @@ header{flex-wrap:wrap}
 #btnCreate{font-size:14px;padding:12px 22px;border-radius:12px}
 #btnCreateTop{display:none}
 @media(min-width:900px){#btnCreateTop{display:block}.createrow{display:none}}
-@media(min-width:900px){#camMain{display:none}}
+@media(min-width:900px){#camMain,#camLiq,#btnScanBill{display:none}}
 
 /* ===== lightbox (kieu AppSheet: nen den, giua man hinh) ===== */
 #lightbox{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;z-index:99;touch-action:none}
@@ -757,6 +757,7 @@ if(hasGs())loadErr='Không tải được chi tiết từ server — '+(e&&e.mes
 }
 paintDetail(code,loadErr);
 }
+var rsDraft={code:null,bill:''};
 async function paintDetail(code,loadErr){
 var it=state.detail.item;
 document.getElementById('detailTitle').textContent=it.code||'';
@@ -766,7 +767,9 @@ document.getElementById('btnPrevDetail').disabled=vi<=0;
 document.getElementById('btnNextDetail').disabled=vi<0||vi>=vis.length-1;
 renderDetailBody();
 renderTimeline();
-document.getElementById('resolveBill').value='';
+var rbEl=document.getElementById('resolveBill');
+var curBill=rbEl.value;
+rbEl.value='';
 document.getElementById('rsStep2').style.display='none';
 var isAdm=(state.me&&state.me.role)==='ADMIN';
 document.getElementById('btnEditDetail').style.display=isAdm?'':'none';
@@ -774,6 +777,12 @@ document.getElementById('editModal').classList.remove('open');
 try{if(!state.me)await loadMe();}catch(e){}
 var done=it.status&&it.status!=='chua_xu_ly';
 document.getElementById('btnGoResolve').style.display=done?'none':'';
+if(!done&&rsDraft.code===it.code){
+document.getElementById('rsStep2').style.display='block';
+document.getElementById('btnGoResolve').style.display='none';
+rbEl.value=rsDraft.bill||curBill;
+rsDraft.bill=rbEl.value;
+}else if(rsDraft.code&&rsDraft.code!==it.code){rsDraft={code:null,bill:''};}
 if(loadErr)msg('msgDetail',loadErr);else msg('msgDetail','',true);
 }
 function detailPhotos_(it){
@@ -964,6 +973,7 @@ msg('msgDetail','Đã chuyển '+code+' sang Resolve.',true);
 try{
 var r=await gs('resolveItem',[code,bill]);
 if(!r.ok)throw new Error(r.error);
+rsDraft={code:null,bill:''};
 await refreshDetail(code);
 }catch(e){
 dropPending(code,entry);
@@ -1259,11 +1269,12 @@ document.getElementById('btnPrevDetail').onclick=function(){detailNav(-1);};
 document.getElementById('btnNextDetail').onclick=function(){detailNav(1);};
 function syncScanClear(){var s=document.getElementById('scanMain'),b=document.getElementById('scanClear');if(s&&b)b.classList.toggle('show',s.value.trim().length>0);}
 document.getElementById('scanMain').addEventListener('input',function(){state.filter=this.value.trim();syncScanClear();renderGrid();});
-document.getElementById('btnGoResolve').onclick=function(){document.getElementById('rsStep2').style.display='block';document.getElementById('btnGoResolve').style.display='none';document.getElementById('resolveBill').focus();};
-document.getElementById('btnCancelResolve').onclick=function(){document.getElementById('rsStep2').style.display='none';document.getElementById('btnGoResolve').style.display='';};
+document.getElementById('btnGoResolve').onclick=function(){if(state.detail&&state.detail.item)rsDraft={code:state.detail.item.code,bill:document.getElementById('resolveBill').value};document.getElementById('rsStep2').style.display='block';document.getElementById('btnGoResolve').style.display='none';document.getElementById('resolveBill').focus();};
+document.getElementById('btnCancelResolve').onclick=function(){rsDraft={code:null,bill:''};document.getElementById('rsStep2').style.display='none';document.getElementById('btnGoResolve').style.display='';};
 document.getElementById('btnConfirmResolve').onclick=doResolve;
 document.getElementById('btnScanBill').onclick=function(){toggleCam('resolveBill');};
 document.getElementById('resolveBill').addEventListener('keydown',function(e){if(e.key==='Enter')doResolve();});
+document.getElementById('resolveBill').addEventListener('input',function(){if(state.detail&&state.detail.item&&rsDraft.code===state.detail.item.code)rsDraft.bill=this.value;});
 document.getElementById('btnPrintDetail').onclick=function(){if(state.detail)doPrint(state.detail.item.code);};
 document.getElementById('navMain').onclick=function(){showLiq(false);};
 document.getElementById('navLiq').onclick=function(){showLiq(true);};

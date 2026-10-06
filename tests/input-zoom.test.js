@@ -14,6 +14,7 @@ test('input-zoom: khong khoa zoom chu dong cua user + giu focus', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   const vp = html.match(/<meta name="viewport" content="([^"]+)">/);
   assert.ok(vp);
-  assert.ok(!/maximum-scale|user-scalable=no/.test(vp[1]));
+  assert.ok(/maximum-scale=1/.test(vp[1]));
+  assert.ok(!/user-scalable=no/.test(vp[1]));
   assert.ok(html.includes("document.getElementById('resolveBill').focus()"));
 });

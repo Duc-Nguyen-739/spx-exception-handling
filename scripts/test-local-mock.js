@@ -239,6 +239,13 @@ async function main() {
     const lbClosed = await evalIn(ws, `!document.getElementById('lightbox').classList.contains('open')`);
     check('Lightbox dong bang nut X', lbClosed.value === true, String(lbClosed.value));
 
+    await evalIn(ws, `openDetail('Box.06-10-2026.1')`);
+    await waitUntil(ws, "document.getElementById('detailTitle').textContent.includes('Box.06-10-2026.1')", 5000);
+    await evalIn(ws, `openDetail('Box.06-10-2026.1'); document.getElementById('btnGoResolve').click(); document.getElementById('resolveBill').value='SPXVN9';`);
+    await sleep(600);
+    const draft = await evalIn(ws, `JSON.stringify({open: document.getElementById('rsStep2').style.display, bill: document.getElementById('resolveBill').value})`);
+    const DF = JSON.parse(draft.value);
+    check('Fetch nen khong day form Resolve', DF.open === 'block' && DF.bill === 'SPXVN9', draft.value);
     await evalIn(ws, `document.getElementById('scanMain').value='SPXVN1'; document.getElementById('scanMain').dispatchEvent(new Event('input'))`);
     const scShow = await evalIn(ws, `document.getElementById('scanClear').classList.contains('show')`);
     check('Nut xoa hien khi co chu', scShow.value === true, String(scShow.value));
