@@ -425,7 +425,7 @@ function create_(kind, p) {
       ph.appendRow([code, jobs[k][0], ids[jobs[k][0]], at]);
     }
 
-    getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, '', 'chua_xu_ly', by, 'Tạo mới' + (shareOk ? '' : ' (ảnh chưa share được)')]);
+    getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, '', 'chua_xu_ly', by, 'Tạo mới']);
     var created = { code: code, created_at: at, description: desc, kind: kind, photo_path_outer: outerId, photo_path_product: productId, status: 'chua_xu_ly', status_note: '', mvdn: '', trip: '', reporter: by, note: String(p.note || '').trim() };
     return { code: code, shareOk: shareOk, item: toClient_(created) };
   });

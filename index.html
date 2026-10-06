@@ -672,6 +672,23 @@ if(r&&r.ok){state.detailCache[code]=r.data;upsertItem(r.data.item);if(state.deta
 }).catch(function(){});
 return;
 }
+var lc=findCached(code)||state.items.filter(function(x){return x.code===code;})[0]||null;
+if(lc){
+state.detail={item:lc,history:[]};
+paintDetail(code,'');
+msg('msgDetail','Đang tải chi tiết…',true);
+try{
+var r=await gs('getItem',[code]);
+if(!r.ok)throw new Error(r.error);
+state.detail=r.data;
+state.detailCache[code]=r.data;
+upsertItem(r.data.item);
+paintDetail(code,'');
+}catch(e){
+msg('msgDetail','Không tải được chi tiết từ server — '+(e&&e.message||e));
+}
+return;
+}
 msg('msgDetail','Đang tải…',true);
 var loadErr='';
 try{
@@ -708,7 +725,7 @@ if(loadErr)msg('msgDetail',loadErr);else msg('msgDetail','',true);
 }
 function detailBodyHTML(it){
 var h='<div class="kv"><b>Mã sản phẩm</b><span class="val mono">'+esc(it.code||'')+'</span></div>'+
-phBox('ẢNH NGOẠI QUAN',it.imgOuter)+
+((it.kind==='Box'||it.imgOuter)?phBox('ẢNH NGOẠI QUAN',it.imgOuter):'')+
 phBox('ẢNH SẢN PHẨM',it.imgProduct);
 (it.extras||[]).forEach(function(u,i){h+=phBox('ẢNH BỔ SUNG '+(i+1),u);});
 h+='<div class="kv"><b>Loại</b><span class="val">'+esc(it.kind||'')+'</span></div>'+
@@ -1139,6 +1156,7 @@ applyTheme(savedTheme==='dark'?'dark':'light');
 
 window.addEventListener('DOMContentLoaded',function(){
 loadGrid();loadMe();
+try{if(!state._poll)state._poll=setInterval(function(){if(!document.hidden)loadGrid({silent:true});},300000);}catch(e){}
 renderSlots('Box');renderSlots('Item');
 document.getElementById('btnTheme').onclick=function(){
 applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
