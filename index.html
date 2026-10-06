@@ -50,7 +50,10 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 
 /* ===== scan bar ===== */
 .scanbar{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 13px;margin-bottom:10px}
-#viewMain .scanbar{max-width:700px;margin:0 auto 10px}
+#viewMain .scanbar{background:none;border:none;padding:0;position:relative;justify-content:center}
+#viewMain .search-group{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 13px;flex:0 1 600px;min-width:0}
+#viewMain .search-group input{flex:1;min-width:0;margin:0;text-align:center}
+@media(min-width:600px){#viewMain #btnCreateMain{position:absolute;right:0;top:50%;transform:translateY(-50%)}}
 .scanbar svg{color:var(--o);flex:none}
 .scanbar input{border:none;background:transparent;padding:9px 0;font-size:14px;font-weight:600;flex:0 1 480px;min-width:0;margin:0 auto;text-align:center}
 .scanbar .create-big{padding:12px 22px;font-size:14px;white-space:nowrap}
@@ -315,9 +318,11 @@ header{flex-wrap:wrap}
 
 <main id="viewMain">
 <div class="scanbar">
+<div class="search-group">
 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
 <input id="scanMain" placeholder="Nhập mã để tìm kiếm…" inputmode="text">
 <button id="camMain">📷 Quét</button>
+</div>
 <button id="btnCreateMain" class="primary create-big">＋ Create</button>
 </div>
 <div id="reader" style="display:none"></div>
