@@ -50,6 +50,8 @@ CDP verify: measure card cells (`::before` content, `white-space`, `grid-*`, fon
 
 **Integrated from archived prompts:** Token-first analysis (grep tokens/colors/spacing/type/shadows/radii + read 5–10 components before deciding); **AI slop blacklist:** glassmorphism everywhere, cyan-purple gradient, gradient text, repeated icon+heading card grid, nested cards, large rounded icons above headings, hero metric layout, center-align all, pure #000/#fff, bounce easing — each = P1 if violated.
 
+**Craft-floor supplement (impeccable v4.5.0):** eyebrow/kicker above heading = ban; side `border-left/right` >1px on cards/callouts = P1; hard `4px 4px 0` shadow outside neobrutalism = P1; emoji/unicode glyph as icon = P1 (use single-stroke SVG); body measure 65–75ch, motion one authored moment, theme browser surfaces (selection/caret/scrollbar/focus-ring).
+
 ## Phase 2 — Accessibility Audit (WCAG 2.2)
 
 Checklist:
