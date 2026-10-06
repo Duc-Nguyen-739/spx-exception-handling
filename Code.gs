@@ -426,7 +426,8 @@ function create_(kind, p) {
     }
 
     getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, '', 'chua_xu_ly', by, 'Tạo mới' + (shareOk ? '' : ' (ảnh chưa share được)')]);
-    return { code: code, shareOk: shareOk };
+    var created = { code: code, created_at: at, description: desc, kind: kind, photo_path_outer: outerId, photo_path_product: productId, status: 'chua_xu_ly', status_note: '', mvdn: '', trip: '', reporter: by, note: String(p.note || '').trim() };
+    return { code: code, shareOk: shareOk, item: toClient_(created) };
   });
 }
 

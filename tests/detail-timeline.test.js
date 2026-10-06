@@ -16,7 +16,7 @@ function makeEnv(fakeItem, fakeHistory) {
       style: {}, children: [], onclick: null, onchange: null,
       appendChild(c) { this.children.push(c); return c; },
       addEventListener() {}, focus() {}, click() {},
-      querySelector() { return null; }, querySelectorAll() { return []; },
+      querySelector() { return makeEl(); }, querySelectorAll() { return []; },
       getAttribute(k) { return this['@' + k]; },
       setAttribute(k, v) { this['@' + k] = v; },
     };

@@ -465,7 +465,7 @@ var DEMO=[
 {code:'Box.01-10-2026.21',kind:'Box',createdAt:'01/10/2026 09:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo box',note:'',status:'chua_xu_ly',statusLabel:'Lưu kho',bill:'',days:5},
 {code:'Item.01-10-2026.3',kind:'Item',createdAt:'01/10/2026 10:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo item',note:'',status:'da_tim_bill',statusLabel:'Resolve',bill:'SPXVN1',days:5}
 ];
-var state={items:[],detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{}};
+var state={items:[],itemMap:{},detailCache:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{}};
 function hasGs(){return typeof google!=='undefined'&&google.script&&google.script.run;}
 function gs(fn,args){return new Promise(function(res,rej){
 if(!hasGs()){rej(new Error('LOCAL'));return;}
@@ -524,18 +524,40 @@ return '<div class="tl-time">'+esc(fmtAt(x.at))+'</div>'
 +(x.bill?'<div class="tl-bill">'+esc(x.bill)+'</div>':'');
 }
 
-async function loadGrid(){
-msg('msgMain','Đang tải…',true);
+function normItem_(it){if(it&&it.days==null)it.days=daysOf(it.createdAt);return it;}
+function upsertItem(it){
+if(!it||!it.code)return;
+normItem_(it);
+var cur=state.itemMap[it.code];
+if(cur){for(var k in it)cur[k]=it[k];}
+else{state.itemMap[it.code]=it;state.items.push(it);}
+}
+function mergeItems(list){(list||[]).forEach(function(it){upsertItem(it);});}
+function findCached(code){return state.itemMap[code]||null;}
+async function refreshDetail(code){
+try{
+var r=await gs('getItem',[code]);
+if(r&&r.ok){state.detailCache[code]=r.data;upsertItem(r.data.item);if(state.detail&&state.detail.item&&state.detail.item.code===code){state.detail=r.data;paintDetail(code,'');}return true;}
+}catch(e){}
+return false;
+}
+async function loadGrid(opts){
+opts=opts||{};
+if(state._loadingGrid)return state._loadingGrid;
+if(!opts.silent)msg('msgMain','Đang tải…',true);
+state._loadingGrid=(async function(){
 try{
 var r=await gs('listItems',[100]);
 if(!r.ok)throw new Error(r.error);
-state.items=r.data;
+mergeItems(r.data);
 }catch(e){
-if(e&&e.message==='LOCAL'){state.items=DEMO.slice();}
-else{state.items=[];renderGrid();renderSummary();msg('msgMain','Không tải được dữ liệu từ Sheet — '+(e&&e.message||e));return;}
+if(e&&e.message==='LOCAL'){mergeItems(DEMO.slice());}
+else{if(!state.items.length){renderGrid();renderSummary();msg('msgMain','Không tải được dữ liệu từ Sheet — '+(e&&e.message||e));}return;}
 }
-state.items.forEach(function(it){if(it.days==null)it.days=daysOf(it.createdAt);});
-renderGrid();renderSummary();msg('msgMain','',true);
+state.items.forEach(function(it){normItem_(it);});
+renderGrid();renderSummary();if(!opts.silent)msg('msgMain','',true);
+})();
+try{await state._loadingGrid;}finally{state._loadingGrid=null;}
 }
 function renderSummary(){
 var open=state.items.filter(function(it){return it.status==='chua_xu_ly';});
@@ -553,6 +575,7 @@ b.className='pill'+(state.statusFilter===d[0]?' on':'');b.setAttribute('data-k',
 b.innerHTML=esc(d[1])+'<span class="n">'+d[2]+'</span>';
 b.onclick=function(){state.statusFilter=d[0];renderGrid();renderSummary();};
 p.appendChild(b);});
+var rf=document.createElement('button');rf.type='button';rf.className='pill';rf.title='Tải đơn mới từ server (giữ cache cũ)';rf.innerHTML='↻ Mới';rf.onclick=function(){loadGrid();};p.appendChild(rf);
 renderSideFilters();
 }
 }
@@ -636,19 +659,33 @@ ph.querySelector('button').onclick=function(){if(state.detail&&state.detail.item
 };});}
 
 async function openDetail(code){
-msg('msgDetail','Đang tải…',true);
 document.getElementById('detailModal').classList.add('open');
 document.body.classList.add('has-drawer');
+var cached=state.detailCache[code];
+if(cached){
+state.detail=cached;
+paintDetail(code,'');
+gs('getItem',[code]).then(function(r){
+if(r&&r.ok){state.detailCache[code]=r.data;upsertItem(r.data.item);if(state.detail&&state.detail.item&&state.detail.item.code===code){state.detail=r.data;paintDetail(code,'');}}
+}).catch(function(){});
+return;
+}
+msg('msgDetail','Đang tải…',true);
 var loadErr='';
 try{
 var r=await gs('getItem',[code]);
 if(!r.ok)throw new Error(r.error);
 state.detail=r.data;
+state.detailCache[code]=r.data;
+upsertItem(r.data.item);
 }catch(e){
-var f=state.items.filter(function(x){return x.code===code;})[0]||{code:code};
+var f=findCached(code)||state.items.filter(function(x){return x.code===code;})[0]||{code:code};
 state.detail={item:f,history:[]};
 if(hasGs())loadErr='Không tải được chi tiết từ server — '+(e&&e.message||e);
 }
+paintDetail(code,loadErr);
+}
+async function paintDetail(code,loadErr){
 var it=state.detail.item;
 document.getElementById('detailTitle').textContent=it.code||'';
 var vis=visibleItems(),vi=-1;
@@ -696,8 +733,12 @@ document.getElementById('detailHist').innerHTML=hh;
 document.getElementById('histCnt').textContent=list.length;
 }
 function applyLocalItem(code,fn){
-state.items.forEach(function(x){if(x.code===code)fn(x);});
-if(state.detail&&state.detail.item&&state.detail.item.code===code)fn(state.detail.item);
+var seen=[];
+function once(o){if(o&&seen.indexOf(o)<0){seen.push(o);fn(o);}}
+state.items.forEach(function(x){if(x.code===code)once(x);});
+once(state.itemMap[code]);
+var dc=state.detailCache[code];if(dc)once(dc.item);
+if(state.detail&&state.detail.item&&state.detail.item.code===code)once(state.detail.item);
 renderGrid();renderSummary();renderDetailBody();renderTimeline();
 }
 function applyLocalStatus(code,st){
@@ -820,10 +861,10 @@ document.getElementById('editModal').classList.remove('open');
 try{
 var r=await gs('adminEditItem',[{code:code,description:desc,note:noteV,deleteSlots:editDel,addPhotos:editAdd,toStatus:editStatusSel?EDIT_ST[editStatusSel]:'',bill:bill}]);
 if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi lưu');
-await loadGrid();await openDetail(code);
+await refreshDetail(code);
 }catch(e){
 entries.forEach(function(e){dropPending(code,e);});
-await loadGrid();await openDetail(code);
+await loadGrid({silent:true});await refreshDetail(code);
 msg('msgDetail',e.message||'Lỗi lưu');
 }
 }
@@ -839,10 +880,11 @@ msg('msgDetail','Đã chuyển '+code+' sang Resolve.',true);
 try{
 var r=await gs('resolveItem',[code,bill]);
 if(!r.ok)throw new Error(r.error);
-await loadGrid();await openDetail(code);
+await refreshDetail(code);
 }catch(e){
 dropPending(code,entry);
-await loadGrid();await openDetail(code);
+applyLocalStatus(code,from);
+await refreshDetail(code);
 msg('msgDetail',e.message||'Lỗi resolve');
 }
 }
@@ -932,7 +974,9 @@ state.lastCreated=r.data.code;
 if(r.data.shareOk===false)msg('msgCreate','Đã tạo '+r.data.code+' — ảnh chưa share được, báo ADMIN kiểm tra quyền share Drive.');
 else msg('msgCreate','Đã tạo '+r.data.code,true);
 boxPhotos=[];itemPhotos=[];renderSlots('Box');renderSlots('Item');
-await loadGrid();await refreshPreview();
+if(r.data.item)upsertItem(r.data.item);
+else await loadGrid({silent:true});
+renderGrid();renderSummary();await refreshPreview();
 showCreateQR(r.data.code);
 }catch(e){msg('msgCreate',e.message||'Lỗi tạo mã');}
 }
@@ -956,9 +1000,10 @@ return f?f.status:'';
 }
 async function liqAdd(code){
 code=String(code||'').trim();if(!code)return;
-var found=null;
-try{var r=await gs('getItem',[code]);if(r.ok)found=r.data.item;}catch(e){}
-if(!found)found=state.items.filter(function(x){return x.code===code;})[0];
+var found=findCached(code)||state.items.filter(function(x){return x.code===code;})[0]||null;
+if(!found){
+try{var r=await gs('getItem',[code]);if(r&&r.ok){found=r.data.item;upsertItem(found);}}catch(e){}
+}
 if(!found){msg('msgLiq','Không Có: '+code);return;}
 var st=found.status||'chua_xu_ly';
 if(st==='thanh_ly'){msg('msgLiq','Đã Thanh Lý: '+code);return;}
@@ -988,11 +1033,10 @@ if(!r.ok)throw new Error(r.error);
 state.liq=[];renderLiq();
 document.getElementById('liqCodeWrap').style.display='none';
 document.getElementById('liqCode').value='';
-await loadGrid();
+renderGrid();renderSummary();
 }catch(e){
 entries.forEach(function(en){dropPending(en.code,en);});
 codes.forEach(function(cd){applyLocalStatus(cd,prev[cd]);});
-await loadGrid();
 msg('msgLiq',e.message||'Lỗi thanh lý');
 }
 }
@@ -1040,8 +1084,8 @@ var r=await gs('fixPhotoSharing',[]);
 if(!r.ok)throw new Error(r.error);
 var f=r.data.failed&&r.data.failed.length?(' Lỗi '+r.data.failed.length+' file.'):'';
 var via=r.data.domainOnly?' (share nội bộ — xem bằng email công ty).':'';
-msg('msgAccess','Đã share '+r.data.shared+'/'+r.data.total+' ảnh.'+via+f+' Mở lại Danh sách để kiểm tra.',true);
-await loadGrid();
+msg('msgAccess','Đã share '+r.data.shared+'/'+r.data.total+' ảnh.'+via+f,true);
+renderGrid();
 }catch(e){msg('msgAccess',e.message||'Lỗi sửa share');}
 }
 async function delUser(email){

@@ -120,13 +120,14 @@
 
   function create_(kind, p) {
     var code = (kind === 'Box' ? 'Box.' : 'Item.') + '06-10-2026.' + (ITEMS.length + 1);
-    ITEMS.unshift({
+    var it = {
       code: code, kind: kind, createdAt: '06/10/2026 18:30:00', createdBy: ME,
       imgOuter: '', imgProduct: '', description: (p && p.description) || '', note: (p && p.note) || '',
       status: 'chua_xu_ly', statusLabel: 'Lưu kho', bill: '', days: 0, extras: [], slots: []
-    });
+    };
+    ITEMS.unshift(it);
     HIST[code] = [{ at: '06/10/2026 18:30:00', code: code, from: '', to: 'chua_xu_ly', by: ME, note: 'Tạo mới', bill: '' }];
-    return { ok: true, data: { code: code, shareOk: true } };
+    return { ok: true, data: { code: code, shareOk: true, item: clone(it) } };
   }
 
   function makeChain(ok, err) {
