@@ -267,6 +267,9 @@ header{flex-wrap:wrap}
 #lbCap{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#fff;font-size:12px;font-weight:600}
 .ph img[data-ph]{cursor:zoom-in}
 .phstrip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.phstrip.n2{grid-template-columns:repeat(2,1fr)}
+.phstrip.n1{grid-template-columns:1fr;justify-items:center}
+.phstrip.n1 .thumb{max-width:260px;width:100%}
 .thumb{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:linear-gradient(135deg,#eef1f6,#e2e8f1)}
 .thumb img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
 .thumb .cap{position:absolute;left:0;right:0;bottom:0;background:rgba(23,43,72,.72);color:#fff;font-size:9px;font-weight:700;padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -779,7 +782,7 @@ return arr.filter(function(p){return !!p[1];});
 }
 function phStrip(photos){
 if(!photos.length)return '<div class="kvImg"><b>ẢNH</b><div class="ph"><div class="fb"><span class="big">\uD83D\uDCC6</span><span>Không có ảnh</span></div></div></div>';
-var h='<div class="kvImg"><b>ẢNH ('+photos.length+')</b><div class="phstrip">';
+var h='<div class="kvImg"><b>ẢNH ('+photos.length+')</b><div class="phstrip n'+Math.min(photos.length,3)+'">';
 photos.forEach(function(p){
 h+='<div class="thumb" data-url="'+esc(p[1])+'"><img data-ph loading="lazy" src="'+esc(p[1])+'"><span class="cap">'+esc(p[0])+'</span></div>';});
 return h+'</div></div>';

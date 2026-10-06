@@ -31,6 +31,14 @@ test('compact: dhead sticky + strip CSS co mat', () => {
   assert.ok(html.includes("function detailPhotos_(it){"));
 });
 
+test('compact: strip can theo so luong (1 giua, 2 deu, 3 nhu cu)', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes('.phstrip.n2{grid-template-columns:repeat(2,1fr)}'));
+  assert.ok(html.includes('.phstrip.n1{grid-template-columns:1fr;justify-items:center}'));
+  assert.ok(html.includes('.phstrip.n1 .thumb{max-width:260px;width:100%}'));
+  assert.ok(html.includes('<div class="phstrip n\'+Math.min(photos.length,3)+\'">'));
+});
+
 test('compact: fallback chiu duoc .thumb + caption lightbox', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes("im.closest('.ph')||im.closest('.thumb')"));
