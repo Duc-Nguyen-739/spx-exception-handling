@@ -435,12 +435,14 @@ header{flex-wrap:wrap}
 <div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea id="boxDesc" rows="2" placeholder="VD: Thùng 12 áo thun hoàn, seal còn nguyên…"></textarea></div>
 <div class="field"><label>GHI CHÚ</label><input id="boxNote" placeholder="Nơi để, bù đơn hàng…"></div>
 <div class="row"><button id="btnBoxPrint">🖨 In Mã</button><button id="btnBoxDone" class="primary">Confirm</button></div>
+<button id="btnBoxAgain" style="width:100%;margin-top:8px;display:none">＋ Tạo tiếp</button>
 </div>
 <div id="formItem" style="display:none">
 <div class="field"><label>MÃ ITEM (server cấp khi lưu)</label><input id="itemCode" class="mono" readonly placeholder="Item.(ngày-tháng-năm).(số tự sinh)"></div>
 <div class="field"><label>Ảnh *</label><div id="itemSlots"></div></div>
 <div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea id="itemDesc" rows="2"></textarea></div>
 <div class="row"><button id="btnItemPrint">🖨 In Mã</button><button id="btnItemDone" class="primary">Confirm</button></div>
+<button id="btnItemAgain" style="width:100%;margin-top:8px;display:none">＋ Tạo tiếp</button>
 </div>
 <div class="msg" id="msgCreate"></div>
 <div id="createResult" style="display:none;text-align:center;margin-top:10px">
@@ -971,14 +973,33 @@ try{
 var r=await gs(isBox?'createBox':'createItem',[{description:desc,note:note,outer:outer,product:product,extras:extras}]);
 if(!r.ok)throw new Error(r.error);
 state.lastCreated=r.data.code;
+var codeInput=document.getElementById(isBox?'boxCode':'itemCode');
+if(codeInput)codeInput.value=r.data.code;
 if(r.data.shareOk===false)msg('msgCreate','Đã tạo '+r.data.code+' — ảnh chưa share được, báo ADMIN kiểm tra quyền share Drive.');
 else msg('msgCreate','Đã tạo '+r.data.code,true);
-boxPhotos=[];itemPhotos=[];renderSlots('Box');renderSlots('Item');
 if(r.data.item)upsertItem(r.data.item);
 else await loadGrid({silent:true});
-renderGrid();renderSummary();await refreshPreview();
+renderGrid();renderSummary();
+setCreateDoneUI(true);
 showCreateQR(r.data.code);
 }catch(e){msg('msgCreate',e.message||'Lỗi tạo mã');}
+}
+function setCreateDoneUI(done){
+var b1=document.getElementById('btnBoxDone'),b2=document.getElementById('btnItemDone');
+var a1=document.getElementById('btnBoxAgain'),a2=document.getElementById('btnItemAgain');
+if(b1){b1.disabled=!!done;b1.textContent=done?'Đã lưu ✓':'Confirm';}
+if(b2){b2.disabled=!!done;b2.textContent=done?'Đã lưu ✓':'Confirm';}
+if(a1)a1.style.display=done?'block':'none';
+if(a2)a2.style.display=done?'block':'none';
+}
+async function resetCreateForNext(){
+boxPhotos=[];itemPhotos=[];renderSlots('Box');renderSlots('Item');
+document.getElementById('boxDesc').value='';document.getElementById('itemDesc').value='';
+document.getElementById('boxNote').value='';
+document.getElementById('createResult').style.display='none';
+msg('msgCreate','');
+setCreateDoneUI(false);
+await refreshPreview();
 }
 
 function renderLiq(){
@@ -1122,8 +1143,8 @@ renderSlots('Box');renderSlots('Item');
 document.getElementById('btnTheme').onclick=function(){
 applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 };
-document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';};
-document.getElementById('btnCreateTop').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';};
+document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';setCreateDoneUI(false);};
+document.getElementById('btnCreateTop').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';setCreateDoneUI(false);};
 document.getElementById('btnCreateMain').onclick=document.getElementById('btnCreateTop').onclick;
 function showCreateStep(n){
 state.createStep=n;
@@ -1142,6 +1163,8 @@ document.getElementById('optItem').onclick=function(){state.kind='Item';document
 document.getElementById('btnBackCreate').onclick=function(){showCreateStep(state.createStep===3?2:1);};
 document.getElementById('btnCloseCreate').onclick=function(){document.getElementById('createModal').classList.remove('open');};
 document.getElementById('btnBoxDone').onclick=submitCreate;
+document.getElementById('btnBoxAgain').onclick=resetCreateForNext;
+document.getElementById('btnItemAgain').onclick=resetCreateForNext;
 document.getElementById('btnItemDone').onclick=function(){state.kind='Item';submitCreate();};
 document.getElementById('btnBoxPrint').onclick=function(){if(state.lastCreated)doPrint(state.lastCreated);};
 document.getElementById('btnItemPrint').onclick=function(){if(state.lastCreated)doPrint(state.lastCreated);};
