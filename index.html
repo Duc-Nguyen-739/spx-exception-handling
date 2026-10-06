@@ -255,6 +255,16 @@ header{flex-wrap:wrap}
 @media(min-width:900px){#btnCreateTop{display:block}.createrow{display:none}}
 @media(min-width:900px){#camMain{display:none}}
 
+/* ===== lightbox (kieu AppSheet: nen den, giua man hinh) ===== */
+#lightbox{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;z-index:99;touch-action:none}
+#lightbox.open{display:block}
+#lightbox .bar{position:absolute;top:0;left:0;right:0;display:flex;gap:8px;align-items:center;padding:10px 12px;z-index:2}
+#lightbox button{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:19px;font-weight:700}
+#lightbox button:active{background:rgba(255,255,255,.28)}
+#lbStage{position:absolute;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#lbImg{max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+#lbCap{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#fff;font-size:12px;font-weight:600}
+.ph img[data-ph]{cursor:zoom-in}
 /* ===== print 4x6 ===== */
 #printArea{display:none}
 @page{size:4in 6in;margin:0}
@@ -456,6 +466,7 @@ header{flex-wrap:wrap}
 </div></div>
 
 <div class="modal" id="leaveModal"><div class="sheet" style="max-width:360px;text-align:center"><p id="leaveText" style="font-size:13.5px;font-weight:700">Bạn muốn hủy task này chứ?</p><div class="btnrow"><button id="btnLeaveOk" class="primary">Confirm</button><button id="btnLeaveCancel">Cancel</button></div></div></div>
+<div id="lightbox" role="dialog" aria-label="Xem ảnh phóng to"><div class="bar"><button id="lbBack" title="Đóng">‹</button><span style="flex:1"></span><button id="lbOut" title="Thu nhỏ">−</button><button id="lbIn" title="Phóng to">＋</button><button id="lbFit" title="Vừa màn hình">⟳</button><button id="lbX" title="Đóng">✕</button></div><div id="lbStage"><img id="lbImg" alt="Ảnh phóng to"></div><div id="lbCap"></div></div>
 <div id="printArea"><div id="qrBox"></div><div class="pcode" id="printCode"></div></div>
 
 <script>
@@ -648,10 +659,41 @@ g.appendChild(d);
 
 function phBox(label,url){
 if(!url)return '<div class="kvImg"><b>'+esc(label)+'</b><div class="ph"><div class="fb"><span class="big">\uD83D\uDCC6</span><span>Không có ảnh</span></div></div></div>';
-return '<div class="kvImg"><b>'+esc(label)+'</b><div class="ph" data-url="'+esc(url)+'"><a href="'+esc(url)+'" target="_blank" rel="noopener"><img data-ph loading="lazy" src="'+esc(url)+'"></a></div></div>';
+return '<div class="kvImg"><b>'+esc(label)+'</b><div class="ph" data-url="'+esc(url)+'"><img data-ph loading="lazy" src="'+esc(url)+'"></div></div>';
+}
+var lbScale=1,lbTx=0,lbTy=0,lbDrag=null;
+function lbApply(){var i=document.getElementById('lbImg');if(i)i.style.transform='translate('+lbTx+'px,'+lbTy+'px) scale('+lbScale+')';}
+function openLightbox(src,cap){
+if(!src)return;
+var lb=document.getElementById('lightbox');if(!lb)return;
+var im=document.getElementById('lbImg');im.src=src;
+document.getElementById('lbCap').textContent=cap||'';
+lbScale=1;lbTx=0;lbTy=0;lbApply();
+lb.classList.add('open');
+}
+function closeLightbox(){var lb=document.getElementById('lightbox');if(lb)lb.classList.remove('open');}
+function lbZoom(f){lbScale=Math.min(5,Math.max(1,lbScale*f));if(lbScale===1){lbTx=0;lbTy=0;}lbApply();}
+function initLightbox(){
+var lb=document.getElementById('lightbox');if(!lb)return;
+var im=document.getElementById('lbImg'),st=document.getElementById('lbStage');
+document.getElementById('lbX').onclick=closeLightbox;
+document.getElementById('lbBack').onclick=closeLightbox;
+document.getElementById('lbIn').onclick=function(){lbZoom(1.4);};
+document.getElementById('lbOut').onclick=function(){lbZoom(1/1.4);};
+document.getElementById('lbFit').onclick=function(){lbScale=1;lbTx=0;lbTy=0;lbApply();};
+st.addEventListener('click',function(e){if(e.target===st)closeLightbox();});
+im.addEventListener('click',function(e){e.stopPropagation();});
+im.addEventListener('dblclick',function(){if(lbScale>1){lbScale=1;lbTx=0;lbTy=0;}else{lbScale=2.5;}lbApply();});
+st.addEventListener('wheel',function(e){e.preventDefault();lbZoom(e.deltaY<0?1.15:1/1.15);},{passive:false});
+document.addEventListener('keydown',function(e){if(lb.classList.contains('open')&&e.key==='Escape')closeLightbox();});
+im.addEventListener('pointerdown',function(e){if(lbScale<=1)return;lbDrag={x:e.clientX-lbTx,y:e.clientY-lbTy};try{im.setPointerCapture(e.pointerId);}catch(err){}});
+im.addEventListener('pointermove',function(e){if(!lbDrag)return;lbTx=e.clientX-lbDrag.x;lbTy=e.clientY-lbDrag.y;lbApply();});
+im.addEventListener('pointerup',function(){lbDrag=null;});
+im.addEventListener('pointercancel',function(){lbDrag=null;});
 }
 function bindPhotoFallback(){
 document.getElementById('detailBody').querySelectorAll('img[data-ph]').forEach(function(im){
+im.onclick=function(){openLightbox(im.src||im.getAttribute('src'));};
 im.onerror=function(){
 var ph=im.closest('.ph'),url=im.src;
 photoFallback(im,url,function(){
@@ -1157,6 +1199,7 @@ applyTheme(savedTheme==='dark'?'dark':'light');
 window.addEventListener('DOMContentLoaded',function(){
 loadGrid();loadMe();
 try{if(!state._poll)state._poll=setInterval(function(){if(!document.hidden)loadGrid({silent:true});},300000);}catch(e){}
+try{initLightbox();}catch(e){}
 renderSlots('Box');renderSlots('Item');
 document.getElementById('btnTheme').onclick=function(){
 applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');

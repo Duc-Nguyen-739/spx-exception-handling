@@ -231,6 +231,14 @@ async function main() {
     check('Mốc Edit không lộ email ADMIN', !!(D && /ADMIN đổi trạng thái/.test(D.adminEntry) && !/@/.test(D.adminEntry)), D && D.adminEntry.replace(/\n/g, ' | '));
     check('Mốc Resolve nút thường vẫn hiện email', !!(D && /@/.test(D.resolveEntry)), D && D.resolveEntry.replace(/\n/g, ' | ').slice(0, 120));
 
+    await evalIn(ws, `openLightbox('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','Demo')`);
+    const lbOk = await waitUntil(ws, "document.getElementById('lightbox').classList.contains('open')", 3000);
+    check('Lightbox mo overlay giua man hinh', !!lbOk, lbOk ? 'open' : 'no open');
+    await evalIn(ws, `document.getElementById('lbX').click()`);
+    await sleep(200);
+    const lbClosed = await evalIn(ws, `!document.getElementById('lightbox').classList.contains('open')`);
+    check('Lightbox dong bang nut X', lbClosed.value === true, String(lbClosed.value));
+
     const errs = await evalIn(ws, `JSON.stringify(window.__PAGE_ERRORS__ || [])`);
     check('Không lỗi JS trên trang', errs.value === '[]', errs.value);
   } catch (e) {
