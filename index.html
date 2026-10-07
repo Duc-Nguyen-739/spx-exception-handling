@@ -57,7 +57,7 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 #viewPrint .psect{margin:6px 0 12px;font-size:15px;color:var(--navy);padding-left:10px;border-left:4px solid var(--o)}
 #viewPrint .pstep{font-size:12.5px;color:var(--mut);margin:12px 0 8px}
 #viewPrint .pstep::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#c3ccd8;margin-right:8px}
-#viewPrint .pcards{display:grid;grid-template-columns:repeat(2,minmax(0,370px));gap:12px;justify-content:start}
+#viewPrint .pcards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;justify-content:start;max-width:754px}
 #viewPrint .pcard{border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:24px 14px;font-size:15px;font-weight:600;text-align:center;cursor:pointer;color:var(--ink)}
 #viewPrint .pcard small{display:block;font-weight:400;font-size:11px;color:var(--mut);margin-top:6px}
 #viewPrint .pcard.on{border-color:var(--o);background:var(--tint);color:var(--o)}
@@ -167,7 +167,8 @@ html[data-theme=dark] .cnt small{color:#a4573d}
 button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;font-size:11.5px;padding:9px}
 .backhome{display:inline-flex!important;align-items:center;gap:8px;color:var(--o)!important;font-weight:800!important;font-size:14.5px!important;padding:10px 14px 10px 4px!important}
 .backhome svg{width:19px;height:19px;flex:none}
-@media(min-width:900px){#viewPrint{margin-left:28px;margin-top:16px}}
+/* Gotcha: khong margin-left cho #viewPrint (ID de margin-left cua main theo sidebar) — dich phai bang padding-left. */
+@media(min-width:900px){#viewPrint{margin-top:16px;padding-left:28px}}
 
 /* ===== users table ===== */
 table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;font-size:12px}
