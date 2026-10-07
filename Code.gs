@@ -86,13 +86,6 @@ function getSheet_(name, header) {
   return sh;
 }
 
-// Moi dong moi insert o dong 2 (moi nhat len dau) — batch 1 lan shift cho N dong.
-function prependRows_(sh, rows) {
-  if (!rows || !rows.length) return;
-  sh.insertRowsBefore(2, rows.length);
-  sh.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
-}
-
 function cellText_(v) {
   if (v instanceof Date) return Utilities.formatDate(v, TZ, 'dd/MM/yyyy HH:mm:ss');
   return v === null || v === undefined ? '' : String(v);
@@ -235,18 +228,15 @@ function readHeadItems_(maxRows) {
 function firstExtraMap_(codes) {
   var want = {};
   for (var i = 0; i < codes.length; i++) want[codes[i]] = true;
-  var map = {}, bestAt = {};
+  var map = {};
   var vals = readPhotosAll_();
   for (var j = 0; j < vals.length; j++) {
     var code = String(vals[j][0]);
-    if (!want[code]) continue;
+    if (!want[code] || map[code]) continue;
     var slot = String(vals[j][1]);
     if (slot === 'ngoai_quan' || slot === 'san_pham') continue;
     var url = thumbUrl_(vals[j][2]);
-    if (!url) continue;
-    var t = parseCreatedSmart_(cellText_(vals[j][3]), code);
-    var ms = t ? t.getTime() : -1;
-    if (!map[code] || (ms >= 0 && ms < bestAt[code])) { map[code] = url; bestAt[code] = ms; }
+    if (url) map[code] = url;
   }
   return map;
 }
@@ -286,7 +276,6 @@ function listFull(limit) {
         if (!want[hc]) continue;
         (histByCode[hc] = histByCode[hc] || []).push(logEntry_(log.rows[j], log.cols, hc));
       }
-      for (var hk in histByCode) sortHistAsc_(histByCode[hk], hk);
     }
     var out = r.items.map(function (o) {
       var t = toClient_(o);
@@ -315,12 +304,8 @@ function photosByCode_(want) {
   for (var i = 0; i < vals.length; i++) {
     var code = String(vals[i][0] || '').trim();
     if (!want[code]) continue;
-    (map[code] = map[code] || []).push({ slot: cellText_(vals[i][1]), fileId: cellText_(vals[i][2]), at: cellText_(vals[i][3]) });
+    (map[code] = map[code] || []).push({ slot: cellText_(vals[i][1]), fileId: cellText_(vals[i][2]) });
   }
-  for (var k in map) map[k].sort((function (ck) { return function (a, b) {
-    var da = parseCreatedSmart_(a.at, ck), db = parseCreatedSmart_(b.at, ck);
-    return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
-  }; })(k));
   return map;
 }
 
@@ -365,15 +350,6 @@ function logEntry_(row, c, code) {
   };
 }
 
-// Sheet tron 2 chieu (cu append, moi prepend) — sort theo `at` de timeline on dinh cu->moi.
-function sortHistAsc_(arr, code) {
-  arr.sort(function (a, b) {
-    var da = parseCreatedSmart_(a.at, code), db = parseCreatedSmart_(b.at, code);
-    return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
-  });
-  return arr;
-}
-
 function readLogRows_() {
   var sh = getSheet_('ActivityLog', LOG_HEADER);
   var last = sh.getLastRow();
@@ -391,7 +367,7 @@ function historyFor_(code) {
     if (String(r.rows[i][r.cols.code] || '').trim() !== want) continue;
     out.push(logEntry_(r.rows[i], r.cols, want));
   }
-  return sortHistAsc_(out, want);
+  return out;
 }
 
 function billOf_(from, to, note) {
@@ -435,7 +411,8 @@ function previewBulkCodes(kind, count) {
       for (var i = 0; i < n; i++) codes.push(prefix_(k) + datePart + '.' + (start + i));
       var at = nowStr_(), by = currentEmail_();
       var rows = codes.map(function (c) { return [c, "'" + at, by, k]; });
-      prependRows_(getSheet_('PrintedCodes', PRINTED_HEADER), rows);
+      var sh = getSheet_('PrintedCodes', PRINTED_HEADER);
+      sh.getRange(sh.getLastRow() + 1, 1, rows.length, PRINTED_HEADER.length).setValues(rows);
       return { codes: codes, kind: k };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
@@ -588,12 +565,14 @@ function create_(kind, p) {
 
     var row = [code, "'" + at, desc, kind, outerId, productId, 'chua_xu_ly', '',
       '', '', by, String(p.note || '').trim()];
-    prependRows_(sh, [row]);
+    sh.insertRowBefore(2);
+    sh.getRange(2, 1, 1, row.length).setValues([row]);
 
+    var ph = getSheet_('Photos', PHOTOS_HEADER);
     var phRows = jobs.map(function (j) { return [code, j[0], ids[j[0]], "'" + at]; });
-    prependRows_(getSheet_('Photos', PHOTOS_HEADER), phRows);
+    ph.getRange(ph.getLastRow() + 1, 1, phRows.length, PHOTOS_HEADER.length).setValues(phRows);
 
-    prependRows_(getSheet_('ActivityLog', LOG_HEADER), [["'" + at, code, '', 'chua_xu_ly', by, 'Tạo mới', '']]);
+    getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, '', 'chua_xu_ly', by, 'Tạo mới', '']);
     var created = { code: code, created_at: at, description: desc, kind: kind, photo_path_outer: outerId, photo_path_product: productId, status: 'chua_xu_ly', status_note: '', mvdn: '', trip: '', reporter: by, note: String(p.note || '').trim() };
     return { code: code, shareOk: shareOk, item: toClient_(created) };
   });
@@ -631,7 +610,7 @@ function resolveItem(code, bill) {
       var by = currentEmail_();
       // G:I 1 lần ghi (status, giữ status_note, mvdn). Không đè reporter/created_at.
       r.sh.getRange(idx + 2, 7, 1, 3).setValues([['da_tim_bill', r.items[idx].status_note || '', bill]]);
-      prependRows_(getSheet_('ActivityLog', LOG_HEADER), [["'" + at, code, cur, 'da_tim_bill', by, bill, '']]);
+      getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, cur, 'da_tim_bill', by, bill, '']);
       return { code: code, status: 'da_tim_bill', at: at, by: by };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
@@ -672,8 +651,10 @@ function liquidateBatch(codes, liqCode) {
         vals[k][1] = textDate_(vals[k][1]);
       }
       sh.getRange(2, 1, vals.length, ITEMS_HEADER.length).setValues(vals);
-      var logRows = codes.map(function (cd) { return ["'" + at, cd, 'chua_xu_ly', 'thanh_ly', by, liqCode, '']; });
-      prependRows_(getSheet_('ActivityLog', LOG_HEADER), logRows);
+      var log = getSheet_('ActivityLog', LOG_HEADER);
+      for (var m = 0; m < codes.length; m++) {
+        log.appendRow(["'" + at, codes[m], 'chua_xu_ly', 'thanh_ly', by, liqCode, '']);
+      }
       return { count: codes.length, at: at, by: by, liqCode: liqCode };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
@@ -806,18 +787,16 @@ function adminEditItem(p) {
       });
       if (placed.length) {
         var folder = monthFolder_();
-        var newPhRows = [];
+        var ph2 = getSheet_('Photos', PHOTOS_HEADER);
         for (var w = 0; w < placed.length; w++) {
           var f = folder.createFile(dataUrlToBlob_(placed[w][1], code + '.' + placed[w][0] + '.jpg'));
           tryShareFile_(f);
-          newPhRows.push([code, placed[w][0], f.getId(), "'" + at]);
+          ph2.appendRow([code, placed[w][0], f.getId(), "'" + at]);
           if (placed[w][0] === 'ngoai_quan') outerId = f.getId();
           if (placed[w][0] === 'san_pham') productId = f.getId();
         }
-        prependRows_(getSheet_('Photos', PHOTOS_HEADER), newPhRows);
       }
       r.sh.getRange(row, 5, 1, 2).setValues([[outerId, productId]]);
-      var newLogRows = [];
       var finalSt = cur;
       if (toStatus && toStatus !== cur) {
         if (toStatus === 'chua_xu_ly') {
@@ -825,16 +804,16 @@ function adminEditItem(p) {
         } else {
           r.sh.getRange(row, 7, 1, 3).setValues([[toStatus, r.items[idx].status_note || '', bill]]);
         }
-        newLogRows.push(["'" + at, code, cur, toStatus, 'ADMIN đổi trạng thái', bill, reason]);
+        getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, cur, toStatus, 'ADMIN đổi trạng thái', bill, reason]);
         finalSt = toStatus;
       }
+      var log = getSheet_('ActivityLog', LOG_HEADER);
       for (var n = 0; n < editNotes.length; n++) {
-        newLogRows.push(["'" + at, code, finalSt, finalSt, by, editNotes[n], '']);
+        log.appendRow(["'" + at, code, finalSt, finalSt, by, editNotes[n], '']);
       }
       if (photoChanged) {
-        newLogRows.push(["'" + at, code, finalSt, finalSt, by, 'ADMIN chỉnh sửa Ảnh', '']);
+        log.appendRow(["'" + at, code, finalSt, finalSt, by, 'ADMIN chỉnh sửa Ảnh', '']);
       }
-      prependRows_(getSheet_('ActivityLog', LOG_HEADER), newLogRows);
       return { code: code };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
@@ -868,8 +847,10 @@ function editItem(p) {
       if (desc !== null) r.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
       if (note !== null) r.sh.getRange(row, 12, 1, 1).setValues([[note]]);
       var at = nowStr_(), by = currentEmail_();
-      var staffRows = notes.map(function (t) { return ["'" + at, code, cur, cur, by, t, '']; });
-      prependRows_(getSheet_('ActivityLog', LOG_HEADER), staffRows);
+      var log = getSheet_('ActivityLog', LOG_HEADER);
+      for (var n = 0; n < notes.length; n++) {
+        log.appendRow(["'" + at, code, cur, cur, by, notes[n], '']);
+      }
       return { code: code };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
@@ -923,9 +904,8 @@ function listUsers() {
     if (!u.rows.length) {
       var seeds = seedAdmins_();
       var at = nowStr_(), by = currentEmail_();
-      var seedRows = seeds.map(function (s) { return [s, 'ADMIN', "'" + at, by]; });
-      prependRows_(u.sh, seedRows);
       for (var i = 0; i < seeds.length; i++) {
+        u.sh.appendRow([seeds[i], 'ADMIN', "'" + at, by]);
         u.rows.push([seeds[i], 'ADMIN', at, by]);
       }
     }
@@ -944,7 +924,7 @@ function addAdmin(email) {
       for (var i = 0; i < u.rows.length; i++) {
         if (normEmail_(u.rows[i][0]) === email) throw new Error('Email đã có trong danh sách.');
       }
-      prependRows_(u.sh, [[email, 'ADMIN', "'" + nowStr_(), currentEmail_()]]);
+      u.sh.appendRow([email, 'ADMIN', "'" + nowStr_(), currentEmail_()]);
       return { email: email, role: 'ADMIN' };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }

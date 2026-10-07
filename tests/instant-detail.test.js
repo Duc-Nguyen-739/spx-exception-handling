@@ -27,7 +27,7 @@ test('instant-detail: miss detailCache nhung list co san -> ve ngay roi moi fetc
 
 test('instant-detail: log Tao moi gon, khong suffix share', () => {
   const gs = fs.readFileSync('Code.gs', 'utf8');
-  assert.ok(gs.includes(`prependRows_(getSheet_('ActivityLog', LOG_HEADER), [["'" + at, code, '', 'chua_xu_ly', by, 'Tạo mới', '']]);`));
+  assert.ok(gs.includes(`appendRow(["'" + at, code, '', 'chua_xu_ly', by, 'Tạo mới', ''])`));
   assert.ok(gs.includes('shareOk'));
 });
 
