@@ -1101,6 +1101,18 @@ if(it.imgProduct)s.push({slot:'san_pham',url:it.imgProduct});
 (it.extras||[]).forEach(function(u,i){if(u)s.push({slot:i?'bo_sung_'+i:'bo_sung',url:u});});
 return s;
 }
+function bindEditPhotoFallback_(box,url){
+try{
+var im=box.querySelector('img');
+if(!im)return;
+im.onerror=function(){
+var ph=im.closest('.ph');
+photoFallback(im,url||im.src,function(){
+if(ph)ph.innerHTML='<div class="fb"><span class="big">\uD83D\uDCF7</span><span>Không tải được ảnh</span></div>';
+});
+};
+}catch(e){}
+}
 function renderEditPhotos(){
 var det=state.detail||{};
 var raw=(det.slots&&det.slots.length)?det.slots:((det.item&&det.item.slots&&det.item.slots.length)?det.item.slots:[]);
@@ -1110,7 +1122,9 @@ var keep=slots.filter(function(x){return editDel.indexOf(String(x.slot))<0;});
 var w=document.getElementById('editPhotos');w.innerHTML='';
 keep.forEach(function(x){
 var box=document.createElement('div');box.style.marginBottom='10px';
-box.innerHTML='<div class="ph"><img loading="lazy" src="'+esc(x.url||'')+'"><span class="badge">'+esc(slotVn(x.slot))+'</span></div>';
+if(x.url)box.innerHTML='<div class="ph"><img loading="lazy" src="'+esc(x.url)+'"><span class="badge">'+esc(slotVn(x.slot))+'</span></div>';
+else box.innerHTML='<div class="ph"><div class="fb"><span class="big">\uD83D\uDCF7</span><span>Đang tải ảnh…</span></div><span class="badge">'+esc(slotVn(x.slot))+'</span></div>';
+bindEditPhotoFallback_(box,x.url);
 var del=document.createElement('button');del.style.cssText='width:100%;margin-top:6px';del.textContent='Xóa '+slotVn(x.slot);
 del.onclick=(function(s){return function(){editDel.push(s);renderEditPhotos();};})(String(x.slot));
 box.appendChild(del);w.appendChild(box);
