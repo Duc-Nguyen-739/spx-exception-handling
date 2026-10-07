@@ -430,7 +430,7 @@ header{flex-wrap:wrap}
 <div id="camModal" role="dialog" aria-label="Quét mã bằng camera"><div class="cam-box"><div id="camView"></div><div id="camStatus">Đưa mã vào khung — tự nhận diện.</div><div class="cam-btnrow"><button id="camFileBtn" type="button">Chụp ảnh</button><button id="camCloseBtn" type="button">Đóng</button></div></div></div><input type="file" id="camFile" accept="image/*" capture="environment" style="display:none">
 <div class="modal" id="rangeModal" role="dialog" aria-label="Chọn Display Range"><div class="sheet rgsheet">
 <div class="rghead">ⓘ Display Range: <span id="rgLabel"></span><button id="rgX" class="iconBtn" type="button">✕</button></div>
-<div class="rgbody"><div class="rgpresets" id="rgPresets"><button data-d="7" type="button">Last 7 Days</button><button data-d="14" type="button">Last 14 Days</button><button data-d="30" class="on" type="button">Last 30 Days</button><button data-d="60" type="button">Last 60 Days</button><button data-d="90" type="button">Last 90 Days</button><button data-d="180" type="button">Last 180 Days</button><button data-d="365" type="button">Last 365 Days</button><div class="rgover">Phạm vi hiển thị tối đa 365 ngày. Mặc định 30 ngày gần nhất.</div></div><div class="rgcals"><div class="rgcal" id="rgCalL"></div><div class="rgcal" id="rgCalR"></div></div></div>
+<div class="rgbody"><div class="rgpresets" id="rgPresets"><button data-d="7" type="button">Last 7 Days</button><button data-d="14" type="button">Last 14 Days</button><button data-d="30" class="on" type="button">Last 30 Days</button><button data-d="60" type="button">Last 60 Days</button><div class="rgover">Phạm vi hiển thị tối đa 60 ngày. Mặc định 30 ngày gần nhất.</div></div><div class="rgcals"><div class="rgcal" id="rgCalL"></div><div class="rgcal" id="rgCalR"></div></div></div>
 <div class="rgfoot"><span class="msg" id="rgMsg"></span><button id="rgReset" type="button">Reset</button><button id="rgOk" class="primary" type="button">Confirm</button></div>
 </div></div>
 <div class="createrow"><button id="btnCreate" class="primary">＋ Create</button></div>
@@ -786,12 +786,6 @@ state.range=null;
 renderRangebar();renderGrid();
 msg('msgMain','\u0110\u00e3 t\u1eaft l\u1ecdc ng\u00e0y \u2014 hi\u1ec3n th\u1ecb t\u1ea5t c\u1ea3 '+state.items.length+' \u0111\u01a1n trong cache.',true);
 }
-function expandRange365(){
-var t=todayYMD_();
-state.range={f:addDaysYMD_(t,-364),t:t};
-renderRangebar();renderGrid();
-msg('msgMain','\u0110\u00e3 m\u1edf r\u1ed9ng Display Range (l\u1ecdc danh s\u00e1ch): '+fmtRange_(state.range.f,state.range.t),true);
-}
 function resetKindStatus(){
 state.statusFilter='';state.kinds={Box:true,Item:true};
 renderGrid();renderSummary();
@@ -824,11 +818,9 @@ if(!inRangeDay_(it0.createdAt))hidden++;
 }
 }catch(e2){}
 if(hidden>0){
-g.innerHTML='<div class="rel-empty">Kh\u00f4ng c\u00f3 \u0111\u01a1n trong Display Range '+esc(rangeLabel_())+'.<br>C\u00f3 '+hidden+' \u0111\u01a1n ngo\u00e0i ph\u1ea1m vi (t\u00ecm ki\u1ebfm ch\u1eef v\u1eabn th\u1ea5y v\u00ec kh\u00f4ng gi\u1edbi h\u1ea1n ng\u00e0y).<br><br><button id="gridShowAll" type="button">Xem t\u1ea5t c\u1ea3 ('+state.items.length+')</button> <button id="gridExpand365" type="button">M\u1edf r\u1ed9ng 365 ng\u00e0y</button></div>';
+g.innerHTML='<div class="rel-empty">Kh\u00f4ng c\u00f3 \u0111\u01a1n trong Display Range '+esc(rangeLabel_())+'.<br>C\u00f3 '+hidden+' \u0111\u01a1n ngo\u00e0i ph\u1ea1m vi (t\u00ecm ki\u1ebfm ch\u1eef v\u1eabn th\u1ea5y v\u00ec kh\u00f4ng gi\u1edbi h\u1ea1n ng\u00e0y).<br><br><button id="gridShowAll" type="button">Xem t\u1ea5t c\u1ea3 ('+state.items.length+')</button></div>';
 var b1=document.getElementById('gridShowAll');
 if(b1)b1.onclick=clearRangeFilter;
-var b2=document.getElementById('gridExpand365');
-if(b2)b2.onclick=expandRange365;
 }else{
 g.innerHTML='<div class="rel-empty">Kh\u00f4ng c\u00f3 \u0111\u01a1n kh\u1edbp b\u1ed9 l\u1ecdc tr\u1ea1ng th\u00e1i/lo\u1ea1i.<br><br><button id="gridResetFS" type="button">\u0110\u1eb7t l\u1ea1i l\u1ecdc</button></div>';
 var b3=document.getElementById('gridResetFS');
@@ -1491,7 +1483,7 @@ async function delUser(email){
 msg('msgAccess','Đang xóa…',true);
 try{var r=await gs('deleteUser',[email]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi xóa');msg('msgAccess','Đã xóa '+email+'.',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi xóa');}
 }
-var RANGE_MAXD=365;
+var RANGE_MAXD=60;
 var RG_MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 var RG_WD=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 var rgSel=null,rgHoverT=0,rgDragging=false,rgAnchorT=0,rgDragEnd=0,rgVisited=false,rgViewY=0,rgViewM=0;
