@@ -259,21 +259,28 @@ async function main() {
     const scGone = await evalIn(ws, `JSON.stringify({v: document.getElementById('scanMain').value, show: document.getElementById('scanClear').classList.contains('show')})`);
     const SG = JSON.parse(scGone.value);
     check('Bam nut xoa -> sach + an nut', SG.v === '' && SG.show === false, scGone.value);
+    await evalIn(ws, `window.print = function(){ window.__PRINTED__ = (window.__PRINTED__ || 0) + 1; };`);
     await evalIn(ws, `document.getElementById('btnPrintMain').click()`);
+    const pvOk = await waitUntil(ws, "document.getElementById('viewPrint').style.display === 'block'", 3000);
+    check('Nut In Ma vao thang tab In Ma', !!pvOk, String(pvOk));
+    await evalIn(ws, `document.getElementById('scanPrint').value='Item.06-10-2026.2';document.getElementById('scanPrint').dispatchEvent(new Event('input'))`);
+    const sgOk = await waitUntil(ws, "document.getElementById('lastPrint').innerText.includes('Item.06-10-2026.2')", 5000);
+    check('Scan dung dinh dang tu in (ca Box/Item)', !!sgOk, String(sgOk));
+    await evalIn(ws, `document.getElementById('cardBulk').click()`);
     const pkOpen = await waitUntil(ws, "document.getElementById('printKindModal').classList.contains('open')", 3000);
-    check('Nut In Ma mo bang chon Box/Item', !!pkOpen, String(pkOpen));
+    check('The In Nhieu Ma mo bang chon Box/Item', !!pkOpen, String(pkOpen));
     await evalIn(ws, `document.getElementById('optPrintBox').click()`);
-    const pvOk = await waitUntil(ws, "document.getElementById('viewPrint').style.display === 'block'"
-      + " && document.getElementById('printTitleKind').textContent === 'Box'", 3000);
-    check('Chon Box vao tab In Ma', !!pvOk, String(pvOk));
-    await evalIn(ws, `document.getElementById('btnBulkPrint').click()`);
     const bkOk = await waitUntil(ws, "document.querySelectorAll('#bulkList li').length === 10", 8000);
+    await sleep(600);
     const bk = await evalIn(ws, `JSON.stringify({
       n: document.querySelectorAll('#bulkList li').length,
       first: (document.querySelector('#bulkList li span') || {textContent: ''}).textContent,
-      calls: (window.__MOCK_CALLS__ || []).filter(function(c){return c[0]==='previewBulkCodes';}).length
+      calls: (window.__MOCK_CALLS__ || []).filter(function(c){return c[0]==='previewBulkCodes';}).length,
+      jobs: window.__PRINTED__ || 0,
+      labels: document.querySelectorAll('#printArea .plabel').length
     })`);
-    check('Bulk sinh 10 ma lien tuc (mock)', !!(bkOk && bk.value && JSON.parse(bk.value).calls >= 1), bk.value);
+    const B = bk.err ? null : JSON.parse(bk.value);
+    check('Bulk sinh 10 ma + tu in 1 lenh duy nhat', !!(bkOk && B && B.n === 10 && B.calls >= 1 && B.jobs === 2 && B.labels === 10), bk.value);
     await evalIn(ws, `document.getElementById('btnBackPrint').click()`);
     const bkMain = await evalIn(ws, `document.getElementById('viewMain').style.display`);
     check('Tab In Ma quay ve man hinh chinh', bkMain.value === 'block', String(bkMain.value));

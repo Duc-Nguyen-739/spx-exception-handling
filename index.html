@@ -54,6 +54,22 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 #viewMain .search-group{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 13px;flex:0 1 600px;min-width:0}
 #viewMain .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 #viewMain .topbtns{display:flex;gap:8px;flex:none}
+#viewPrint .psect{margin:6px 0 12px;font-size:15px;color:var(--navy);padding-left:10px;border-left:4px solid var(--o)}
+#viewPrint .pstep{font-size:12.5px;color:var(--mut);margin:12px 0 8px}
+#viewPrint .pstep::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#c3ccd8;margin-right:8px}
+#viewPrint .pcards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#viewPrint .pcard{border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:24px 14px;font-size:15px;font-weight:600;text-align:center;cursor:pointer;color:var(--ink)}
+#viewPrint .pcard small{display:block;font-weight:400;font-size:11px;color:var(--mut);margin-top:6px}
+#viewPrint .pcard.on{border-color:var(--o);background:var(--tint);color:var(--o)}
+#viewPrint .pscan{max-width:420px}
+#viewPrint .pscanwrap{position:relative}
+#viewPrint .pscanwrap .pic{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:14px}
+#viewPrint .pscanwrap input{padding-left:32px}
+#viewPrint .phint{font-size:11.5px;margin-top:6px;min-height:17px;font-weight:600;color:var(--mut)}
+#viewPrint .phint.ok{color:#0d9a50}#viewPrint .phint.err{color:var(--o)}
+#viewPrint .plast{font-size:12px;margin-top:6px}
+#viewPrint .plast b{font-family:ui-monospace,Menlo,monospace}
+#viewPrint #bulkList{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
 @media(min-width:600px){#viewMain .topbtns{position:absolute;right:0;top:50%;transform:translateY(-50%)}}
 #scanClear{display:none;width:30px;height:30px;flex:none;border:none;border-radius:50%;background:#e8ecf1;color:#5b6572;font-size:13px;font-weight:800;line-height:1;padding:0}
 #scanClear.show{display:block}
@@ -61,6 +77,7 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 .scanbar input{border:none;background:transparent;padding:9px 0;font-size:14px;font-weight:600;flex:0 1 480px;min-width:0;margin:0 auto;text-align:center}
 .scanbar .create-big{padding:12px 22px;font-size:14px;white-space:nowrap}
 #btnCreateTop,#btnPrintTop,.createrow{display:none!important}
+@media(max-width:899px){#btnPrintMain,#btnPrintTop{display:none!important}}
 .scanbar input:focus{outline:none}
 .scanbar input::placeholder{color:var(--mut);font-weight:500}
 #reader{width:100%;max-width:420px;margin:8px auto}
@@ -280,7 +297,7 @@ header{flex-wrap:wrap}
 #printArea{display:none}
 @page{size:4in 6in;margin:0}
 #printArea{width:4in;height:6in}
-@media print{body>*{display:none!important}#printArea{display:flex!important;flex-direction:column;align-items:center;justify-content:center;width:4in;height:6in;margin:0;padding:0;text-align:center}#qrBox img,#qrBox canvas,#qrBox table{width:2.8in!important;height:2.8in!important}#printArea .pcode{font-size:34px;font-weight:800;margin-top:12px;word-break:break-all;padding:0 8px}}
+@media print{body>*{display:none!important}#printArea{display:block!important;margin:0;padding:0}#printArea .plabel{width:4in;height:6in;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;page-break-after:always}#printArea .plabel:last-child{page-break-after:auto}#printArea .pq img,#printArea .pq canvas,#printArea .pq table{width:2.8in!important;height:2.8in!important}#printArea .pcode{font-size:34px;font-weight:800;margin-top:12px;word-break:break-all;padding:0 8px}}
 </style>
 </head>
 <body>
@@ -379,19 +396,19 @@ header{flex-wrap:wrap}
 
 <main id="viewPrint" style="display:none">
 <div class="backrow"><button id="btnBackPrint" class="lnk">‹ Màn hình chính</button></div>
-<h2 style="margin:6px 0 2px;font-size:16px;color:var(--navy)">In Mã — <span id="printTitleKind">Box</span></h2>
-<div class="csub">Chọn Box/Item rồi in theo 1 trong 2 cách dưới đây.</div>
-<div class="seg" id="printKindSeg"><button type="button" data-kind="Box" class="on">BOX</button><button type="button" data-kind="Item">ITEM</button></div>
-<div class="msg" id="msgPrint"></div>
-<div class="field"><label>1 — SCAN MÃ RỒI IN</label>
-<div class="billrow"><button id="btnScanPrint" type="button">📷 Quét</button><input id="scanPrint" class="mono" placeholder="Quét hoặc nhập mã…"></div>
+<h2 class="psect">Chọn cách in</h2>
+<div class="pstep">Chọn cách in</div>
+<div class="pcards">
+<div class="pcard on" id="cardSingle">In 1 Mã<small>Scan đúng định dạng là tự in (cả Box và Item)</small></div>
+<div class="pcard" id="cardBulk">In Nhiều Mã<small>Server tự sinh 10 mã — bấm là tự in cả 10</small></div>
 </div>
-<div class="btnrow"><button id="btnSinglePrint" class="primary">🖨 In mã này</button></div>
-<div class="field" style="margin-top:14px"><label>2 — IN MÃ HÀNG LOẠT (SERVER TỰ SINH 10 MÃ)</label>
-<div class="csub">Mã sinh ra được giữ chỗ trong sheet PrintedCodes nên lần in sau không trùng.</div>
+<div class="pstep">Quét mã (cho thẻ In 1 Mã)</div>
+<div class="pscan"><div class="pscanwrap"><span class="pic">⌕</span><input id="scanPrint" class="mono" placeholder="Scan or Input"></div>
+<div class="phint" id="scanPrintHint">Nhập/scan mã Box.… hoặc Item.… đúng định dạng sẽ tự in.</div>
+<div class="plast" id="lastPrint"></div>
 </div>
-<div class="btnrow"><button id="btnBulkPrint" class="primary">⚡ Sinh &amp; in 10 mã</button></div>
 <ul id="bulkList"></ul>
+<div class="phint" id="bulkHint"></div>
 </main>
 
 <main id="viewAccess" style="display:none">
@@ -496,8 +513,8 @@ header{flex-wrap:wrap}
 </div></div>
 
 <div class="modal" id="printKindModal"><div class="sheet">
-<h2>In Mã — chọn loại</h2>
-<div class="csub">Chọn loại mã để vào tab In Mã.</div>
+<h2>In Nhiều Mã — chọn loại</h2>
+<div class="csub">Server tự sinh 10 mã liên tục rồi tự in, không cần xác nhận.</div>
 <div class="opt" id="optPrintBox"><div><b>BOX</b><small>Nguyên thùng — mã Box.…</small></div><span class="chev">›</span></div>
 <div class="opt" id="optPrintItem"><div><b>ITEM</b><small>Tách lẻ — mã Item.…</small></div><span class="chev">›</span></div>
 <button id="btnClosePrintKind" class="lnk" style="width:100%">Đóng</button>
@@ -505,7 +522,7 @@ header{flex-wrap:wrap}
 
 <div class="modal" id="leaveModal"><div class="sheet" style="max-width:360px;text-align:center"><p id="leaveText" style="font-size:13.5px;font-weight:700">Bạn muốn hủy task này chứ?</p><div class="btnrow"><button id="btnLeaveOk" class="primary">Confirm</button><button id="btnLeaveCancel">Cancel</button></div></div></div>
 <div id="lightbox" role="dialog" aria-label="Xem ảnh phóng to"><div class="bar"><button id="lbBack" title="Đóng">‹</button><span style="flex:1"></span><button id="lbOut" title="Thu nhỏ">−</button><button id="lbIn" title="Phóng to">＋</button><button id="lbFit" title="Vừa màn hình">⟳</button><button id="lbX" title="Đóng">✕</button></div><div id="lbStage"><img id="lbImg" alt="Ảnh phóng to"></div><div id="lbCap"></div></div>
-<div id="printArea"><div id="qrBox"></div><div class="pcode" id="printCode"></div></div>
+<div id="printArea"></div>
 
 <script>
 if(typeof google==='undefined'||!google.script){
@@ -1020,12 +1037,19 @@ var q=document.getElementById('createQR');q.innerHTML='';
 try{if(typeof QRCode!=='undefined'){new QRCode(q,{text:code,width:200,height:200});}}catch(e){}
 document.getElementById('createResult').style.display='block';
 }
-function doPrint(code){
-document.getElementById('printCode').textContent=code;
-var q=document.getElementById('qrBox');q.innerHTML='';
+function doPrintMany(codes){
+var pa=document.getElementById('printArea');pa.innerHTML='';
+(codes||[]).forEach(function(code){
+var d=document.createElement('div');d.className='plabel';
+var q=document.createElement('div');q.className='pq';d.appendChild(q);
+var t=document.createElement('div');t.className='pcode';t.textContent=code;d.appendChild(t);
+pa.appendChild(d);
 try{if(typeof QRCode!=='undefined'){new QRCode(q,{text:code,width:320,height:320});}else{q.textContent=code;}}catch(e){q.textContent=code;}
-setTimeout(function(){window.print();},150);
+});
+if(!pa.children.length)return;
+setTimeout(function(){window.print();},200);
 }
+function doPrint(code){doPrintMany([code]);}
 
 var boxPhotos=[],itemPhotos=[];
 var SLOT_LABELS={Box:['Ảnh ngoại quan *','Ảnh sản phẩm *','Ảnh bổ sung'],Item:['Ảnh sản phẩm *']};
@@ -1126,44 +1150,49 @@ await refreshPreview();
 }
 
 function setActive(id){['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.toggle('on',n===id);});curNav=id;renderRail();}
-function setPrintKind(k){
-state.printKind=(k==='Item')?'Item':'Box';
-var lbl=document.getElementById('printTitleKind');if(lbl)lbl.textContent=state.printKind;
-var seg=document.getElementById('printKindSeg');
-if(seg)Array.prototype.forEach.call(seg.children,function(b){b.classList.toggle('on',b.getAttribute('data-kind')===state.printKind);});
-document.getElementById('bulkList').innerHTML='';
-msg('msgPrint','');
-}
-function showPrint(on,kind){
+var PRINT_RE=/^(Box|Item)\.\d{2}-\d{2}-\d{4}\.\d+$/;
+var lastAutoPrint='';
+function showPrint(on){
 document.getElementById('viewPrint').style.display=on?'block':'none';
 document.getElementById('viewMain').style.display=on?'none':'block';
 document.getElementById('viewLiq').style.display='none';
 document.getElementById('viewAccess').style.display='none';
-if(on){if(kind)setPrintKind(kind);['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.remove('on');});curNav='';renderRail();}
+if(on){['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.remove('on');});curNav='';renderRail();}
 else{setActive('navMain');}
 }
-function renderBulkList(codes){
-var ul=document.getElementById('bulkList');ul.innerHTML='';
-(codes||[]).forEach(function(c){
-var li=document.createElement('li');
-li.innerHTML='<span>'+esc(c)+'</span>';
-var b=document.createElement('button');b.type='button';b.textContent='🖨 In';
-b.onclick=(function(code){return function(){doPrint(code);};})(c);
-li.appendChild(b);ul.appendChild(li);
-});
+function selectPrintCard(which){
+document.getElementById('cardSingle').classList.toggle('on',which==='single');
+document.getElementById('cardBulk').classList.toggle('on',which==='bulk');
+if(which==='single')document.getElementById('scanPrint').focus();
 }
-async function bulkPrint(){
-var kind=state.printKind||'Box';
-var b=document.getElementById('btnBulkPrint');
-var old=b.textContent;b.disabled=true;b.textContent='Server đang sinh mã…';
-msg('msgPrint','Server đang sinh 10 mã…',true);
+function printHint(t,ok){var h=document.getElementById('scanPrintHint');h.textContent=t||'';h.className='phint '+(t?(ok?'ok':'err'):'');}
+var autoT=null;
+function autoPrintSingle(){
+var c=document.getElementById('scanPrint').value.trim();
+if(!c){lastAutoPrint='';printHint('Nhập/scan mã Box.… hoặc Item.… đúng định dạng sẽ tự in.');return;}
+if(!PRINT_RE.test(c)){printHint('Chưa đúng định dạng — cần Box.… hoặc Item.… (ngày-tháng-năm.số).');return;}
+if(c===lastAutoPrint)return;
+lastAutoPrint=c;
+printHint('Đúng định dạng — đang tự in '+c+'…',true);
+document.getElementById('lastPrint').innerHTML='Đã in: <b>'+esc(c)+'</b> (khổ 4x6in).';
+doPrint(c);
+}
+async function bulkGo(kind){
+var k=(kind==='Item')?'Item':'Box';
+var h=document.getElementById('bulkHint'),ul=document.getElementById('bulkList');
+ul.innerHTML='';h.textContent='Server đang sinh 10 mã '+k+'…';h.className='phint';
 try{
-var r=await gs('previewBulkCodes',[kind,10]);
+var r=await gs('previewBulkCodes',[k,10]);
 if(!r.ok)throw new Error(r.error);
-renderBulkList(r.data.codes||[]);
-msg('msgPrint','Đã giữ chỗ '+(r.data.codes||[]).length+' mã '+kind+' (lần in sau không trùng). Bấm In từng mã.',true);
-}catch(e){msg('msgPrint',(e&&e.message)||'Lỗi sinh mã');}
-b.disabled=false;b.textContent=old;
+var codes=r.data.codes||[];
+ul.innerHTML='';
+codes.forEach(function(c){
+var li=document.createElement('li');li.innerHTML='<span>'+esc(c)+'</span>';ul.appendChild(li);
+});
+h.textContent='Đã giữ chỗ '+codes.length+' mã '+k+' — tự in '+codes[0]+' → '+codes[codes.length-1]+' (1 lệnh in, khổ 4x6in).';h.className='phint ok';
+document.getElementById('lastPrint').innerHTML='Đã in 10 mã: <b>'+esc(codes[0])+' → '+esc(codes[codes.length-1])+'</b>.';
+doPrintMany(codes);
+}catch(e){h.textContent=(e&&e.message)||'Lỗi sinh mã';h.className='phint err';}
 }
 function renderLiq(){
 var ul=document.getElementById('liqList');ul.innerHTML='';
@@ -1286,7 +1315,7 @@ if(typeof Html5Qrcode==='undefined'){msg('msgMain','Không tải được camera
 qr=new Html5Qrcode('reader');
 qr.start({facingMode:'environment'},{fps:10,qrbox:250},
 function(txt){document.getElementById(inputId).value=txt;
-if(inputId==='scanLiq')liqAdd(txt);else if(inputId==='resolveBill'){document.getElementById('resolveBill').focus();}else if(inputId==='scanPrint'){}else openDetail(txt);
+if(inputId==='scanLiq')liqAdd(txt);else if(inputId==='resolveBill'){document.getElementById('resolveBill').focus();}else openDetail(txt);
 try{qr.stop();}catch(e){}rd.style.display='none';},
 function(){}).catch(function(){msg('msgMain','Không mở được camera (cần HTTPS). Nhập tay hoặc dùng súng.');});
 }
@@ -1312,11 +1341,11 @@ applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':
 document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';setCreateDoneUI(false);};
 document.getElementById('btnCreateTop').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';setCreateDoneUI(false);};
 document.getElementById('btnCreateMain').onclick=document.getElementById('btnCreateTop').onclick;
-document.getElementById('btnPrintTop').onclick=function(){document.getElementById('printKindModal').classList.add('open');};
+document.getElementById('btnPrintTop').onclick=function(){showPrint(true);};
 document.getElementById('btnPrintMain').onclick=document.getElementById('btnPrintTop').onclick;
-document.getElementById('btnClosePrintKind').onclick=function(){document.getElementById('printKindModal').classList.remove('open');};
-document.getElementById('optPrintBox').onclick=function(){document.getElementById('printKindModal').classList.remove('open');showPrint(true,'Box');};
-document.getElementById('optPrintItem').onclick=function(){document.getElementById('printKindModal').classList.remove('open');showPrint(true,'Item');};
+document.getElementById('btnClosePrintKind').onclick=function(){document.getElementById('printKindModal').classList.remove('open');selectPrintCard('single');};
+document.getElementById('optPrintBox').onclick=function(){document.getElementById('printKindModal').classList.remove('open');bulkGo('Box');};
+document.getElementById('optPrintItem').onclick=function(){document.getElementById('printKindModal').classList.remove('open');bulkGo('Item');};
 function showCreateStep(n){
 state.createStep=n;
 document.getElementById('stepTask').style.display=n===1?'block':'none';
@@ -1380,15 +1409,10 @@ document.getElementById('camMain').onclick=function(){toggleCam('scanMain');};
 document.getElementById('scanClear').onclick=function(){var s=document.getElementById('scanMain');s.value='';state.filter='';syncScanClear();renderGrid();s.focus();};
 document.getElementById('camLiq').onclick=function(){toggleCam('scanLiq');};
 document.getElementById('btnBackPrint').onclick=function(){showPrint(false);};
-document.getElementById('btnScanPrint').onclick=function(){toggleCam('scanPrint');};
-document.getElementById('scanPrint').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('btnSinglePrint').click();});
-document.getElementById('btnSinglePrint').onclick=function(){
-var c=document.getElementById('scanPrint').value.trim();
-if(!c){msg('msgPrint','Quét hoặc nhập mã trước khi in.');return;}
-msg('msgPrint','Đã gửi lệnh in '+c+' (khổ 4x6in).',true);
-doPrint(c);};
-document.getElementById('btnBulkPrint').onclick=bulkPrint;
-Array.prototype.forEach.call(document.getElementById('printKindSeg').children,function(b){b.onclick=function(){setPrintKind(b.getAttribute('data-kind'));};});
+document.getElementById('cardSingle').onclick=function(){selectPrintCard('single');};
+document.getElementById('cardBulk').onclick=function(){selectPrintCard('bulk');document.getElementById('printKindModal').classList.add('open');};
+document.getElementById('scanPrint').addEventListener('input',function(){clearTimeout(autoT);autoT=setTimeout(autoPrintSingle,600);});
+document.getElementById('scanPrint').addEventListener('keydown',function(e){if(e.key==='Enter'){clearTimeout(autoT);autoPrintSingle();}});
 function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';document.getElementById('viewPrint').style.display='none';setActive(on?'navLiq':'navMain');}
 async function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';document.getElementById('viewPrint').style.display='none';setActive('navAccess');try{await loadMe();}catch(e){}
 var e=state.me||{};
