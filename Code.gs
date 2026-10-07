@@ -446,11 +446,11 @@ function readPrintedCodes_() {
     .filter(Boolean);
 }
 
-function nextSeqBoth_(items, printed, kind, datePart) {
+function nextSeqBothCodes_(codes, printed, kind, datePart) {
   var p = prefix_(kind) + datePart + '.';
   var best = 0;
-  for (var i = 0; i < items.length; i++) {
-    var a = seqNum_(items[i].code, p);
+  for (var i = 0; i < codes.length; i++) {
+    var a = seqNum_(codes[i], p);
     if (a > best) best = a;
   }
   for (var j = 0; j < printed.length; j++) {
@@ -458,6 +458,12 @@ function nextSeqBoth_(items, printed, kind, datePart) {
     if (b > best) best = b;
   }
   return best + 1;
+}
+
+function nextSeqBoth_(items, printed, kind, datePart) {
+  var codes = [];
+  for (var i = 0; i < items.length; i++) codes.push(items[i].code);
+  return nextSeqBothCodes_(codes, printed, kind, datePart);
 }
 
 function dataUrlToBlob_(dataUrl, name) {
@@ -525,17 +531,16 @@ function create_(kind, p) {
   if (count > 3) throw new Error('Tối đa 3 ảnh.');
 
   return withLock_(function () {
-    var r = readAllItems_();
+    // Chi doc cot A de tinh seq + check trung — giam cells doc trong lock, van insert dau sheet.
+    var sh = getSheet_('Items', ITEMS_HEADER);
+    var last = sh.getLastRow();
+    var codes = last < 2 ? [] : sh.getRange(2, 1, last - 1, 1).getValues()
+      .map(function (x) { return String(x[0] || ''); }).filter(Boolean);
+    var printedCodes = readPrintedCodes_();
     var datePart = todayPart_();
-    var code = custom || (prefix_(kind) + datePart + '.' + nextSeqBoth_(r.items, readPrintedCodes_(), kind, datePart));
+    var code = custom || (prefix_(kind) + datePart + '.' + nextSeqBothCodes_(codes, printedCodes, kind, datePart));
     if (custom) {
-      var printed = readPrintedCodes_();
-      for (var d = 0; d < r.items.length; d++) {
-        if (r.items[d].code === custom) throw new Error('Mã ' + custom + ' đã tồn tại — sửa mã khác.');
-      }
-      for (var q = 0; q < printed.length; q++) {
-        if (printed[q] === custom) throw new Error('Mã ' + custom + ' đã tồn tại — sửa mã khác.');
-      }
+      if (codes.indexOf(custom) >= 0 || printedCodes.indexOf(custom) >= 0) throw new Error('Mã ' + custom + ' đã tồn tại — sửa mã khác.');
     }
     var at = nowStr_();
     var by = currentEmail_();
@@ -560,13 +565,12 @@ function create_(kind, p) {
 
     var row = [code, "'" + at, desc, kind, outerId, productId, 'chua_xu_ly', '',
       '', '', by, String(p.note || '').trim()];
-    r.sh.insertRowBefore(2);
-    r.sh.getRange(2, 1, 1, row.length).setValues([row]);
+    sh.insertRowBefore(2);
+    sh.getRange(2, 1, 1, row.length).setValues([row]);
 
     var ph = getSheet_('Photos', PHOTOS_HEADER);
-    for (var k = 0; k < jobs.length; k++) {
-      ph.appendRow([code, jobs[k][0], ids[jobs[k][0]], "'" + at]);
-    }
+    var phRows = jobs.map(function (j) { return [code, j[0], ids[j[0]], "'" + at]; });
+    ph.getRange(ph.getLastRow() + 1, 1, phRows.length, PHOTOS_HEADER.length).setValues(phRows);
 
     getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, '', 'chua_xu_ly', by, 'Tạo mới', '']);
     var created = { code: code, created_at: at, description: desc, kind: kind, photo_path_outer: outerId, photo_path_product: productId, status: 'chua_xu_ly', status_note: '', mvdn: '', trip: '', reporter: by, note: String(p.note || '').trim() };
