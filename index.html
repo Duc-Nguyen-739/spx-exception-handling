@@ -70,6 +70,26 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 #viewPrint .plast{font-size:12px;margin-top:6px}
 #viewPrint .plast b{font-family:ui-monospace,Menlo,monospace}
 #viewPrint #bulkList{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+#viewLiq .lscanrow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:8px 10px;margin-bottom:10px;flex-wrap:wrap}
+#viewLiq .lscanrow>label{font-size:12.5px;font-weight:700;white-space:nowrap;color:var(--navy)}
+#viewLiq .lscanrow>label i{color:var(--o);font-style:normal}
+#viewLiq .lscanbox{position:relative;width:300px;max-width:100%;flex:none}
+#viewLiq .lscanbox .pic{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:14px}
+#viewLiq .lscanbox input{padding-left:32px}
+#viewLiq .lempty{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:30px 0 26px;text-align:center;color:var(--mut);font-size:12.5px;font-weight:600}
+#viewLiq .lempty .big{font-size:32px;display:block;margin-bottom:8px}
+#viewLiq .ltblwrap{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;overflow-x:auto}
+#viewLiq .ltblwrap h3{margin:0;padding:12px 16px;font-size:13.5px;color:var(--navy)}
+#viewLiq .ltable{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
+#viewLiq .ltable th{background:var(--bg);text-align:left;padding:9px 14px;font-size:10.5px;color:var(--mut);border-top:1px solid var(--line);border-bottom:1px solid var(--line);white-space:nowrap}
+#viewLiq .ltable td{padding:9px 14px;border-bottom:1px solid var(--bg);vertical-align:top}
+#viewLiq .ltable tr:last-child td{border-bottom:none}
+#viewLiq .ltable td.code{font-family:ui-monospace,Menlo,monospace;font-weight:700;color:var(--navy);white-space:nowrap}
+#viewLiq .ltable td.desc{max-width:280px;word-break:break-word}
+#viewLiq .ltable tfoot td{color:var(--mut);font-size:11.5px;font-weight:700}
+#viewLiq .lnextrow{margin-top:12px;display:flex}
+#viewLiq .lnextrow .primary{flex:0 0 280px;max-width:100%}
+#viewLiq #liqCodeWrap{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px;margin-top:12px;max-width:520px}
 @media(min-width:600px){#viewMain .topbtns{position:absolute;right:0;top:50%;transform:translateY(-50%)}}
 #scanClear{display:none;width:30px;height:30px;flex:none;border:none;border-radius:50%;background:#e8ecf1;color:#5b6572;font-size:13px;font-weight:800;line-height:1;padding:0}
 #scanClear.show{display:block}
@@ -120,14 +140,10 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 .days.hot{color:var(--amber);background:var(--t4)}
 
 /* ===== thanh ly ===== */
-.cnt{background:var(--tint);border:1px solid #ffd9cd;border-radius:15px;padding:13px 15px;display:flex;align-items:center;gap:14px;margin-bottom:12px}
-.cnt b{font-size:30px;font-weight:800;color:var(--o);line-height:1}
-.cnt small{font-size:10.5px;color:#b06a52;font-weight:600;line-height:1.5}
-html[data-theme=dark] .cnt small{color:#a4573d}
-#liqList,#bulkList{list-style:none;padding:0;margin:0 0 12px}
-#liqList li,#bulkList li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;font-size:12px;font-weight:600;color:var(--navy)}
-#liqList li span,#bulkList li span{flex:1;font-family:ui-monospace,Menlo,monospace;font-size:11px;word-break:break-all}
-#liqList li button,#bulkList li button{padding:5px 10px;font-size:10.5px;color:var(--mut);border-color:var(--line)}
+#bulkList{list-style:none;padding:0;margin:0 0 12px}
+#bulkList li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;font-size:12px;font-weight:600;color:var(--navy)}
+#bulkList li span{flex:1;font-family:ui-monospace,Menlo,monospace;font-size:11px;word-break:break-all}
+#bulkList li button{padding:5px 10px;font-size:10.5px;color:var(--mut);border-color:var(--line)}
 .row{display:flex;gap:8px}.row>*{flex:1}
 .backrow{display:flex;margin-bottom:2px}
 
@@ -379,15 +395,22 @@ header{flex-wrap:wrap}
 
 <main id="viewLiq" style="display:none">
 <div class="backrow"><button id="btnBackLiq" class="lnk backhome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Màn hình chính</button></div>
-<div class="scanbar">
-<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 5v14M8 5v14M13 5v14M17 5v14M20 5v14" stroke-dasharray="2 3"/></svg>
-<input id="scanLiq" placeholder="Quét mã đơn vào lô thanh lý…" inputmode="text">
+<div class="lscanrow">
+<label><i>*</i> Quét mã thanh lý</label>
+<span class="lscanbox"><span class="pic">⌕</span><input id="scanLiq" class="mono" placeholder="Quét hoặc nhập mã…"></span>
 <button id="camLiq">📷 Quét</button>
 </div>
 <div class="msg" id="msgLiq"></div>
-<div class="cnt" id="liqCnt" style="display:none"><b id="liqCount">0</b><small>mã đủ điều kiện trong lô · kiểm tra trùng / đã Resolve / đã thanh lý tự động</small></div>
-<ul id="liqList"></ul>
-<div class="row">
+<div class="lempty" id="liqEmpty"><span class="big">🗂️</span>Quét mã để thêm vào lô thanh lý</div>
+<div class="ltblwrap" id="liqTblWrap" style="display:none">
+<h3>Chi tiết lô thanh lý</h3>
+<table class="ltable">
+<thead><tr><th>Mã Đơn</th><th>Loại</th><th>Mô tả</th><th></th></tr></thead>
+<tbody id="liqRows"></tbody>
+<tfoot><tr><td colspan="4" id="liqTotal">Total 0</td></tr></tfoot>
+</table>
+</div>
+<div class="lnextrow">
 <button id="btnNext" class="primary" disabled>Next →</button>
 </div>
 <div id="liqCodeWrap" style="display:none">
@@ -1221,16 +1244,17 @@ doPrintMany(codes);
 }catch(e){h.textContent=(e&&e.message)||'Lỗi sinh mã';h.className='phint err';}
 }
 function renderLiq(){
-var ul=document.getElementById('liqList');ul.innerHTML='';
-state.liq.forEach(function(c,i){
-var li=document.createElement('li');
-li.innerHTML='<span>'+esc(c)+'</span>';
-var b=document.createElement('button');b.textContent='✕ Xóa';
+var tb=document.getElementById('liqRows');tb.innerHTML='';
+state.liq.forEach(function(r,i){
+var tr=document.createElement('tr');
+tr.innerHTML='<td class="code">'+esc(r.code)+'</td><td>'+esc(r.kind||'')+'</td><td class="desc">'+esc(r.desc||'')+'</td>';
+var td=document.createElement('td');var b=document.createElement('button');b.textContent='✕ Xóa';
 b.onclick=function(){state.liq.splice(i,1);renderLiq();};
-li.appendChild(b);ul.appendChild(li);
+td.appendChild(b);tr.appendChild(td);tb.appendChild(tr);
 });
-var cnt=document.getElementById('liqCount');if(cnt)cnt.textContent=state.liq.length;
-var wrap=document.getElementById('liqCnt');if(wrap)wrap.style.display=state.liq.length?'flex':'none';
+document.getElementById('liqTotal').textContent='Total '+state.liq.length;
+document.getElementById('liqTblWrap').style.display=state.liq.length?'block':'none';
+document.getElementById('liqEmpty').style.display=state.liq.length?'none':'block';
 document.getElementById('btnNext').disabled=!state.liq.length;
 }
 function liqStatusOf(code){
@@ -1248,14 +1272,14 @@ var st=found.status||'chua_xu_ly';
 if(st==='thanh_ly'){msg('msgLiq','Đã Thanh Lý: '+code);return;}
 if(st==='da_tim_bill'){msg('msgLiq','Đã Resolve: '+code);return;}
 if(st!=='chua_xu_ly'){msg('msgLiq','Không cho thanh lý ('+(found.statusLabel||st)+'): '+code);return;}
-if(state.liq.indexOf(code)>=0){msg('msgLiq','Trùng (đã có trong danh sách): '+code);return;}
-state.liq.push(code);renderLiq();
+if(state.liq.some(function(x){return x.code===code;})){msg('msgLiq','Trùng (đã có trong danh sách): '+code);return;}
+state.liq.push({code:code,kind:found.kind||'',desc:found.description||''});renderLiq();
 msg('msgLiq','Thành công: '+code,true);
 }
 async function liqDone(){
 var liqCode=document.getElementById('liqCode').value.trim();
 if(!liqCode){msg('msgLiq','Vui lòng nhập mã thanh lý.');return;}
-var codes=state.liq.slice();
+var codes=state.liq.map(function(x){return x.code;});
 var prev={};
 var entries=[];
 codes.forEach(function(cd){

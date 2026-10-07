@@ -302,6 +302,21 @@ async function main() {
     check('Detail header dinh khi cuon', dh.value === 'sticky', String(dh.value));
     const fs = await evalIn(ws, `parseFloat(getComputedStyle(document.getElementById('resolveBill')).fontSize)`);
     check('O bill du 16px (iOS khong tu zoom)', fs.value >= 16, String(fs.value));
+    await evalIn(ws, `document.getElementById('navLiq').click()`);
+    await evalIn(ws, `var s=document.getElementById('scanLiq');s.value='Box.06-10-2026.5';s.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter'}))`);
+    const lqOk = await waitUntil(ws, "document.querySelectorAll('#liqRows tr').length === 1"
+      + " && document.getElementById('liqTotal').textContent === 'Total 1'"
+      + " && document.querySelector('#liqRows tr td.code').textContent.includes('Box.06-10-2026.5')"
+      + " && document.querySelectorAll('#liqRows tr td')[2].textContent.includes('Thùng chờ thanh lý')", 8000);
+    check('Thanh Ly: scan vao bang chi tiet du Ma/Loai/Mo ta', !!lqOk, String(lqOk));
+    await evalIn(ws, `document.getElementById('btnNext').click()`);
+    const lqW = await waitUntil(ws, "document.getElementById('liqCodeWrap').style.display === 'block'", 3000);
+    check('Thanh Ly: Next hien o nhap ma SPXVN', !!lqW, String(lqW));
+    await evalIn(ws, `document.getElementById('liqCode').value='SPXVN777L';document.getElementById('btnLiqDone').click()`);
+    const lqDone = await waitUntil(ws, "document.getElementById('msgLiq').innerText.includes('Đã thanh lý 1 mã')"
+      + " && document.querySelectorAll('#liqRows tr').length === 0"
+      + " && document.getElementById('liqCodeWrap').style.display === 'none'", 8000);
+    check('Thanh Ly: Confirm SPXVN chot lo + reset', !!lqDone, String(lqDone));
 
     const errs = await evalIn(ws, `JSON.stringify(window.__PAGE_ERRORS__ || [])`);
     check('Không lỗi JS trên trang', errs.value === '[]', errs.value);

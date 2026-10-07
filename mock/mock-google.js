@@ -39,6 +39,13 @@
       description: 'Thùng thanh lý demo', note: '', status: 'thanh_ly',
       statusLabel: 'Thanh Lý', bill: 'SPXVN999', days: 1, extras: [],
       slots: [{ slot: 'san_pham', url: '' }]
+    },
+    {
+      code: 'Box.06-10-2026.5', kind: 'Box', createdAt: '06/10/2026 11:00:00',
+      createdBy: 'duc.nguyenvan05@spxexpress.com', imgOuter: '', imgProduct: '',
+      description: 'Thùng chờ thanh lý', note: '', status: 'chua_xu_ly',
+      statusLabel: 'Lưu kho', bill: '', days: 0, extras: [],
+      slots: [{ slot: 'san_pham', url: '' }]
     }
   ];
 
@@ -54,6 +61,9 @@
     'Box.05-10-2026.9': [
       { at: '05/10/2026 08:00:00', code: 'Box.05-10-2026.9', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '' },
       { at: '06/10/2026 17:00:00', code: 'Box.05-10-2026.9', from: 'chua_xu_ly', to: 'thanh_ly', by: 'son.nguyenngoc@spxexpress.com', note: 'SPXVN999', bill: 'SPXVN999' }
+    ],
+    'Box.06-10-2026.5': [
+      { at: '06/10/2026 11:00:00', code: 'Box.06-10-2026.5', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '' }
     ]
   };
 
