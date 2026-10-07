@@ -645,7 +645,7 @@ var s=document.getElementById('hdrSummary');if(s)s.textContent=me;
 var counts={all:state.items.length,open:open.length,resolve:state.items.filter(function(i){return i.status==='da_tim_bill';}).length,liq:state.items.filter(function(i){return i.status==='thanh_ly';}).length};
 var p=document.getElementById('pillsRow');
 if(p){
-var defs=[['','Tất cả',counts.all],['open','Lưu kho',counts.open],['resolve','Resolve',counts.resolve]];
+var defs=[['','Tất cả',counts.all],['open','Lưu kho',counts.open],['resolve','Resolve',counts.resolve],['liq','Thanh Lý',counts.liq]];
 p.innerHTML='';
 defs.forEach(function(d){
 var b=document.createElement('button');b.type='button';
@@ -672,10 +672,10 @@ e.onclick=function(){document.body.classList.remove('rail');};
 r.appendChild(e);
 }
 function renderSideFilters(){
-var c={all:state.items.length,open:0,resolve:0,Box:0,Item:0};
-state.items.forEach(function(it){if(it.status==='chua_xu_ly')c.open++;if(it.status==='da_tim_bill')c.resolve++;if(it.kind==='Box')c.Box++;else c.Item++;});
+var c={all:state.items.length,open:0,resolve:0,liq:0,Box:0,Item:0};
+state.items.forEach(function(it){if(it.status==='chua_xu_ly')c.open++;if(it.status==='da_tim_bill')c.resolve++;if(it.status==='thanh_ly')c.liq++;if(it.kind==='Box')c.Box++;else c.Item++;});
 var st=document.getElementById('fStatus');st.innerHTML='';
-[['','Tất cả',c.all],['open','Lưu kho',c.open],['resolve','Resolve',c.resolve]].forEach(function(o){
+[['','Tất cả',c.all],['open','Lưu kho',c.open],['resolve','Resolve',c.resolve],['liq','Thanh Lý',c.liq]].forEach(function(o){
 var l=document.createElement('label');l.className='dash-opt';
 var r=document.createElement('input');r.type='radio';r.checked=(state.statusFilter===o[0]);
 r.onchange=(function(v){return function(){state.statusFilter=v;renderGrid();renderSummary();};})(o[0]);

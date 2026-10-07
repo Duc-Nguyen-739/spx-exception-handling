@@ -293,6 +293,11 @@ async function main() {
     await evalIn(ws, `document.getElementById('btnBackPrint').click()`);
     const bkMain = await evalIn(ws, `document.getElementById('viewMain').style.display`);
     check('Tab In Ma quay ve man hinh chinh', bkMain.value === 'block', String(bkMain.value));
+    await evalIn(ws, `document.querySelector('.pill[data-k="liq"]').click()`);
+    const liqOk = await waitUntil(ws, "document.querySelectorAll('#grid .card').length === 1"
+      + " && document.querySelector('#grid .card .code').textContent.includes('Box.05-10-2026.9')", 5000);
+    check('Loc Thanh Ly hien dung don thanh_ly', !!liqOk, String(liqOk));
+    await evalIn(ws, `document.querySelector('.pill[data-k=""]').click()`);
     const dh = await evalIn(ws, `getComputedStyle(document.querySelector('.dhead')).position`);
     check('Detail header dinh khi cuon', dh.value === 'sticky', String(dh.value));
     const fs = await evalIn(ws, `parseFloat(getComputedStyle(document.getElementById('resolveBill')).fontSize)`);

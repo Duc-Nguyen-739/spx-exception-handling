@@ -32,6 +32,13 @@
       description: 'Khăn màu đỏ', note: '', status: 'da_tim_bill',
       statusLabel: 'Resolve', bill: 'SPXVN123456789', days: 0, extras: [],
       slots: [{ slot: 'san_pham', url: '' }]
+    },
+    {
+      code: 'Box.05-10-2026.9', kind: 'Box', createdAt: '05/10/2026 08:00:00',
+      createdBy: 'duc.nguyenvan05@spxexpress.com', imgOuter: '', imgProduct: '',
+      description: 'Thùng thanh lý demo', note: '', status: 'thanh_ly',
+      statusLabel: 'Thanh Lý', bill: 'SPXVN999', days: 1, extras: [],
+      slots: [{ slot: 'san_pham', url: '' }]
     }
   ];
 
@@ -43,6 +50,10 @@
       { at: '06/10/2026 09:15:00', code: 'Item.06-10-2026.2', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '' },
       { at: '06/10/2026 18:01:00', code: 'Item.06-10-2026.2', from: 'chua_xu_ly', to: 'da_tim_bill', by: 'son.nguyenngoc@spxexpress.com', note: 'SPXVN123456789', bill: 'SPXVN123456789' },
       { at: '06/10/2026 18:05:00', code: 'Item.06-10-2026.2', from: 'da_tim_bill', to: 'da_tim_bill', by: ME, note: 'ADMIN chỉnh sửa Mô tả sản phẩm', bill: '' }
+    ],
+    'Box.05-10-2026.9': [
+      { at: '05/10/2026 08:00:00', code: 'Box.05-10-2026.9', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '' },
+      { at: '06/10/2026 17:00:00', code: 'Box.05-10-2026.9', from: 'chua_xu_ly', to: 'thanh_ly', by: 'son.nguyenngoc@spxexpress.com', note: 'SPXVN999', bill: 'SPXVN999' }
     ]
   };
 
