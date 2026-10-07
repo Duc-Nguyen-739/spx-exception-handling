@@ -130,8 +130,50 @@ def parse_created_at(s):
     return None
 
 
-def storage_days(created_at_str, now=None):
-    created = parse_created_at(created_at_str)
+def code_date(code):
+    # KHỚP Code.gs codeDate_: ngày tạo nằm trong mã Box./Item. (sheet locale US
+    # đảo ngày/tháng khi parse lại — dùng mã để chọn cách đọc đúng).
+    m = re.match(r"^(?:Box|Item)\.(\d{2})-(\d{2})-(\d{4})\.", str(code or ""))
+    if m:
+        return (int(m.group(3)), int(m.group(2)), int(m.group(1)))
+    o = re.match(r"^(?:BOX|ITEM|TTC)\.(\d{2})(\d{2})(\d{4})\.", str(code or ""), re.IGNORECASE)
+    if o:
+        return (int(o.group(3)), int(o.group(2)), int(o.group(1)))
+    return None
+
+
+def _valid_ymd(y, m, d):
+    try:
+        datetime(y, m, d)
+        return 1 <= m <= 12 and 1 <= d <= 31
+    except ValueError:
+        return False
+
+
+def parse_created_smart(s, code=None):
+    # KHỚP Code.gs parseCreatedSmart_: đọc VN dd/mm, thử đảo US mm/dd khi
+    # ngày/tháng đều <= 12; đối chiếu ngày trong mã, fallback VN như cũ.
+    m = re.match(
+        r"(\d{2})/(\d{2})/(\d{4})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?",
+        str(s or ""),
+    )
+    if not m:
+        return None
+    y, a, b = int(m.group(3)), int(m.group(1)), int(m.group(2))
+    hh, mi, ss = int(m.group(4) or 0), int(m.group(5) or 0), int(m.group(6) or 0)
+    vn = datetime(y, b, a, hh, mi, ss, tzinfo=TZ) if _valid_ymd(y, b, a) else None
+    us = datetime(y, a, b, hh, mi, ss, tzinfo=TZ) if _valid_ymd(y, a, b) else None
+    cd = code_date(code)
+    if cd:
+        if vn and (vn.year, vn.month, vn.day) == cd:
+            return vn
+        if us and (us.year, us.month, us.day) == cd:
+            return us
+    return vn or us
+
+
+def storage_days(created_at_str, now=None, code=None):
+    created = parse_created_smart(created_at_str, code)
     if not created:
         return 0
     now = now or datetime.now(TZ)

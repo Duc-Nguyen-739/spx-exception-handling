@@ -8,12 +8,36 @@ function ymdNum(o) { return o.y * 10000 + o.m * 100 + o.d; }
 function rangeDiff(a, b) {
   return Math.round((new Date(b.y, b.m - 1, b.d) - new Date(a.y, a.m - 1, a.d)) / 86400000);
 }
-function inRangeDay(createdAt, range) {
+function codeDate(code) {
+  let m = String(code || '').match(/^(?:Box|Item)\.(\d{2})-(\d{2})-(\d{4})\./);
+  if (m) return { y: +m[3], m: +m[2], d: +m[1] };
+  const o = String(code || '').match(/^(?:BOX|ITEM|TTC)\.(\d{2})(\d{2})(\d{4})\./i);
+  if (o) return { y: +o[3], m: +o[2], d: +o[1] };
+  return null;
+}
+function validYMD(y, m, d) {
+  if (!(m >= 1 && m <= 12 && d >= 1 && d <= 31)) return false;
+  const t = new Date(y, m - 1, d);
+  return t.getFullYear() === y && t.getMonth() === m - 1 && t.getDate() === d;
+}
+function parseSmart(s, code) {
+  const m = String(s || '').match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!m) return null;
+  const vn = validYMD(+m[3], +m[2], +m[1]) ? [+m[3], +m[2], +m[1]] : null;
+  const us = validYMD(+m[3], +m[1], +m[2]) ? [+m[3], +m[1], +m[2]] : null;
+  const cd = codeDate(code);
+  if (cd) {
+    if (vn && vn[0] === cd.y && vn[1] === cd.m && vn[2] === cd.d) return vn;
+    if (us && us[0] === cd.y && us[1] === cd.m && us[2] === cd.d) return us;
+  }
+  return vn || us;
+}
+function inRangeDay(createdAt, range, code) {
   const r = range;
   if (!r || !r.f || !r.t) return true;
-  const m = String(createdAt || '').match(/(\d{2})\/(\d{2})\/(\d{4})/);
-  if (!m) return true;
-  const n = (+m[3]) * 10000 + (+m[2]) * 100 + (+m[1]);
+  const p = parseSmart(createdAt, code);
+  if (!p) return true;
+  const n = p[0] * 10000 + p[1] * 100 + p[2];
   return n >= ymdNum(r.f) && n <= ymdNum(r.t);
 }
 function visible(it, q, range) {
@@ -48,6 +72,17 @@ test('range: don thang 10 phai nam trong range 30d mac dinh', () => {
   assert.strictEqual(inRangeDay('05/10/2026 19:05:51', r30), true);
   assert.strictEqual(inRangeDay('06/10/2026 18:39:00', r30), true);
   assert.strictEqual(inRangeDay('07/10/2026 13:49:30', r30), true);
+});
+
+test('range: chuoi dao ngay/thang (locale US) doi chieu ma van dung', () => {
+  const r30 = { f: { y: 2026, m: 9, d: 8 }, t: { y: 2026, m: 10, d: 7 } };
+  assert.deepStrictEqual(parseSmart('10/06/2026 18:39:00', 'Box.06-10-2026.2'), [2026, 10, 6]);
+  assert.deepStrictEqual(parseSmart('10/05/2026 19:14:53', 'Box.05-10-2026.2'), [2026, 10, 5]);
+  assert.strictEqual(inRangeDay('10/06/2026 18:39:00', r30, 'Box.06-10-2026.2'), true);
+  assert.deepStrictEqual(parseSmart('06/10/2026 18:39:00', 'Box.06-10-2026.2'), [2026, 10, 6]);
+  assert.deepStrictEqual(parseSmart('10/06/2026 18:39:00', 'Box.01-01-2026.9'), [2026, 6, 10]);
+  assert.deepStrictEqual(parseSmart('25/10/2026 08:00:00', 'Box.06-10-2026.2'), [2026, 10, 25]);
+  assert.strictEqual(parseSmart('khong-phai-ngay', 'Box.06-10-2026.2'), null);
 });
 
 test('range: co chu tim thi bypass (ke ca mo ta, khong gioi han ngay)', () => {

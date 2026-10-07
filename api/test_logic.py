@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime
 from api.logic import (
     gen_code, next_seq, next_seq_reserved, bulk_codes, BULK_MAX,
-    storage_days, can_resolve, can_liquidate,
+    storage_days, parse_created_smart, code_date, can_resolve, can_liquidate,
     canonical_status, canonical_kind, valid_liq_code, can_edit_status,
     history_bill, map_history_row,
     check_create_photos, can_delete_user, extract_drive_id, can_edit, CODE_RE, TZ,
@@ -123,6 +123,20 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(storage_days("01/10/2026 10:00:00", now), 5)
         self.assertEqual(storage_days("06/10/2026 10:00:00", now), 0)
         self.assertEqual(storage_days("khong-phai-ngay", now), 0)
+
+    def test_smart_date_against_code(self):
+        now = datetime(2026, 10, 7, 0, 0, 0, tzinfo=TZ)
+        # Chuoi US MM/dd doc nhu VN: doi chieu ma thi dung Oct.
+        self.assertEqual(
+            parse_created_smart("10/06/2026 18:39:00", "Box.06-10-2026.2"),
+            datetime(2026, 10, 6, 18, 39, 0, tzinfo=TZ),
+        )
+        self.assertEqual(storage_days("10/06/2026 18:39:00", now, "Box.06-10-2026.2"), 0)
+        self.assertEqual(storage_days("10/05/2026 19:14:53", now, "Box.05-10-2026.2"), 1)
+        # Ma custom khong khop ngay tao: fallback VN nhu cu.
+        self.assertEqual(storage_days("10/06/2026 18:39:00", now, "Box.01-01-2026.9"), 118)
+        self.assertIsNone(code_date("ma-la-khong-chuan"))
+        self.assertEqual(code_date("BOX.06102026.01"), (2026, 10, 6))
 
     def test_bulk_codes_continuous(self):
         dt = datetime(2026, 10, 6, 10, 0, 0, tzinfo=TZ)

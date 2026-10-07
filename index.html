@@ -622,14 +622,16 @@ try{google.script.run.withSuccessHandler(done).withFailureHandler(function(e){re
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function msg(id,t,ok){var e=document.getElementById(id);e.textContent=t||'';e.className='msg '+(t?(ok?'ok':'err'):'');}
 function todayPart(){try{return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date()).replace(/\//g,'-');}catch(e){var d=new Date();return('0'+d.getDate()).slice(-2)+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+d.getFullYear();}}
-function parseCreated(s){var m=String(s||'').match(/(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?/);if(!m)return null;return new Date(+m[3],+m[2]-1,+m[1],+(m[4]||0),+(m[5]||0));}
+function codeDate_(code){var m=String(code||'').match(/^(?:Box|Item)\.(\d{2})-(\d{2})-(\d{4})\./);if(m)return{y:+m[3],m:+m[2],d:+m[1]};var o=String(code||'').match(/^(?:BOX|ITEM|TTC)\.(\d{2})(\d{2})(\d{4})\./i);if(o)return{y:+o[3],m:+o[2],d:+o[1]};return null;}
+function validYMD_(y,m,d){if(!(m>=1&&m<=12&&d>=1&&d<=31))return false;var t=new Date(y,m-1,d);return t.getFullYear()===y&&t.getMonth()===m-1&&t.getDate()===d;}
+function parseCreated(s,code){var m=String(s||'').match(/(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?/);if(!m)return null;var hh=+(m[4]||0),mi=+(m[5]||0);var vn=validYMD_(+m[3],+m[2],+m[1])?new Date(+m[3],+m[2]-1,+m[1],hh,mi):null;var us=validYMD_(+m[3],+m[1],+m[2])?new Date(+m[3],+m[1]-1,+m[2],hh,mi):null;var cd=codeDate_(code);if(cd){if(vn&&vn.getFullYear()===cd.y&&vn.getMonth()===cd.m-1&&vn.getDate()===cd.d)return vn;if(us&&us.getFullYear()===cd.y&&us.getMonth()===cd.m-1&&us.getDate()===cd.d)return us;}return vn||us;}
 function todayYMD_(){try{var p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());var g={};p.forEach(function(x){g[x.type]=x.value;});return {y:+g.year,m:+g.month,d:+g.day};}catch(e){var t=new Date();return {y:t.getFullYear(),m:t.getMonth()+1,d:t.getDate()};}}
 function addDaysYMD_(o,n){var t=new Date(o.y,o.m-1,o.d);t.setDate(t.getDate()+n);return {y:t.getFullYear(),m:t.getMonth()+1,d:t.getDate()};}
 function ymdNum_(o){return o.y*10000+o.m*100+o.d;}
 function rangeDiff_(a,b){return Math.round((new Date(b.y,b.m-1,b.d)-new Date(a.y,a.m-1,a.d))/86400000);}
 function fmtRange_(a,b){function q(n){return (n<10?'0':'')+n;}return a.y+'/'+q(a.m)+'/'+q(a.d)+' 00:00-'+b.y+'/'+q(b.m)+'/'+q(b.d)+' 23:59';}
-function inRangeDay_(createdAt){var r=state.range;if(!r||!r.f||!r.t)return true;var m=String(createdAt||'').match(/(\d{2})\/(\d{2})\/(\d{4})/);if(!m)return true;var n=(+m[3])*10000+(+m[2])*100+(+m[1]);return n>=ymdNum_(r.f)&&n<=ymdNum_(r.t);}
-function daysOf(c){var d=parseCreated(c);if(!d)return 0;return Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));}
+function inRangeDay_(createdAt,code){var r=state.range;if(!r||!r.f||!r.t)return true;var d=parseCreated(createdAt,code);if(!d)return true;var n=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();return n>=ymdNum_(r.f)&&n<=ymdNum_(r.t);}
+function daysOf(c,code){var d=parseCreated(c,code);if(!d)return 0;return Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));}
 function thumb(it){return it.imgProduct||it.imgOuter||(it.extras&&it.extras[0])||'';}
 function extractDriveId(u){var s=String(u||'');var m=s.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);if(m)return m[1];m=s.match(/\/d\/([a-zA-Z0-9_-]{10,})/);return m?m[1]:'';}
 var photoCache={},photoLoading={};
@@ -678,7 +680,7 @@ return '<div class="tl-time">'+esc(fmtAt(x.at))+'</div>'
 +(x.bill?'<div class="tl-bill">'+esc(x.bill)+'</div>':'');
 }
 
-function normItem_(it){if(it&&it.days==null)it.days=daysOf(it.createdAt);return it;}
+function normItem_(it){if(it&&it.days==null)it.days=daysOf(it.createdAt,it.code);return it;}
 function upsertItem(it){
 if(!it||!it.code)return;
 normItem_(it);
@@ -775,7 +777,7 @@ if(k==='open'&&it.status!=='chua_xu_ly')return false;
 if(k==='resolve'&&it.status!=='da_tim_bill')return false;
 if(k==='liq'&&it.status!=='thanh_ly')return false;
 if(!state.kinds[it.kind])return false;
-if(!q)return inRangeDay_(it.createdAt);
+if(!q)return inRangeDay_(it.createdAt,it.code);
 return String(it.code).toLowerCase().indexOf(q)>=0
 ||String(it.description||'').toLowerCase().indexOf(q)>=0
 ||String(it.kind||'').toLowerCase().indexOf(q)>=0;
@@ -814,7 +816,7 @@ if(k==='open'&&it0.status!=='chua_xu_ly')continue;
 if(k==='resolve'&&it0.status!=='da_tim_bill')continue;
 if(k==='liq'&&it0.status!=='thanh_ly')continue;
 if(!state.kinds[it0.kind])continue;
-if(!inRangeDay_(it0.createdAt))hidden++;
+if(!inRangeDay_(it0.createdAt,it0.code))hidden++;
 }
 }catch(e2){}
 if(hidden>0){
@@ -983,7 +985,7 @@ function detailBodyHTML(it){
 var h='<div class="kv"><b>Mã sản phẩm</b><span class="val mono">'+esc(it.code||'')+'</span></div>'+
 phStrip(detailPhotos_(it));
 h+='<div class="kv"><b>Loại</b><span class="val">'+esc(it.kind||'')+'</span></div>'+
-'<div class="kv"><b>Ngày tạo</b><span class="val">'+esc(it.createdAt||'')+'<span class="sub">'+esc(daysOf(it.createdAt)+' ngày lưu kho')+'</span></span></div>'+
+'<div class="kv"><b>Ngày tạo</b><span class="val">'+esc(it.createdAt||'')+'<span class="sub">'+esc(daysOf(it.createdAt,it.code)+' ngày lưu kho')+'</span></span></div>'+
 '<div class="kv"><b>Người tạo</b><span class="val">'+esc(it.createdBy||'')+'</span></div>'+
 '<div class="kv"><b>Mô tả</b><span class="val">'+esc(it.description||'')+'</span></div>'+
 '<div class="kv"><b>Ghi chú</b><span class="val">'+esc(it.note||'—')+'</span></div>'+

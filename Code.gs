@@ -105,7 +105,7 @@ function toClient_(o, days, extras) {
     imgOuter: thumbUrl_(o.photo_path_outer), imgProduct: thumbUrl_(o.photo_path_product),
     description: o.description, note: o.note, status: o.status || 'chua_xu_ly',
     statusLabel: STATUS_LABEL[o.status] || STATUS_LABEL.chua_xu_ly,
-    bill: o.mvdn, days: days == null ? storageDays_(o.created_at) : days,
+    bill: o.mvdn, days: days == null ? storageDays_(o.created_at, o.code) : days,
     extras: extras || []
   };
 }
@@ -166,8 +166,43 @@ function parseCreated_(s) {
   return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
 }
 
-function storageDays_(createdAt) {
-  var d = parseCreated_(createdAt);
+function codeDate_(code) {
+  var m = String(code || '').match(/^(?:Box|Item)\.(\d{2})-(\d{2})-(\d{4})\./);
+  if (m) return { y: +m[3], m: +m[2], d: +m[1] };
+  var o = String(code || '').match(/^(?:BOX|ITEM|TTC)\.(\d{2})(\d{2})(\d{4})\./i);
+  if (o) return { y: +o[3], m: +o[2], d: +o[1] };
+  return null;
+}
+function validYMD_(y, m, d) {
+  if (!(m >= 1 && m <= 12 && d >= 1 && d <= 31)) return false;
+  var t = new Date(y, m - 1, d);
+  return t.getFullYear() === y && t.getMonth() === m - 1 && t.getDate() === d;
+}
+function parseCreatedSmart_(s, code) {
+  var m = String(s || '').match(/(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?/);
+  if (!m) return null;
+  var hh = +(m[4] || 0), mi = +(m[5] || 0), ss = +(m[6] || 0);
+  var vn = validYMD_(+m[3], +m[2], +m[1]) ? new Date(+m[3], +m[2] - 1, +m[1], hh, mi, ss) : null;
+  var us = validYMD_(+m[3], +m[1], +m[2]) ? new Date(+m[3], +m[1] - 1, +m[2], hh, mi, ss) : null;
+  var cd = codeDate_(code);
+  if (cd) {
+    if (vn && vn.getFullYear() === cd.y && vn.getMonth() === cd.m - 1 && vn.getDate() === cd.d) return vn;
+    if (us && us.getFullYear() === cd.y && us.getMonth() === cd.m - 1 && us.getDate() === cd.d) return us;
+  }
+  return vn || us;
+}
+function normAt_(at, code) {
+  var d = parseCreatedSmart_(at, code);
+  if (!d) return String(at || '');
+  return Utilities.formatDate(d, TZ, 'dd/MM/yyyy HH:mm:ss');
+}
+function textDate_(v) {
+  var s = cellText_(v);
+  if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) return "'" + s;
+  return s;
+}
+function storageDays_(createdAt, code) {
+  var d = parseCreatedSmart_(createdAt, code);
   if (!d) return 0;
   var ms = Date.now() - d.getTime();
   return Math.max(0, Math.floor(ms / 86400000));
@@ -218,7 +253,7 @@ function listItems(limit) {
       return t;
     });
     out.sort(function (a, b) {
-      var da = parseCreated_(a.createdAt), db = parseCreated_(b.createdAt);
+      var da = parseCreatedSmart_(a.createdAt, a.code), db = parseCreatedSmart_(b.createdAt, b.code);
       return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
     });
     if (limit && out.length > limit) out = out.slice(0, limit);
@@ -271,7 +306,7 @@ function historyFor_(code) {
   for (var i = 0; i < vals.length; i++) {
     if (String(vals[i][iCode] || '').trim() !== want) continue;
     out.push({
-      at: iAt >= 0 ? cellText_(vals[i][iAt]) : '',
+      at: iAt >= 0 ? normAt_(cellText_(vals[i][iAt]), want) : '',
       code: want,
       from: iFrom >= 0 ? String(vals[i][iFrom] || '') : '',
       to: iTo >= 0 ? String(vals[i][iTo] || '') : '',
@@ -328,7 +363,7 @@ function previewBulkCodes(kind, count) {
       var codes = [];
       for (var i = 0; i < n; i++) codes.push(prefix_(k) + datePart + '.' + (start + i));
       var at = nowStr_(), by = currentEmail_();
-      var rows = codes.map(function (c) { return [c, at, by, k]; });
+      var rows = codes.map(function (c) { return [c, "'" + at, by, k]; });
       var sh = getSheet_('PrintedCodes', PRINTED_HEADER);
       sh.getRange(sh.getLastRow() + 1, 1, rows.length, PRINTED_HEADER.length).setValues(rows);
       return { codes: codes, kind: k };
@@ -483,10 +518,10 @@ function create_(kind, p) {
 
     var ph = getSheet_('Photos', PHOTOS_HEADER);
     for (var k = 0; k < jobs.length; k++) {
-      ph.appendRow([code, jobs[k][0], ids[jobs[k][0]], at]);
+      ph.appendRow([code, jobs[k][0], ids[jobs[k][0]], "'" + at]);
     }
 
-    getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, '', 'chua_xu_ly', by, 'Tạo mới']);
+    getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, '', 'chua_xu_ly', by, 'Tạo mới']);
     var created = { code: code, created_at: at, description: desc, kind: kind, photo_path_outer: outerId, photo_path_product: productId, status: 'chua_xu_ly', status_note: '', mvdn: '', trip: '', reporter: by, note: String(p.note || '').trim() };
     return { code: code, shareOk: shareOk, item: toClient_(created) };
   });
@@ -524,7 +559,7 @@ function resolveItem(code, bill) {
       var by = currentEmail_();
       // G:I 1 lần ghi (status, giữ status_note, mvdn). Không đè reporter/created_at.
       r.sh.getRange(idx + 2, 7, 1, 3).setValues([['da_tim_bill', r.items[idx].status_note || '', bill]]);
-      getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, cur, 'da_tim_bill', by, bill]);
+      getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, cur, 'da_tim_bill', by, bill]);
       return { code: code, status: 'da_tim_bill', at: at, by: by };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
@@ -562,11 +597,12 @@ function liquidateBatch(codes, liqCode) {
           vals[k][8] = liqCode;
           vals[k][6] = 'thanh_ly';
         }
+        vals[k][1] = textDate_(vals[k][1]);
       }
       sh.getRange(2, 1, vals.length, ITEMS_HEADER.length).setValues(vals);
       var log = getSheet_('ActivityLog', LOG_HEADER);
       for (var m = 0; m < codes.length; m++) {
-        log.appendRow([at, codes[m], 'chua_xu_ly', 'thanh_ly', by, liqCode]);
+        log.appendRow(["'" + at, codes[m], 'chua_xu_ly', 'thanh_ly', by, liqCode]);
       }
       return { count: codes.length, at: at, by: by, liqCode: liqCode };
     }));
@@ -699,7 +735,7 @@ function adminEditItem(p) {
         for (var w = 0; w < placed.length; w++) {
           var f = folder.createFile(dataUrlToBlob_(placed[w][1], code + '.' + placed[w][0] + '.jpg'));
           tryShareFile_(f);
-          ph2.appendRow([code, placed[w][0], f.getId(), at]);
+          ph2.appendRow([code, placed[w][0], f.getId(), "'" + at]);
           if (placed[w][0] === 'ngoai_quan') outerId = f.getId();
           if (placed[w][0] === 'san_pham') productId = f.getId();
         }
@@ -712,11 +748,11 @@ function adminEditItem(p) {
         } else {
           r.sh.getRange(row, 7, 1, 3).setValues([[toStatus, r.items[idx].status_note || '', bill]]);
         }
-        getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, cur, toStatus, 'ADMIN đổi trạng thái', bill]);
+        getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, cur, toStatus, 'ADMIN đổi trạng thái', bill]);
         finalSt = toStatus;
       }
       if (changed.length) {
-        getSheet_('ActivityLog', LOG_HEADER).appendRow([at, code, finalSt, finalSt, by, 'ADMIN chỉnh sửa ' + changed.join(', ')]);
+        getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, finalSt, finalSt, by, 'ADMIN chỉnh sửa ' + changed.join(', ')]);
       }
       return { code: code };
     }));
@@ -772,7 +808,7 @@ function listUsers() {
       var seeds = seedAdmins_();
       var at = nowStr_(), by = currentEmail_();
       for (var i = 0; i < seeds.length; i++) {
-        u.sh.appendRow([seeds[i], 'ADMIN', at, by]);
+        u.sh.appendRow([seeds[i], 'ADMIN', "'" + at, by]);
         u.rows.push([seeds[i], 'ADMIN', at, by]);
       }
     }
@@ -791,7 +827,7 @@ function addAdmin(email) {
       for (var i = 0; i < u.rows.length; i++) {
         if (normEmail_(u.rows[i][0]) === email) throw new Error('Email đã có trong danh sách.');
       }
-      u.sh.appendRow([email, 'ADMIN', nowStr_(), currentEmail_()]);
+      u.sh.appendRow([email, 'ADMIN', "'" + nowStr_(), currentEmail_()]);
       return { email: email, role: 'ADMIN' };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
@@ -815,6 +851,7 @@ function deleteUser(email) {
       var last = u.sh.getLastRow();
       var vals = u.sh.getRange(2, 1, last - 1, USERS_HEADER.length).getValues();
       vals.splice(idx, 1);
+      for (var q = 0; q < vals.length; q++) vals[q][2] = textDate_(vals[q][2]);
       u.sh.getRange(2, 1, last - 1, USERS_HEADER.length).clearContent();
       if (vals.length) u.sh.getRange(2, 1, vals.length, USERS_HEADER.length).setValues(vals);
       return { email: email };
