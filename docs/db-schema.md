@@ -80,7 +80,8 @@ Matbill/
 
 - Batch `getValues()`/`setValues()`, không loop cell lẻ (luật 2).
 - Ghi `status` qua `LockService` + append `ActivityLog` cùng execution.
-- Đơn mới insert ở dòng 2 (mới nhất lên đầu); `listItems` chỉ đọc ≤100 dòng đầu + sắp xếp mới → cũ. `getItem`/ghi theo mã (Resolve/Thanh Lý/Edit đổi trạng thái) vẫn quét toàn sheet để không sót đơn cũ.
+- Đơn mới insert ở dòng 2 (mới nhất lên đầu); `listItems`/`listFull` chỉ đọc ≤150 dòng đầu + sắp xếp mới → cũ. `getItem`/ghi theo mã (Resolve/Thanh Lý/Edit đổi trạng thái) vẫn quét toàn sheet để không sót đơn cũ.
+- `listFull(limit)` preload cho client: đọc batch `Items` head + `Photos` + `ActivityLog` (mỗi sheet 1 `getValues`), nhóm theo `code`, trả `[{item (kèm `slots`/`extras` ảnh), history}]` — ảnh chỉ trả URL thumbnail, không base64 (base64 chỉ `getPhoto` fallback khi Drive chặn).
 - `CacheService` có fallback — không xem là source of truth.
 
 ## 6. Lộ trình nâng cấp

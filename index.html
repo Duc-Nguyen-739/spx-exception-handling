@@ -694,10 +694,20 @@ else{state.itemMap[it.code]=it;state.items.push(it);}
 }
 function mergeItems(list){(list||[]).forEach(function(it){upsertItem(it);});}
 function findCached(code){return state.itemMap[code]||null;}
+// itemMap là nguồn duy nhất — detailCache trỏ cùng object để đổi đơn và sửa cục bộ không lệch bản.
+function cacheDetail_(code,item,history,slots){
+upsertItem(item);
+state.detailCache[code]={item:findCached(code),history:history||[],slots:slots||[]};
+state.detailAt[code]=Date.now();
+return state.detailCache[code];
+}
 async function refreshDetail(code){
 try{
 var r=await gs('getItem',[code]);
-if(r&&r.ok){state.detailCache[code]=r.data;state.detailAt[code]=Date.now();upsertItem(r.data.item);if(state.detail&&state.detail.item&&state.detail.item.code===code){state.detail=r.data;paintDetail(code,'');}return true;}
+if(r&&r.ok){
+var d=cacheDetail_(code,r.data.item,r.data.history,r.data.item&&r.data.item.slots);
+if(state.detail&&state.detail.item&&state.detail.item.code===code){state.detail=d;paintDetail(code,'');}
+return true;}
 }catch(e){}
 return false;
 }
@@ -710,8 +720,10 @@ try{
 var full=null;
 try{var rf=await gs('listFull',[150]);if(rf&&rf.ok&&Array.isArray(rf.data))full=rf.data;}catch(fe){full=null;}
 if(full){
-mergeItems(full.map(function(e){return e.item;}));
-full.forEach(function(e){if(e&&e.item&&e.item.code){state.detailCache[e.item.code]={item:e.item,history:e.history||[]};state.detailAt[e.item.code]=Date.now();upsertItem(e.item);}});
+full.forEach(function(e){
+if(!e||!e.item||!e.item.code)return;
+cacheDetail_(e.item.code,e.item,e.history,e.item.slots);
+});
 try{var cur=state.detail&&state.detail.item&&state.detail.item.code;if(cur&&state.detailCache[cur]){state.detail=state.detailCache[cur];renderDetailBody();renderTimeline();}}catch(ee){}
 }else{
 var r=await gs('listItems',[150]);
@@ -719,7 +731,7 @@ if(!r.ok)throw new Error(r.error);
 mergeItems(r.data);
 }
 }catch(e){
-if(e&&e.message==='LOCAL'){mergeItems(DEMO.slice());DEMO.forEach(function(it){state.detailCache[it.code]={item:it,history:[]};state.detailAt[it.code]=Date.now();});}
+if(e&&e.message==='LOCAL'){DEMO.forEach(function(it){cacheDetail_(it.code,it,[],it.slots);});}
 else{if(!state.items.length){renderGrid();renderSummary();msg('msgMain','Không tải được dữ liệu từ Sheet — '+(e&&e.message||e));}return;}
 }
 state.items.forEach(function(it){normItem_(it);});
@@ -921,10 +933,7 @@ msg('msgDetail','Đang tải chi tiết…',true);
 try{
 var r=await gs('getItem',[code]);
 if(!r.ok)throw new Error(r.error);
-state.detail=r.data;
-state.detailCache[code]=r.data;
-state.detailAt[code]=Date.now();
-upsertItem(r.data.item);
+state.detail=cacheDetail_(code,r.data.item,r.data.history,r.data.item&&r.data.item.slots);
 paintDetail(code,'');
 }catch(e){
 msg('msgDetail','Không tải được chi tiết từ server — '+(e&&e.message||e));
@@ -936,10 +945,7 @@ var loadErr='';
 try{
 var r=await gs('getItem',[code]);
 if(!r.ok)throw new Error(r.error);
-state.detail=r.data;
-state.detailCache[code]=r.data;
-state.detailAt[code]=Date.now();
-upsertItem(r.data.item);
+state.detail=cacheDetail_(code,r.data.item,r.data.history,r.data.item&&r.data.item.slots);
 }catch(e){
 var f=findCached(code)||state.items.filter(function(x){return x.code===code;})[0]||{code:code};
 state.detail={item:f,history:[]};

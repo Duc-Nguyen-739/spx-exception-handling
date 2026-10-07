@@ -267,49 +267,19 @@ function listFull(limit) {
     var r = readHeadItems_(n);
     var want = {};
     for (var w = 0; w < r.items.length; w++) want[r.items[w].code] = true;
-    var phVals = readPhotosAll_();
-    var phByCode = {};
-    for (var i = 0; i < phVals.length; i++) {
-      var pc = String(phVals[i][0] || '').trim();
-      if (!want[pc]) continue;
-      (phByCode[pc] = phByCode[pc] || []).push({ slot: cellText_(phVals[i][1]), fileId: cellText_(phVals[i][2]) });
-    }
+    var phByCode = photosByCode_(want);
     var histByCode = {};
-    var logSh = getSheet_('ActivityLog', LOG_HEADER);
-    var logLast = logSh.getLastRow();
-    if (logLast > 1) {
-      var logW = Math.max(logSh.getLastColumn(), LOG_HEADER.length);
-      var head = logSh.getRange(1, 1, 1, logW).getValues()[0]
-        .map(function (h) { return String(h || '').trim().toLowerCase(); });
-      var ciCode = head.indexOf('code');
-      var ciAt = head.indexOf('at');
-      var ciFrom = head.indexOf('from_status') >= 0 ? head.indexOf('from_status') : head.indexOf('from');
-      var ciTo = head.indexOf('to_status') >= 0 ? head.indexOf('to_status') : head.indexOf('to');
-      var ciBy = head.indexOf('by');
-      var ciNote = head.indexOf('note');
-      if (ciCode >= 0) {
-        var logVals = logSh.getRange(2, 1, logLast - 1, logW).getValues();
-        for (var j = 0; j < logVals.length; j++) {
-          var hc = String(logVals[j][ciCode] || '').trim();
-          if (!want[hc]) continue;
-          var hf = ciFrom >= 0 ? String(logVals[j][ciFrom] || '') : '';
-          var ht = ciTo >= 0 ? String(logVals[j][ciTo] || '') : '';
-          var hn = ciNote >= 0 ? String(logVals[j][ciNote] || '') : '';
-          (histByCode[hc] = histByCode[hc] || []).push({
-            at: ciAt >= 0 ? normAt_(cellText_(logVals[j][ciAt]), hc) : '',
-            code: hc, from: hf, to: ht,
-            by: ciBy >= 0 ? String(logVals[j][ciBy] || '') : '',
-            note: hn, bill: billOf_(hf, ht, hn)
-          });
-        }
+    var log = readLogRows_();
+    if (log.cols && log.cols.code >= 0) {
+      for (var j = 0; j < log.rows.length; j++) {
+        var hc = String(log.rows[j][log.cols.code] || '').trim();
+        if (!want[hc]) continue;
+        (histByCode[hc] = histByCode[hc] || []).push(logEntry_(log.rows[j], log.cols, hc));
       }
     }
     var out = r.items.map(function (o) {
       var t = toClient_(o);
-      var phs = phByCode[o.code] || [];
-      t.slots = phs.map(function (p) { return { slot: p.slot, url: thumbUrl_(p.fileId) }; });
-      t.extras = phs.filter(function (p) { return p.slot !== 'ngoai_quan' && p.slot !== 'san_pham'; })
-        .map(function (p) { return thumbUrl_(p.fileId); }).filter(Boolean);
+      applyPhotos_(t, phByCode[o.code] || []);
       return { item: t, history: histByCode[o.code] || [] };
     });
     out.sort(function (a, b) {
@@ -322,31 +292,34 @@ function listFull(limit) {
 }
 
 function photosFor_(code) {
-  var sh = getSheet_('Photos', PHOTOS_HEADER);
-  var last = sh.getLastRow();
-  if (last < 2) return [];
-  var vals = sh.getRange(2, 1, last - 1, PHOTOS_HEADER.length).getValues();
-  var out = [];
-  for (var i = 0; i < vals.length; i++) {
-    if (String(vals[i][0]) === String(code)) {
-      out.push({ slot: cellText_(vals[i][1]), fileId: cellText_(vals[i][2]) });
-    }
-  }
-  return out;
+  var want = {};
+  want[String(code)] = true;
+  return photosByCode_(want)[String(code)] || [];
 }
 
-function extrasFor_(code) {
-  return photosFor_(code)
+// Gom 1 lần đọc Photos theo code cho cả list lẫn getItem (batch, không loop sheet).
+function photosByCode_(want) {
+  var vals = readPhotosAll_();
+  var map = {};
+  for (var i = 0; i < vals.length; i++) {
+    var code = String(vals[i][0] || '').trim();
+    if (!want[code]) continue;
+    (map[code] = map[code] || []).push({ slot: cellText_(vals[i][1]), fileId: cellText_(vals[i][2]) });
+  }
+  return map;
+}
+
+function applyPhotos_(item, photos) {
+  item.slots = photos.map(function (p) { return { slot: p.slot, url: thumbUrl_(p.fileId) }; });
+  item.extras = photos
     .filter(function (p) { return p.slot !== 'ngoai_quan' && p.slot !== 'san_pham'; })
     .map(function (p) { return thumbUrl_(p.fileId); })
     .filter(Boolean);
+  return item;
 }
 
-function historyFor_(code) {
-  var sh = getSheet_('ActivityLog', LOG_HEADER);
-  var last = sh.getLastRow();
-  if (last < 2) return [];
-  var width = Math.max(sh.getLastColumn(), LOG_HEADER.length);
+// Cột ActivityLog resolve theo tên header (sheet có sẵn có thể lệch thứ tự).
+function logCols_(sh, width) {
   var head = sh.getRange(1, 1, 1, width).getValues()[0]
     .map(function (h) { return String(h || '').trim().toLowerCase(); });
   function col(names) {
@@ -356,23 +329,41 @@ function historyFor_(code) {
     }
     return -1;
   }
-  var iCode = col(['code']);
-  if (iCode < 0) return [];
-  var iAt = col(['at']), iFrom = col(['from_status', 'from']), iTo = col(['to_status', 'to']);
-  var iBy = col(['by']), iNote = col(['note']);
+  return {
+    code: col(['code']), at: col(['at']),
+    from: col(['from_status', 'from']), to: col(['to_status', 'to']),
+    by: col(['by']), note: col(['note'])
+  };
+}
+
+function logEntry_(row, c, code) {
+  var from = c.from >= 0 ? String(row[c.from] || '') : '';
+  var to = c.to >= 0 ? String(row[c.to] || '') : '';
+  var note = c.note >= 0 ? String(row[c.note] || '') : '';
+  return {
+    at: c.at >= 0 ? normAt_(cellText_(row[c.at]), code) : '',
+    code: code, from: from, to: to,
+    by: c.by >= 0 ? String(row[c.by] || '') : '',
+    note: note, bill: billOf_(from, to, note)
+  };
+}
+
+function readLogRows_() {
+  var sh = getSheet_('ActivityLog', LOG_HEADER);
+  var last = sh.getLastRow();
+  if (last < 2) return { cols: null, rows: [] };
+  var width = Math.max(sh.getLastColumn(), LOG_HEADER.length);
+  return { cols: logCols_(sh, width), rows: sh.getRange(2, 1, last - 1, width).getValues() };
+}
+
+function historyFor_(code) {
+  var r = readLogRows_();
+  if (!r.cols || r.cols.code < 0) return [];
   var want = String(code || '').trim();
-  var vals = sh.getRange(2, 1, last - 1, width).getValues();
   var out = [];
-  for (var i = 0; i < vals.length; i++) {
-    if (String(vals[i][iCode] || '').trim() !== want) continue;
-    out.push({
-      at: iAt >= 0 ? normAt_(cellText_(vals[i][iAt]), want) : '',
-      code: want,
-      from: iFrom >= 0 ? String(vals[i][iFrom] || '') : '',
-      to: iTo >= 0 ? String(vals[i][iTo] || '') : '',
-      by: iBy >= 0 ? String(vals[i][iBy] || '') : '',
-      note: iNote >= 0 ? String(vals[i][iNote] || '') : ''
-    });
+  for (var i = 0; i < r.rows.length; i++) {
+    if (String(r.rows[i][r.cols.code] || '').trim() !== want) continue;
+    out.push(logEntry_(r.rows[i], r.cols, want));
   }
   return out;
 }
@@ -389,14 +380,8 @@ function getItem(code) {
     var r = readAllItems_();
     for (var i = 0; i < r.items.length; i++) {
       if (r.items[i].code === code) {
-        var it = toClient_(r.items[i]);
-        it.extras = extrasFor_(code);
-        it.slots = photosFor_(code).map(function (p) { return { slot: p.slot, url: thumbUrl_(p.fileId) }; });
-        var hist = historyFor_(code).map(function (x) {
-          x.bill = billOf_(x.from, x.to, x.note);
-          return x;
-        });
-        return ok({ item: it, history: hist });
+        var it = applyPhotos_(toClient_(r.items[i]), photosFor_(code));
+        return ok({ item: it, history: historyFor_(code) });
       }
     }
     return fail('Không Có');

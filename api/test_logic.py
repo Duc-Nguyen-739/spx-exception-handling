@@ -160,5 +160,48 @@ class TestStatus(unittest.TestCase):
                          ["Item.06-10-2026.1", "Item.06-10-2026.2", "Item.06-10-2026.3"])
 
 
+class TestListFullBatch(unittest.TestCase):
+    """Mirror Code.gs listFull: gom log 1 lần theo code, moi code giu bill."""
+
+    def test_group_history_by_code(self):
+        header = ["at", "code", "from_status", "to_status", "by", "note"]
+        rows = [
+            ["06/10/2026 08:02:00", "Box.06-10-2026.1", "", "chua_xu_ly", "a@x.com", "Tạo mới"],
+            ["06/10/2026 18:01:00", "Box.06-10-2026.1", "chua_xu_ly", "da_tim_bill", "b@x.com", "SPXVN123"],
+            ["05/10/2026 09:00:00", "Item.06-10-2026.2", "", "chua_xu_ly", "c@x.com", "Tạo mới"],
+        ]
+        grouped = {}
+        for r in rows:
+            e = map_history_row(header, r, r[1])
+            if e:
+                e["bill"] = history_bill(e["from"], e["to"], e["note"])
+                grouped.setdefault(e["code"], []).append(e)
+        self.assertEqual(sorted(grouped), ["Box.06-10-2026.1", "Item.06-10-2026.2"])
+        self.assertEqual(len(grouped["Box.06-10-2026.1"]), 2)
+        self.assertEqual(grouped["Box.06-10-2026.1"][0]["bill"], "")
+        self.assertEqual(grouped["Box.06-10-2026.1"][1]["bill"], "SPXVN123")
+        self.assertEqual(grouped["Item.06-10-2026.2"][0]["bill"], "")
+
+    def test_group_history_skips_other_code(self):
+        header = ["at", "code", "from_status", "to_status", "by", "note"]
+        want = {"Box.06-10-2026.1"}
+        grouped = {}
+        for r in [["06/10/2026 08:00:00", "Item.06-10-2026.9", "", "chua_xu_ly", "a@x.com", "Tạo mới"],
+                  ["06/10/2026 08:02:00", "Box.06-10-2026.1", "", "chua_xu_ly", "a@x.com", "Tạo mới"]]:
+            if str(r[1]).strip() not in want:
+                continue
+            e = map_history_row(header, r, r[1])
+            grouped.setdefault(e["code"], []).append(e)
+        self.assertEqual(list(grouped), ["Box.06-10-2026.1"])
+
+    def test_alt_header_names_from_to(self):
+        # Sheet có sẵn dùng tên cột from/to thay from_status/to_status.
+        header = ["at", "code", "from", "to", "by", "note"]
+        e = map_history_row(header, ["06/10/2026 18:00:00", "Box.06-10-2026.1",
+                                     "chua_xu_ly", "thanh_ly", "a@x.com", "SPXVN9"], "Box.06-10-2026.1")
+        self.assertEqual((e["from"], e["to"]), ("chua_xu_ly", "thanh_ly"))
+        self.assertEqual(history_bill(e["from"], e["to"], e["note"]), "SPXVN9")
+
+
 if __name__ == "__main__":
     unittest.main()

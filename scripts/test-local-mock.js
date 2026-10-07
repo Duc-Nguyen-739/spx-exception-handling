@@ -257,6 +257,35 @@ async function main() {
     await sleep(400);
     const g2 = await evalIn(ws, `(window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getItem';}).length`);
     check('Don tuoi mo lai zero call', g2.value === g1.value, g1.value + '->' + g2.value);
+
+    // Preload: mo app da duoc item + history cho MOI don, doi don khong goi getItem.
+    const pre = await evalIn(ws, `(function(){
+      var codes = Object.keys(state.detailCache);
+      var full = codes.filter(function(c){ return (state.detailCache[c].history||[]).length > 0; }).length;
+      return JSON.stringify({
+        listFull: (window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='listFull';}).length,
+        cached: codes.length, withHist: full,
+        identity: codes.every(function(c){ return state.detailCache[c].item === state.itemMap[c]; })
+      });
+    })()`);
+    const PRE = pre.err ? null : JSON.parse(pre.value);
+    check('Mo app preload item+history cho moi don qua listFull (zero getItem)',
+      !!(PRE && PRE.listFull >= 1 && PRE.cached === PRE.withHist && PRE.cached >= 1), pre.value);
+    check('detailCache.item cung identity voi itemMap (khong lech ban khi poll)',
+      !!(PRE && PRE.identity === true), PRE && String(PRE.identity));
+    const n1 = await evalIn(ws, `(window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getItem';}).length`);
+    await evalIn(ws, `openDetail('Box.05-10-2026.9'); openDetail('Box.06-10-2026.1'); openDetail('Item.06-10-2026.2')`);
+    await sleep(400);
+    const n2 = await evalIn(ws, `(window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getItem';}).length`);
+    const tlNow = await evalIn(ws, `JSON.stringify({
+      hist: document.getElementById('detailHist').innerText.length > 0,
+      title: document.getElementById('detailTitle').textContent
+    })`);
+    const TL = tlNow.err ? null : JSON.parse(tlNow.value);
+    check('Doi don lien nhau: 3 lan openDetail van zero getItem + timeline co du lieu',
+      n1.value === n2.value && !!(TL && TL.hist), n1.value + '->' + n2.value + ' ' + tlNow.value);
+    const poll = await evalIn(ws, `JSON.stringify({ iv: 180000, has: typeof state._poll !== 'undefined' })`);
+    check('Poll ngam 3 phut', /180000/.test(poll.value || ''), poll.value);
     await evalIn(ws, `document.getElementById('scanMain').value='SPXVN1'; document.getElementById('scanMain').dispatchEvent(new Event('input'))`);
     const scShow = await evalIn(ws, `document.getElementById('scanClear').classList.contains('show')`);
     check('Nut xoa hien khi co chu', scShow.value === true, String(scShow.value));
