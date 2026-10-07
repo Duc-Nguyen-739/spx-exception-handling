@@ -5,8 +5,9 @@ const assert = require('node:assert');
 // Client quét bằng camera điện thoại: popup top-level trong GAS iframe,
 // fallback chụp ảnh (scanFile), dedup 1.5s, route theo ô quét.
 const CAM_CODE_COOLDOWN_MS = 1500;
+const CAM_FPS = 25;
 const SCAN_MSG_TYPE = 'spxScanResult';
-const FORMATS = ['QR_CODE', 'CODE_128', 'CODE_39', 'EAN_13'];
+const FORMATS = ['QR_CODE', 'CODE_128', 'CODE_39', 'CODE_93', 'EAN_13', 'EAN_8', 'UPC_A', 'UPC_E', 'ITF', 'CODABAR', 'DATA_MATRIX', 'AZTEC'];
 
 function routeOf(target) {
   if (target === 'scanLiq') return 'liqAdd';
@@ -47,4 +48,17 @@ test('camera-scan: index.html có engine mới, hết toggleCam/reader cũ', () 
   }
   assert.ok(!html.includes('toggleCam'), 'còn toggleCam cũ');
   assert.ok(!html.includes('id="reader"'), 'còn div reader cũ');
+});
+
+test('camera-scan: nhạy hơn — fps cao + khung rộng + native detector + HD', () => {
+  const fs = require('node:fs');
+  const html = fs.readFileSync(__dirname + '/../index.html', 'utf8');
+  for (const s of ['camScanConfig_', 'camQrbox_', 'camBoostFocus_', 'camTorchBtn', 'useBarCodeDetectorIfSupported', 'videoConstraints', 'CAM_FPS']) {
+    assert.ok(html.includes(s), 'thiếu ' + s);
+  }
+  assert.ok(html.includes('fps:25') || html.includes('fps: 25') || html.includes('CAM_FPS'), 'chưa tăng fps');
+  assert.ok(!html.includes('fps:10'), 'còn fps:10 cũ chậm');
+  assert.ok(!html.includes('qrbox:250'), 'còn qrbox:250 vuông hẹp (barcode 128 dài bị cắt)');
+  assert.ok(html.includes('ideal') && html.includes('1920'), 'chưa xin camera HD 1920 cho barcode nhỏ');
+  assert.ok(html.includes('CODE_128') && html.includes('QR_CODE'), 'thiếu QR/Code128');
 });
