@@ -28,6 +28,23 @@ STATUS_LABEL = {
 CODE_RE = re.compile(r"^(Box|Item)\.(\d{2})-(\d{2})-(\d{4})\.(\d+)$")
 CODE_RE_ANY = re.compile(r"^(BOX|ITEM|TTC|Box|Item)\.", re.IGNORECASE)
 
+def valid_custom_code(code, kind):
+    # KHỚP Code.gs create_: mã Sửa/Ok trong Create phải đúng định dạng đầy đủ
+    # và prefix khớp loại form (Box form chỉ Box.).
+    c = (code or "").strip()
+    if not CODE_RE.match(c):
+        return (False, "Mã sửa chưa đúng định dạng Box./Item. (ngày-tháng-năm.số).")
+    want = "Box" if kind == "Box" else "Item"
+    if not c.startswith(want + "."):
+        return (False, "Mã sửa phải bắt đầu bằng " + want + ".")
+    return (True, "")
+
+
+def custom_code_exists(code, existing_codes, printed_codes):
+    # KHỚP Code.gs create_: mã custom không được trùng Items hay PrintedCodes.
+    c = (code or "").strip()
+    return c in (existing_codes or []) or c in (printed_codes or [])
+
 
 def _strip(s):
     import unicodedata

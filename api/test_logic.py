@@ -7,6 +7,7 @@ from api.logic import (
     canonical_status, canonical_kind, valid_liq_code, can_edit_status,
     history_bill, map_history_row,
     check_create_photos, can_delete_user, extract_drive_id, can_edit, CODE_RE, TZ,
+    valid_custom_code, custom_code_exists,
 )
 
 
@@ -78,6 +79,17 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(history_bill("", "chua_xu_ly", "Tạo mới"), "")
         self.assertEqual(history_bill("da_tim_bill", "da_tim_bill", "ADMIN chỉnh sửa Ảnh"), "")
         self.assertEqual(history_bill("da_tim_bill", "chua_xu_ly", ""), "")
+
+    def test_custom_code_gate(self):
+        self.assertEqual(valid_custom_code("Box.07-10-2026.41", "Box"), (True, ""))
+        self.assertEqual(valid_custom_code("Item.07-10-2026.51", "Item"), (True, ""))
+        self.assertEqual(valid_custom_code("Item.07-10-2026.51", "Box")[0], False)
+        self.assertEqual(valid_custom_code("Box.07-10-2026.51", "Item")[0], False)
+        self.assertEqual(valid_custom_code("Box.07-10-2026", "Box")[0], False)
+        self.assertEqual(valid_custom_code("", "Box")[0], False)
+        self.assertTrue(custom_code_exists("Box.07-10-2026.41", ["Box.07-10-2026.41"], []))
+        self.assertTrue(custom_code_exists("Box.07-10-2026.41", [], ["Box.07-10-2026.41"]))
+        self.assertFalse(custom_code_exists("Box.07-10-2026.42", ["Box.07-10-2026.41"], []))
 
     def test_photo_gate(self):
         self.assertEqual(check_create_photos("Box", "", "", 0)[0], False)

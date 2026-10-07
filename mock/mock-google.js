@@ -148,7 +148,15 @@
   };
 
   function create_(kind, p) {
-    var code = (kind === 'Box' ? 'Box.' : 'Item.') + '06-10-2026.' + (ITEMS.length + 1);
+    p = p || {};
+    var custom = String(p.customCode || '').trim();
+    var wantPrefix = kind === 'Box' ? 'Box.' : 'Item.';
+    if (custom) {
+      if (!/^(Box|Item)\.\d{2}-\d{2}-\d{4}\.\d+$/.test(custom)) return { ok: false, error: 'Mã sửa chưa đúng định dạng Box./Item. (ngày-tháng-năm.số).' };
+      if (custom.indexOf(wantPrefix) !== 0) return { ok: false, error: 'Mã sửa phải bắt đầu bằng ' + wantPrefix };
+      if (find(custom)) return { ok: false, error: 'Mã ' + custom + ' đã tồn tại — sửa mã khác.' };
+    }
+    var code = custom || ((kind === 'Box' ? 'Box.' : 'Item.') + '06-10-2026.' + (ITEMS.length + 1));
     var it = {
       code: code, kind: kind, createdAt: '06/10/2026 18:30:00', createdBy: ME,
       imgOuter: '', imgProduct: '', description: (p && p.description) || '', note: (p && p.note) || '',

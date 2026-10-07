@@ -426,6 +426,11 @@ function withLock_(fn) {
 
 function create_(kind, p) {
   p = p || {};
+  var custom = String(p.customCode || '').trim();
+  if (custom) {
+    if (!/^(Box|Item)\.\d{2}-\d{2}-\d{4}\.\d+$/.test(custom)) throw new Error('Mã sửa chưa đúng định dạng Box./Item. (ngày-tháng-năm.số).');
+    if (custom.indexOf(prefix_(kind)) !== 0) throw new Error('Mã sửa phải bắt đầu bằng ' + prefix_(kind));
+  }
   var desc = String(p.description || '').trim();
   if (!desc) throw new Error('Vui lòng nhập mô tả sản phẩm.');
   var outer = String(p.outer || '').trim();
@@ -440,7 +445,16 @@ function create_(kind, p) {
   return withLock_(function () {
     var r = readAllItems_();
     var datePart = todayPart_();
-    var code = prefix_(kind) + datePart + '.' + nextSeqBoth_(r.items, readPrintedCodes_(), kind, datePart);
+    var code = custom || (prefix_(kind) + datePart + '.' + nextSeqBoth_(r.items, readPrintedCodes_(), kind, datePart));
+    if (custom) {
+      var printed = readPrintedCodes_();
+      for (var d = 0; d < r.items.length; d++) {
+        if (r.items[d].code === custom) throw new Error('Mã ' + custom + ' đã tồn tại — sửa mã khác.');
+      }
+      for (var q = 0; q < printed.length; q++) {
+        if (printed[q] === custom) throw new Error('Mã ' + custom + ' đã tồn tại — sửa mã khác.');
+      }
+    }
     var at = nowStr_();
     var by = currentEmail_();
     var folder = monthFolder_();

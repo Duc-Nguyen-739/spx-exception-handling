@@ -318,6 +318,25 @@ async function main() {
       + " && document.getElementById('liqCodeWrap').style.display === 'none'", 8000);
     check('Thanh Ly: Confirm SPXVN chot lo + reset', !!lqDone, String(lqDone));
 
+    await evalIn(ws, `document.getElementById('btnCreateMain').click()`);
+    const ceModal = await waitUntil(ws, "document.getElementById('createModal').classList.contains('open')", 3000);
+    check('Create mo modal', !!ceModal, String(ceModal));
+    await evalIn(ws, `document.getElementById('optNonAwb').click(); document.getElementById('optBox').click()`);
+    const ceForm = await waitUntil(ws, "document.getElementById('stepForm').style.display === 'block' && document.getElementById('boxCode').value.indexOf('Box.') === 0", 5000);
+    check('Create Box hien form + ma preview', !!ceForm, String(ceForm));
+    const ce0 = await evalIn(ws, `JSON.stringify({ro: document.getElementById('boxCode').readOnly, btn: document.getElementById('btnBoxEdit').textContent})`);
+    check('Ma mac dinh khoa + nut Sua', ce0.value === '{"ro":true,"btn":"Sửa"}', ce0.value);
+    await evalIn(ws, `window.matchMedia = function(){ return { matches: false }; }; document.getElementById('btnBoxEdit').click()`);
+    const ce1 = await evalIn(ws, `JSON.stringify({ro: document.getElementById('boxCode').readOnly, btn: document.getElementById('btnBoxEdit').textContent})`);
+    check('Sua: mo khoa + nut doi thanh Ok', ce1.value === '{"ro":false,"btn":"Ok"}', ce1.value);
+    await evalIn(ws, `var i = document.getElementById('boxCode'); i.value = 'sai'; i.dispatchEvent(new Event('input'));`);
+    const ce2 = await evalIn(ws, `document.getElementById('btnBoxEdit').disabled`);
+    check('Ma sai dinh dang -> Ok bi khoa', ce2.value === true, String(ce2.value));
+    await evalIn(ws, `var i = document.getElementById('boxCode'); i.value = 'Box.07-10-2026.88'; i.dispatchEvent(new Event('input')); document.getElementById('btnBoxEdit').click()`);
+    const ce3 = await evalIn(ws, `JSON.stringify({ro: document.getElementById('boxCode').readOnly, btn: document.getElementById('btnBoxEdit').textContent, v: document.getElementById('boxCode').value})`);
+    check('Ma dung -> Ok chot, khoa lai', ce3.value === '{"ro":true,"btn":"Sửa","v":"Box.07-10-2026.88"}', ce3.value);
+    await evalIn(ws, `document.getElementById('btnCloseCreate').click()`);
+
     const errs = await evalIn(ws, `JSON.stringify(window.__PAGE_ERRORS__ || [])`);
     check('Không lỗi JS trên trang', errs.value === '[]', errs.value);
   } catch (e) {
