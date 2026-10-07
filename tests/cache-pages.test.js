@@ -64,16 +64,20 @@ test('pages: prefetch anh bounded sau render (khong chan, co dedup)', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   const i = html.indexOf('function prefetchHeadThumbs(){');
   assert.ok(i > 0);
-  const block = html.slice(i, i + 400);
-  assert.ok(block.includes('slice(0,30)'));
+  const block = html.slice(i, i + 1200);
+  assert.ok(block.includes('slice(0,24)'), 'gioi han 24 don dau (man hinh + dem)');
+  assert.ok(block.includes('detailImgUrls_'), 'gom du ca 3 anh chi tiet, khong chi 1 thumb luoi');
+  assert.ok(block.includes('warmPhotoCache'), 'nap batch data-URL nen sau khi am browser cache');
+  assert.ok(block.includes('cachedSrc'), 'uu tien anh da cache khi am');
   assert.ok(block.includes('preWarmed'));
   assert.ok(block.includes('new Image()'));
   assert.ok(html.includes('setTimeout(prefetchHeadThumbs,600)'));
 });
 
-// Prefetch THAT trong sandbox co timers (cach test code deferred): nap ham that
-// prefetchHeadThumbs + thumb that tu index.html, stub visibleItems/document/Image.
-function makePrefetchEnv(items, hidden) {
+// Prefetch THAT trong sandbox co timers: nap thumb that + stub cac dep
+// (detailImgUrls_/cachedSrc/extractDriveId/warmPhotoCache/photoCache) —
+// stub giu dung ngu nghia that: 1 item -> cac URL anh cua no.
+function makePrefetchEnv(items, hidden, urlsOf) {
   const html = fs.readFileSync('index.html', 'utf8');
   const thumbSrc = html.match(/function thumb\(it\)\{[^}]*\}/)[0];
   const start = html.indexOf('function prefetchHeadThumbs(){');
@@ -84,17 +88,24 @@ function makePrefetchEnv(items, hidden) {
   }
   const preSrc = html.slice(start, end);
   const loaded = [];
+  const warmed = [];
   function FakeImage() {}
   Object.defineProperty(FakeImage.prototype, 'src', { set(u) { loaded.push(u); } });
+  const nodeThumb = (it) => (it && (it.imgProduct || it.imgOuter || (it.extras && it.extras[0]))) || '';
   const sandbox = {
     setTimeout, clearTimeout, Image: FakeImage,
     document: { hidden: !!hidden },
     preWarmed: {},
+    photoCache: {},
     visibleItems: () => items.slice(),
+    detailImgUrls_: urlsOf || ((it) => [nodeThumb(it)].filter(Boolean)),
+    cachedSrc: (u) => u,
+    extractDriveId: () => '',
+    warmPhotoCache: (ids) => { warmed.push(ids.slice()); },
   };
   vm.createContext(sandbox);
   vm.runInContext(thumbSrc + '\n' + preSrc, sandbox, { filename: 'prefetch-inline.js' });
-  return { sandbox, loaded };
+  return { sandbox, loaded, warmed };
 }
 function fakeItems(n) {
   const out = [];
@@ -102,19 +113,28 @@ function fakeItems(n) {
   return out;
 }
 
-test('pages: prefetch that chi nap 30 thumb dau (sandbox co timers)', async () => {
+test('pages: prefetch that chi nap 24 don dau (sandbox co timers)', async () => {
   const { sandbox, loaded } = makePrefetchEnv(fakeItems(35), false);
   vm.runInContext('prefetchHeadThumbs()', sandbox);
-  assert.strictEqual(loaded.length, 30);
+  assert.strictEqual(loaded.length, 24);
   assert.strictEqual(loaded[0], 'https://x/img0');
-  assert.strictEqual(loaded[29], 'https://x/img29');
+  assert.strictEqual(loaded[23], 'https://x/img23');
 });
 
 test('pages: prefetch that dedup — chay lai khong nap them', async () => {
   const { sandbox, loaded } = makePrefetchEnv(fakeItems(35), false);
   vm.runInContext('prefetchHeadThumbs()', sandbox);
   vm.runInContext('prefetchHeadThumbs()', sandbox);
-  assert.strictEqual(loaded.length, 30);
+  assert.strictEqual(loaded.length, 24);
+});
+
+test('pages: prefetch that gom du 3 anh/chi tiet (khong chi 1 thumb luoi)', async () => {
+  const items = [{ code: 'Box.08-10-2026.1', imgOuter: 'https://x/o', imgProduct: 'https://x/p', extras: ['https://x/e1'] }];
+  const urlsOf = (it) => [it.imgOuter, it.imgProduct, ...(it.extras || [])].filter(Boolean);
+  const env = makePrefetchEnv(items, false, urlsOf);
+  vm.runInContext('prefetchHeadThumbs()', env.sandbox);
+  assert.deepStrictEqual(env.loaded, ['https://x/o', 'https://x/p', 'https://x/e1']);
+  assert.ok(env.warmed.length <= 1);
 });
 
 test('pages: prefetch that bo qua khi tab an', async () => {

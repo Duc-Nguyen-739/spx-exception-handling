@@ -168,6 +168,18 @@
     getPhoto: function (fileId) {
       if (!/^[a-zA-Z0-9_-]{10,}$/.test(String(fileId || ''))) return { ok: false, error: 'Ảnh không hợp lệ.' };
       return { ok: true, data: { mime: 'image/png', b64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' } };
+    },
+    getThumb: function (fileId) {
+      if (!/^[a-zA-Z0-9_-]{10,}$/.test(String(fileId || ''))) return { ok: false, error: 'Ảnh không hợp lệ.' };
+      return { ok: true, data: { mime: 'image/png', b64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' } };
+    },
+    getThumbs: function (ids, size) {
+      var items = {};
+      ((ids || []).slice(0, 24)).forEach(function (id) {
+        if (!/^[a-zA-Z0-9_-]{10,}$/.test(String(id || ''))) { items[id] = { error: 'Ảnh không hợp lệ.' }; return; }
+        items[id] = { mime: 'image/png', b64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' };
+      });
+      return { ok: true, data: { size: size || 400, items: items } };
     }
   };
 

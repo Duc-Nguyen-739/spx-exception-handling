@@ -195,6 +195,40 @@ function getThumb(fileId, size) {
   } catch (e) { Logger.log(e); return fail('Không tải được ảnh.'); }
 }
 
+// Prefetch batch: 1 call lay nhieu thumb cho anh hien tren man hinh + anh trong chi tiet.
+// Loi 1 anh khong fail ca lo; client giu URL goc cho anh loi.
+function getThumbs(ids, size) {
+  try {
+    var seen = {}, list = [];
+    (ids || []).forEach(function (v) {
+      var id = String(v || '').trim();
+      if (/^[a-zA-Z0-9_-]{10,}$/.test(id) && !seen[id]) { seen[id] = true; list.push(id); }
+    });
+    list = list.slice(0, 24);
+    if (!list.length) return fail('Thiếu danh sách ảnh.');
+    var sz = Math.min(Math.max(parseInt(size, 10) || 400, 200), 800);
+    var allow = photoIds_();
+    var token = ScriptApp.getOAuthToken();
+    var out = {};
+    for (var i = 0; i < list.length; i++) {
+      var fid = list[i];
+      if (!allow[fid]) { out[fid] = { error: 'Không xem được ảnh.' }; continue; }
+      try {
+        var resp = UrlFetchApp.fetch('https://drive.google.com/thumbnail?id=' + fid + '&sz=w' + sz, {
+          headers: { Authorization: 'Bearer ' + token },
+          muteHttpExceptions: true
+        });
+        if (resp.getResponseCode() !== 200) { out[fid] = { error: 'Không tải được ảnh.' }; continue; }
+        var blob = resp.getBlob();
+        var bytes = blob.getBytes();
+        if (!bytes.length || bytes.length > 2 * 1024 * 1024) { out[fid] = { error: 'Không tải được ảnh.' }; continue; }
+        out[fid] = { mime: String(blob.getContentType() || 'image/jpeg'), b64: Utilities.base64Encode(bytes) };
+      } catch (e1) { out[fid] = { error: 'Không tải được ảnh.' }; }
+    }
+    return ok({ size: sz, items: out });
+  } catch (e) { Logger.log(e); return fail('Không tải được ảnh.'); }
+}
+
 function parseCreated_(s) {
   var m = String(s || '').match(/(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?/);
   if (!m) return null;

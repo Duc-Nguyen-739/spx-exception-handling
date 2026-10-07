@@ -52,3 +52,50 @@ test('photo-perf: grid giu w400 + lightbox nang full ngam', () => {
   assert.ok(block.indexOf('serverPhoto(fid)') > block.indexOf('lb.classList.add(\'open\')'),
     'mo ngay bang src cu, nang full sau');
 });
+
+test('photo-perf: Code.gs co getThumbs batch (1 call nhieu anh, cap 24, loi 1 anh khong fail lo)', () => {
+  const gs = fs.readFileSync('Code.gs', 'utf8');
+  assert.strictEqual((gs.match(/function getThumbs\(/g) || []).length, 1);
+  const b = gs.slice(gs.indexOf('function getThumbs('), gs.indexOf('function parseCreated_('));
+  assert.ok(b.includes('slice(0, 24)'), 'cap 24 id/call giu payload duoi gioi han');
+  assert.ok(b.includes('photoIds_()'), 'allowlist 1 lan cho ca lo thay vi N lan');
+  assert.ok(b.includes('ScriptApp.getOAuthToken()'));
+  assert.ok(b.includes('out[fid] = { error:'), 'loi 1 anh khong fail ca lo');
+  assert.ok(b.includes('return ok({ size: sz, items: out })'));
+});
+
+test('photo-perf: client am batch + render uu tien anh da cache (mo chi tiet hien ngay)', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes('function serverThumbsBatch(ids){'), 'batch chunk 20, dedup photoLoading');
+  assert.ok(html.includes("gs('getThumbs',[ch,400])"), 'batch dung thumb nho w400');
+  assert.ok(html.includes('function putPhotoCache(k,u){'), 'LRU memory-only');
+  assert.ok(html.includes('photoCacheOrder.length>=200'), 'cap 200 data-URL chong OOM mobile');
+  assert.ok(html.includes('function cachedSrc(url){'), 'render uu tien data-URL da cache');
+  assert.ok(html.includes('var src=cachedSrc(thumb(it));'), 'grid dung anh cache');
+  assert.ok(html.includes("src=\"'+esc(cachedSrc(p[1]))+'\""), 'chi tiet dung anh cache');
+  assert.ok(html.includes('warmDetailImages(code);'), 'mo chi tiet am ngay anh thieu nen');
+  assert.ok(html.includes('function swapCachedImgs(){'), 'doi img sang data-URL tai cho khong render lai');
+});
+
+// Mirror LRU that (KHOP index.html putPhotoCache): toi da 200, evict cu nhat.
+function makeLRU(limit) {
+  const cache = {}, order = [];
+  return {
+    cache, order,
+    put(k, u) {
+      if (!k || !u || cache[k]) return;
+      if (order.length >= limit) { const old = order.shift(); delete cache[old]; }
+      order.push(k); cache[k] = u;
+    },
+  };
+}
+
+test('photo-perf: LRU 200 — vuot thi xoa cu nhat, khong crash', () => {
+  const lru = makeLRU(200);
+  for (let i = 0; i < 201; i++) lru.put('t' + i, 'data:x');
+  assert.strictEqual(Object.keys(lru.cache).length, 200);
+  assert.ok(!('t0' in lru.cache), 'evict cu nhat');
+  assert.ok('t200' in lru.cache);
+  lru.put('t200', 'data:y');
+  assert.strictEqual(lru.cache.t200, 'data:x', 'khong ghi de da cache');
+});
