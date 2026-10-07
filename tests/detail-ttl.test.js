@@ -20,8 +20,8 @@ test('detail-ttl: loadGrid preload listFull 150 qua cacheDetail_', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   const gs = fs.readFileSync('Code.gs', 'utf8');
   assert.ok(gs.includes('var LIST_LIMIT = 150;'));
-  assert.ok(gs.includes('function listFull(limit)'));
-  assert.ok(html.includes("gs('listFull',[150])"));
+  assert.ok(gs.includes('function listFull(limit, offset)'));
+  assert.ok(html.includes("gs('listFull',[PAGE,off])"));
   assert.ok(html.includes('detailAt:{},_loadingGrid'));
   assert.ok(html.includes('cacheDetail_(e.item.code,e.item,e.history,e.item.slots)'));
 });
@@ -55,9 +55,9 @@ test('detail-ttl: khong con gan detailCache truc tiep ngoai cacheDetail_', () =>
 // listFull + historyFor_/getItem phai dung chung — tranh 2 ban lech nhau.
 test('detail-ttl: server doc log/photos qua helper chung, khong copy logic', () => {
   const gs = fs.readFileSync('Code.gs', 'utf8');
-  const lf = gs.slice(gs.indexOf('function listFull(limit)'), gs.indexOf('function photosFor_(code)'));
-  assert.ok(!lf.includes('getSheet_('), 'listFull phai dung readLogRows_/photosByCode_ thay getSheet_');
-  assert.ok(lf.includes('readLogRows_()'));
+  const lf = gs.slice(gs.indexOf('function listFull(limit, offset)'), gs.indexOf('function photosFor_(code)'));
+  assert.ok(!lf.includes('getSheet_('), 'listFull phai dung logsForCodes_/photosByCode_ thay getSheet_');
+  assert.ok(lf.includes('logsForCodes_(want)'));
   assert.ok(lf.includes('logEntry_(log.rows[j], log.cols, hc)'));
   assert.ok(lf.includes('photosByCode_(want)'));
   assert.ok(lf.includes('applyPhotos_(t,'));

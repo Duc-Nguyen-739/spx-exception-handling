@@ -1,0 +1,71 @@
+const { test } = require('node:test');
+const assert = require('node:assert');
+const fs = require('node:fs');
+
+// Contract cache-first: phan trang offset, merge tich luy, poll 5', prefetch anh.
+// Mirror logic thuan (khong network).
+const PAGE = 150;
+function pageWindow(total, page, limit) {
+  const off = (Math.max(1, page) - 1) * limit;
+  if (off >= total) return [];
+  return { off, n: Math.min(total - off, limit) };
+}
+function mergeInto(map, list) {
+  for (const it of list || []) {
+    if (!it || !it.code) continue;
+    map[it.code] = Object.assign(map[it.code] || {}, it);
+  }
+  return map;
+}
+
+test('pages: cua so offset dung (trang 1 head, trang 2 tiep, het -> rong)', () => {
+  assert.deepStrictEqual(pageWindow(400, 1, PAGE), { off: 0, n: 150 });
+  assert.deepStrictEqual(pageWindow(400, 2, PAGE), { off: 150, n: 150 });
+  assert.deepStrictEqual(pageWindow(400, 3, PAGE), { off: 300, n: 100 });
+  assert.deepStrictEqual(pageWindow(400, 4, PAGE), []);
+});
+
+test('pages: merge tich luy — trang sau khong xoa trang truoc, trung thi update', () => {
+  const cache = {};
+  mergeInto(cache, [{ code: 'A', status: 'chua_xu_ly' }]);
+  mergeInto(cache, [{ code: 'B', status: 'chua_xu_ly' }, { code: 'A', status: 'da_tim_bill' }]);
+  assert.deepStrictEqual(Object.keys(cache).sort(), ['A', 'B']);
+  assert.strictEqual(cache.A.status, 'da_tim_bill');
+});
+
+test('pages: server ho tro offset (readHeadItems_ window + listFull/listItems)', () => {
+  const gs = fs.readFileSync('Code.gs', 'utf8');
+  assert.ok(gs.includes('function readHeadItems_(maxRows, offset)'));
+  assert.ok(gs.includes('sh.getRange(2 + off, 1, n, ITEMS_HEADER.length)'));
+  assert.ok(gs.includes('function listFull(limit, offset)'));
+  assert.ok(gs.includes('function listItems(limit, offset)'));
+  assert.ok(gs.includes('readHeadItems_(n, offset)'));
+});
+
+test('pages: sentinel + observer chi goi khi cuon toi (khong goi thua)', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes('id="gridMore"'));
+  assert.ok(html.includes('new IntersectionObserver'));
+  assert.ok(html.includes('es[0].isIntersecting&&!state.noMore&&!state._loadingGrid'));
+  assert.ok(html.includes('loadGrid({more:true,silent:true})'));
+  assert.ok(html.includes('if(full.length<PAGE)state.noMore=true'));
+});
+
+test('pages: poll 5 phut silent + refresh/reset tu trang 1', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes('loadGrid({silent:true,reset:true});},300000)'));
+  assert.ok(!html.includes(',180000)'), 'khong con poll 3 phut');
+  assert.ok(html.includes('if(opts.reset){state.page=1;state.noMore=false;}'));
+  assert.ok(html.includes('loadGrid({reset:true})'));
+});
+
+test('pages: prefetch anh bounded sau render (khong chan, co dedup)', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const i = html.indexOf('function prefetchHeadThumbs(){');
+  assert.ok(i > 0);
+  const block = html.slice(i, i + 400);
+  assert.ok(block.includes('slice(0,30)'));
+  assert.ok(block.includes('preWarmed'));
+  assert.ok(block.includes('new Image()'));
+  assert.ok(html.includes('setTimeout(prefetchHeadThumbs,600)'));
+});

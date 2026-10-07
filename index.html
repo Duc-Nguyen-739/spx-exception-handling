@@ -488,7 +488,7 @@ header{flex-wrap:wrap}
 <div class="pills" id="pillsRow"></div>
 </div>
 <div class="msg" id="msgMain"></div>
-<div id="grid"></div>
+<div id="grid"></div><div id="gridMore" style="height:2px"></div>
 </main>
 
 <main id="viewLiq" style="display:none">
@@ -661,7 +661,9 @@ var DEMO=[
 {code:'Box.01-10-2026.21',kind:'Box',createdAt:'01/10/2026 09:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo box',note:'',status:'chua_xu_ly',statusLabel:'Lưu kho',bill:'',days:5},
 {code:'Item.01-10-2026.3',kind:'Item',createdAt:'01/10/2026 10:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo item',note:'',status:'da_tim_bill',statusLabel:'Resolve',bill:'SPXVN1',days:5}
 ];
-var state={items:[],itemMap:{},detailCache:{},detailAt:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{},codeEdit:{Box:false,Item:false},range:{f:null,t:null}};
+var state={items:[],itemMap:{},detailCache:{},detailAt:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{},codeEdit:{Box:false,Item:false},range:{f:null,t:null},page:1,noMore:false};
+var PAGE=150;
+var preWarmed={};
 function hasGs(){return typeof google!=='undefined'&&google.script&&google.script.run;}
 function gs(fn,args){return new Promise(function(res,rej){
 if(!hasGs()){rej(new Error('LOCAL'));return;}
@@ -681,6 +683,7 @@ function fmtRange_(a,b){function q(n){return (n<10?'0':'')+n;}return a.y+'/'+q(a
 function inRangeDay_(createdAt,code){var r=state.range;if(!r||!r.f||!r.t)return true;var d=parseCreated(createdAt,code);if(!d)return true;var n=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();return n>=ymdNum_(r.f)&&n<=ymdNum_(r.t);}
 function daysOf(c,code){var d=parseCreated(c,code);if(!d)return 0;return Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));}
 function thumb(it){return it.imgProduct||it.imgOuter||(it.extras&&it.extras[0])||'';}
+function prefetchHeadThumbs(){try{if(document.hidden)return;var vis=visibleItems().slice(0,30);for(var i=0;i<vis.length;i++){var u=thumb(vis[i]);if(u&&!preWarmed[u]){preWarmed[u]=1;var im=new Image();im.src=u;}}}catch(e){}}
 function extractDriveId(u){var s=String(u||'');var m=s.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);if(m)return m[1];m=s.match(/\/d\/([a-zA-Z0-9_-]{10,})/);return m?m[1]:'';}
 var photoCache={},photoLoading={};
 function serverThumb(id){var k='t'+id;if(photoCache[k])return Promise.resolve(photoCache[k]);if(photoLoading[k])return photoLoading[k];photoLoading[k]=gs('getThumb',[id,800]).then(function(r){delete photoLoading[k];if(!r||!r.ok||!r.data||!r.data.b64)throw new Error((r&&r.error)||'loi');var u='data:'+(r.data.mime||'image/jpeg')+';base64,'+r.data.b64;photoCache[k]=u;return u;}).catch(function(e){delete photoLoading[k];throw e;});return photoLoading[k];}
@@ -767,28 +770,34 @@ return false;
 async function loadGrid(opts){
 opts=opts||{};
 if(state._loadingGrid)return state._loadingGrid;
-if(!opts.silent)msg('msgMain','Đang tải…',true);
+if(!opts.silent&&!opts.more)msg('msgMain','Đang tải…',true);
+if(opts.reset){state.page=1;state.noMore=false;}
+var page=Math.max(1,state.page||1);
+var off=(page-1)*PAGE;
 state._loadingGrid=(async function(){
 try{
 var full=null;
-try{var rf=await gs('listFull',[150]);if(rf&&rf.ok&&Array.isArray(rf.data))full=rf.data;}catch(fe){full=null;}
+try{var rf=await gs('listFull',[PAGE,off]);if(rf&&rf.ok&&Array.isArray(rf.data))full=rf.data;}catch(fe){full=null;}
 if(full){
 full.forEach(function(e){
 if(!e||!e.item||!e.item.code)return;
 cacheDetail_(e.item.code,e.item,e.history,e.item.slots);
 });
+if(full.length<PAGE)state.noMore=true;else state.page=page+1;
 try{var cur=state.detail&&state.detail.item&&state.detail.item.code;if(cur&&state.detailCache[cur]){state.detail=state.detailCache[cur];renderDetailBody();renderTimeline();}}catch(ee){}
 }else{
-var r=await gs('listItems',[150]);
+var r=await gs('listItems',[PAGE,off]);
 if(!r.ok)throw new Error(r.error);
 mergeItems(r.data);
+if(r.data.length<PAGE)state.noMore=true;else state.page=page+1;
 }
 }catch(e){
 if(e&&e.message==='LOCAL'){DEMO.forEach(function(it){cacheDetail_(it.code,it,[],it.slots);});}
 else{if(!state.items.length){renderGrid();renderSummary();msg('msgMain','Không tải được dữ liệu từ Sheet — '+(e&&e.message||e));}return;}
 }
 state.items.forEach(function(it){normItem_(it);});
-renderGrid();renderSummary();if(!opts.silent)msg('msgMain','',true);
+renderGrid();renderSummary();if(!opts.silent&&!opts.more)msg('msgMain','',true);
+if(!opts.more&&typeof setTimeout==='function')setTimeout(prefetchHeadThumbs,600);
 })();
 try{await state._loadingGrid;}finally{state._loadingGrid=null;}
 }
@@ -808,7 +817,7 @@ b.className='pill'+(state.statusFilter===d[0]?' on':'');b.setAttribute('data-k',
 b.innerHTML=esc(d[1])+'<span class="n">'+d[2]+'</span>';
 b.onclick=function(){state.statusFilter=d[0];renderGrid();renderSummary();};
 p.appendChild(b);});
-var rf=document.createElement('button');rf.type='button';rf.className='pill';rf.title='Tải đơn mới từ server (giữ cache cũ)';rf.innerHTML='↻ Mới';rf.onclick=function(){loadGrid();};p.appendChild(rf);
+var rf=document.createElement('button');rf.type='button';rf.className='pill';rf.title='Tải đơn mới từ server (giữ cache cũ)';rf.innerHTML='↻ Mới';rf.onclick=function(){loadGrid({reset:true});};p.appendChild(rf);
 renderSideFilters();
 }
 }
@@ -1241,7 +1250,7 @@ if(!rs||!rs.ok)throw new Error((rs&&rs.error)||'Lỗi lưu');
 await refreshDetail(code);
 }catch(err){
 sentries.forEach(function(e){dropPending(code,e);});
-await loadGrid({silent:true});await refreshDetail(code);
+await loadGrid({silent:true,reset:true});await refreshDetail(code);
 msg('msgDetail',err.message||'Lỗi lưu');
 }
 return;
@@ -1279,7 +1288,7 @@ if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi lưu');
 await refreshDetail(code);
 }catch(e){
 entries.forEach(function(e){dropPending(code,e);});
-await loadGrid({silent:true});await refreshDetail(code);
+await loadGrid({silent:true,reset:true});await refreshDetail(code);
 msg('msgDetail',e.message||'Lỗi lưu');
 }
 }
@@ -1432,7 +1441,7 @@ if(codeInput)codeInput.value=r.data.code;
 state.codeEdit[kindKey]=false;paintCodeEdit_(kindKey);
 msg('msgCreate','Đã tạo '+r.data.code+' ✓',true);
 if(r.data.item)upsertItem(r.data.item);
-else await loadGrid({silent:true});
+else await loadGrid({silent:true,reset:true});
 renderGrid();renderSummary();
 setCreateDoneUI(true);
 showCreateQR(r.data.code);
@@ -1891,7 +1900,8 @@ applyTheme(savedTheme==='dark'?'dark':'light');
 
 window.addEventListener('DOMContentLoaded',function(){
 loadGrid();loadMe();
-try{if(!state._poll)state._poll=setInterval(function(){if(!document.hidden)loadGrid({silent:true});},180000);}catch(e){}
+try{if(!state._poll)state._poll=setInterval(function(){if(!document.hidden)loadGrid({silent:true,reset:true});},300000);}catch(e){}
+try{var gm=document.getElementById('gridMore');if(gm&&'IntersectionObserver' in window&&!state._io){state._io=new IntersectionObserver(function(es){if(es[0]&&es[0].isIntersecting&&!state.noMore&&!state._loadingGrid)loadGrid({more:true,silent:true});},{rootMargin:'400px'});state._io.observe(gm);}}catch(e){}
 try{initLightbox();}catch(e){}
 try{syncScanClear();}catch(e){}
 try{setupCodeEdit('Box');setupCodeEdit('Item');}catch(e){}

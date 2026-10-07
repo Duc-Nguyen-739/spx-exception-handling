@@ -270,12 +270,14 @@ function readAllItems_() {
   return { sh: sh, items: rowsToItems_(vals) };
 }
 
-function readHeadItems_(maxRows) {
+function readHeadItems_(maxRows, offset) {
   var sh = getSheet_('Items', ITEMS_HEADER);
   var last = sh.getLastRow();
   if (last < 2) return { sh: sh, items: [] };
-  var n = Math.min(last - 1, Math.max(1, maxRows || LIST_LIMIT));
-  var vals = sh.getRange(2, 1, n, ITEMS_HEADER.length).getValues();
+  var off = Math.max(0, offset || 0);
+  if (off >= last - 1) return { sh: sh, items: [] };
+  var n = Math.min(last - 1 - off, Math.max(1, maxRows || LIST_LIMIT));
+  var vals = sh.getRange(2 + off, 1, n, ITEMS_HEADER.length).getValues();
   return { sh: sh, items: rowsToItems_(vals) };
 }
 
@@ -305,10 +307,10 @@ function firstExtraMap_(codes) {
   return map;
 }
 
-function listItems(limit) {
+function listItems(limit, offset) {
   try {
     var n = limit ? Math.min(limit, LIST_LIMIT) : LIST_LIMIT;
-    var r = readHeadItems_(n);
+    var r = readHeadItems_(n, offset);
     var codes = r.items.map(function (o) { return o.code; });
     var exMap = firstExtraMap_(codes);
     var out = r.items.map(function (o) {
@@ -325,10 +327,10 @@ function listItems(limit) {
   } catch (e) { Logger.log(e); return fail('Không tải được danh sách: ' + e.message); }
 }
 
-function listFull(limit) {
+function listFull(limit, offset) {
   try {
     var n = limit ? Math.min(limit, LIST_LIMIT) : LIST_LIMIT;
-    var r = readHeadItems_(n);
+    var r = readHeadItems_(n, offset);
     var want = {};
     for (var w = 0; w < r.items.length; w++) want[r.items[w].code] = true;
     var phByCode = photosByCode_(want);
