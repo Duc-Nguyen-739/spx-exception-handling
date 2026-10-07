@@ -53,15 +53,15 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 header .scanbar{flex:1 1 auto;min-width:0;margin:0;background:none;border:none;padding:0;display:flex;align-items:center;justify-content:center;gap:8px;position:relative}
 header .search-group{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 13px;flex:0 1 560px;min-width:0}
 header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
-header .topbtns{display:flex;gap:8px;flex:none}
-#rangebar{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:9px 14px;margin-bottom:10px;font-size:12.5px;flex-wrap:wrap}
-#rangebar .rg-info{color:var(--blue);font-weight:800}
+.actionrow{display:flex;justify-content:flex-end;margin:10px 0}.actionrow .topbtns{display:flex;gap:8px;flex:none}
+#rangebar{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 16px;margin-bottom:0;font-size:12.5px;text-align:center}
+#rangebar .rg-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}#rangebar .rg-ico{display:inline-flex;vertical-align:-3px}#rangebar .rg-ico svg{display:block}#rangebar .rg-info{color:var(--navy);font-weight:800;letter-spacing:.2px}
 #rangebar #rgRangeLabel{font-weight:600}
 #rangebar #rgEdit{border:none;background:none;color:var(--blue);font-weight:800;text-decoration:underline;padding:4px;font-size:12.5px}
-#rangebar .rg-cap{margin-left:auto;font-size:11px;color:var(--mut);font-weight:600}
+#rangebar .rg-cap{margin:0;font-size:10.5px;color:var(--mut);font-weight:600;line-height:1.55;max-width:660px}
 #rangeModal{align-items:center;justify-content:center;padding:0 16px}
 #rangeModal .rgsheet{max-width:860px;width:100%;height:auto;max-height:92%;border-radius:16px;padding:0;overflow:hidden}
-.rghead{padding:12px 16px;border-bottom:1px solid var(--line);font-size:13.5px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px}
+.rghead .rg-ico{display:inline-flex;vertical-align:-3px}.rghead{padding:12px 16px;border-bottom:1px solid var(--line);font-size:13.5px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px}
 .rghead .iconBtn{margin-left:auto}
 .rgbody{display:flex;min-height:300px}
 .rgpresets{width:170px;flex:none;border-right:1px solid var(--line);padding:8px 0}
@@ -127,7 +127,7 @@ header .topbtns{display:flex;gap:8px;flex:none}
 #viewLiq .lnextrow{margin-top:12px;display:flex}
 #viewLiq .lnextrow .primary{flex:0 0 280px;max-width:100%}
 #viewLiq #liqCodeWrap{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px;margin-top:12px;max-width:520px}
-@media(max-width:899px){header .scanbar{flex:1 1 100%;order:10}header .search-group{flex:1 1 auto}}
+@media(max-width:899px){header .scanbar{flex:1 1 100%;order:10}header .search-group{flex:1 1 auto}#rangebar .rg-cap{font-size:10px}.actionrow .create-big{padding:10px 16px;font-size:13px}}
 #scanClear{display:none;width:30px;height:30px;flex:none;border:none;border-radius:50%;background:#e8ecf1;color:#5b6572;font-size:13px;font-weight:800;line-height:1;padding:0}
 #scanClear.show{display:block}
 .scanbar svg{color:var(--o);flex:none}
@@ -387,7 +387,6 @@ header{flex-wrap:wrap}
 <button id="scanClear" title="Xóa tìm kiếm">✕</button>
 <button id="camMain">📷 Quét</button>
 </div>
-<span class="topbtns"><button id="btnCreateMain" class="primary create-big">＋ Create</button><button id="btnPrintMain" class="create-big">🖨 In Mã</button></span>
 </div>
 <button id="btnTheme" type="button">☾ Tối</button>
 <div id="whoChip" title="Tài khoản đăng nhập"><i id="whoIni">?</i><span id="whoTxt"></span></div>
@@ -426,10 +425,11 @@ header{flex-wrap:wrap}
 </nav>
 
 <main id="viewMain">
-<div id="rangebar"><span class="rg-info">ⓘ Display Range:</span><span id="rgRangeLabel"></span><button id="rgEdit" type="button">Edit</button><span class="rg-cap">Chỉ lọc danh sách · tìm kiếm không giới hạn ngày</span></div>
+<div id="rangebar"><div class="rg-line"><span class="rg-ico"><svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E8F0FE"/><circle cx="10" cy="10" r="8.4" fill="none" stroke="#3274F7" stroke-width="1.1" opacity=".5"/><circle cx="10" cy="6.6" r="1.3" fill="#3274F7"/><rect x="9.05" y="8.8" width="1.9" height="5.6" rx="0.95" fill="#3274F7"/></svg></span><span class="rg-info">Display Range:</span><span id="rgRangeLabel"></span><button id="rgEdit" type="button">Edit</button></div><div class="rg-cap">Dữ liệu được cập nhật mỗi 5 phút. Nếu không tìm thấy, vui lòng mở rộng phạm vi thời gian này hoặc nhập thông tin trên thanh tìm kiếm.</div></div>
+<div class="actionrow"><span class="topbtns"><button id="btnCreateMain" class="primary create-big">＋ Create</button><button id="btnPrintMain" class="create-big">🖨 In Mã</button></span></div>
 <div id="camModal" role="dialog" aria-label="Quét mã bằng camera"><div class="cam-box"><div id="camView"></div><div id="camStatus">Đưa mã vào khung — tự nhận diện.</div><div class="cam-btnrow"><button id="camFileBtn" type="button">Chụp ảnh</button><button id="camCloseBtn" type="button">Đóng</button></div></div></div><input type="file" id="camFile" accept="image/*" capture="environment" style="display:none">
 <div class="modal" id="rangeModal" role="dialog" aria-label="Chọn Display Range"><div class="sheet rgsheet">
-<div class="rghead">ⓘ Display Range: <span id="rgLabel"></span><button id="rgX" class="iconBtn" type="button">✕</button></div>
+<div class="rghead"><span class="rg-ico"><svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E8F0FE"/><circle cx="10" cy="10" r="8.4" fill="none" stroke="#3274F7" stroke-width="1.1" opacity=".5"/><circle cx="10" cy="6.6" r="1.3" fill="#3274F7"/><rect x="9.05" y="8.8" width="1.9" height="5.6" rx="0.95" fill="#3274F7"/></svg></span> Display Range: <span id="rgLabel"></span><button id="rgX" class="iconBtn" type="button">✕</button></div>
 <div class="rgbody"><div class="rgpresets" id="rgPresets"><button data-d="7" type="button">Last 7 Days</button><button data-d="14" type="button">Last 14 Days</button><button data-d="30" class="on" type="button">Last 30 Days</button><button data-d="60" type="button">Last 60 Days</button><div class="rgover">Phạm vi hiển thị tối đa 60 ngày. Mặc định 30 ngày gần nhất.</div></div><div class="rgcals"><div class="rgcal" id="rgCalL"></div><div class="rgcal" id="rgCalR"></div></div></div>
 <div class="rgfoot"><span class="msg" id="rgMsg"></span><button id="rgReset" type="button">Reset</button><button id="rgOk" class="primary" type="button">Confirm</button></div>
 </div></div>
