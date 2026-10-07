@@ -9,7 +9,8 @@
     "test:py": "python3 -m unittest discover -s api -p 'test_*.py'",
     "test:chrome": "node scripts/test-local-mock.js",
     "setup:chrome": "node scripts/setup-chrome.js",
-    "build:local": "node scripts/build-local.js"
+    "build:local": "node scripts/build-local.js",
+    "measure:gas": "node scripts/measure-gas.js"
   },
   "engines": {
     "node": ">=22"

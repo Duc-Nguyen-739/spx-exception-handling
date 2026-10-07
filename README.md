@@ -35,3 +35,10 @@ Workflows giống repo `spx-diem-danh`:
 ## Verify
 
 `npm test` · `npm run test:py` · `npm run build:local` · `npm run test:chrome` (lần đầu chạy `npm run setup:chrome` để tải Chrome for Testing chính chủ về `.chrome/`).
+
+## Đo timing GAS từ local
+
+- Token: OAuth Playground → chọn Apps Script API v1, scope `script.processes` → Authorize → copy access token (hết hạn ~1h).
+- Chạy (secret chỉ qua env, không commit): `GAS_SCRIPT_ID=<id> GAS_MEASURE_TOKEN=<token> npm run measure:gas -- --limit 20 --fn listFull`
+- Cách đối chiếu: thao tác trên app (mở trang/create/resolve) → chạy lệnh → đọc `duration` từng execution + tổng hợp avg/max.
+- Không setup: tab Executions trong Apps Script editor cũng hiện duration từng run.
