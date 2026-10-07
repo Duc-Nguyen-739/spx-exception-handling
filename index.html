@@ -1160,9 +1160,19 @@ document.getElementById('viewAccess').style.display='none';
 if(on){['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.remove('on');});curNav='';renderRail();}
 else{setActive('navMain');}
 }
+function clearPrintMsgs(){
+document.getElementById('scanPrint').value='';
+lastAutoPrint='';
+clearTimeout(autoT);
+printHint('Nhập/scan mã Box.… hoặc Item.… đúng định dạng sẽ tự in.');
+document.getElementById('lastPrint').innerHTML='';
+document.getElementById('bulkList').innerHTML='';
+var bh=document.getElementById('bulkHint');bh.textContent='';bh.className='phint';
+}
 function selectPrintCard(which){
 document.getElementById('cardSingle').classList.toggle('on',which==='single');
 document.getElementById('cardBulk').classList.toggle('on',which==='bulk');
+clearPrintMsgs();
 if(which==='single')document.getElementById('scanPrint').focus();
 }
 function printHint(t,ok){var h=document.getElementById('scanPrintHint');h.textContent=t||'';h.className='phint '+(t?(ok?'ok':'err'):'');}
@@ -1173,6 +1183,8 @@ if(!c){lastAutoPrint='';printHint('Nhập/scan mã Box.… hoặc Item.… đún
 if(!PRINT_RE.test(c)){printHint('Chưa đúng định dạng — cần Box.… hoặc Item.… (ngày-tháng-năm.số).');return;}
 if(c===lastAutoPrint)return;
 lastAutoPrint=c;
+document.getElementById('bulkList').innerHTML='';
+var _bh=document.getElementById('bulkHint');_bh.textContent='';_bh.className='phint';
 printHint('Đúng định dạng — đang tự in '+c+'…',true);
 document.getElementById('lastPrint').innerHTML='Đã in: <b>'+esc(c)+'</b> (khổ 4x6in).';
 doPrint(c);
@@ -1180,6 +1192,8 @@ doPrint(c);
 async function bulkGo(kind){
 var k=(kind==='Item')?'Item':'Box';
 var h=document.getElementById('bulkHint'),ul=document.getElementById('bulkList');
+printHint('Nhập/scan mã Box.… hoặc Item.… đúng định dạng sẽ tự in.');
+document.getElementById('lastPrint').innerHTML='';
 ul.innerHTML='';h.textContent='Server đang sinh 10 mã '+k+'…';h.className='phint';
 try{
 var r=await gs('previewBulkCodes',[k,10]);

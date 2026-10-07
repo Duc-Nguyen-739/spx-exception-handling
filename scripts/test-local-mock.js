@@ -281,6 +281,11 @@ async function main() {
     })`);
     const B = bk.err ? null : JSON.parse(bk.value);
     check('Bulk sinh 10 ma + tu in 1 lenh duy nhat', !!(bkOk && B && B.n === 10 && B.calls >= 1 && B.jobs === 2 && B.labels === 10), bk.value);
+    await evalIn(ws, `document.getElementById('cardSingle').click()`);
+    const clOk = await waitUntil(ws, "document.querySelectorAll('#bulkList li').length === 0"
+      + " && document.getElementById('bulkHint').textContent === ''"
+      + " && document.getElementById('lastPrint').innerText === ''", 3000);
+    check('Doi loai in xoa het thong bao cu', !!clOk, String(clOk));
     await evalIn(ws, `document.getElementById('btnBackPrint').click()`);
     const bkMain = await evalIn(ws, `document.getElementById('viewMain').style.display`);
     check('Tab In Ma quay ve man hinh chinh', bkMain.value === 'block', String(bkMain.value));
