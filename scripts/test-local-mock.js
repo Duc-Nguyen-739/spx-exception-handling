@@ -196,6 +196,13 @@ async function main() {
     // Resolve: thiếu bill báo lỗi, đủ bill đổi token + ghi mốc
     await evalIn(ws, `openDetail('Box.06-10-2026.1')`);
     await waitUntil(ws, "document.getElementById('detailTitle').textContent.includes('Box.06-10-2026.1')", 5000);
+    const ph = await evalIn(ws, `JSON.stringify({
+      n: document.querySelectorAll('#detailBody img[data-ph]').length
+    })`);
+    const P = ph.err ? null : JSON.parse(ph.value);
+    check('Chi tiết Box hiện đủ 3 ảnh', !!(P && P.n === 3), P && ('n=' + P.n));
+    const phDone = await waitUntil(ws, "Array.prototype.every.call(document.querySelectorAll('#detailBody img[data-ph]'), function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;})", 12000);
+    check('Ảnh lỗi Direct tự fallback server, không kẹt placeholder ?', !!phDone, String(phDone));
     await evalIn(ws, `document.getElementById('btnGoResolve').click()`);
     await evalIn(ws, `document.getElementById('btnConfirmResolve').click()`);
     await sleep(300);

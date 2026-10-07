@@ -64,17 +64,24 @@ test('photo-perf: Code.gs co getThumbs batch (1 call nhieu anh, cap 24, loi 1 an
   assert.ok(b.includes('return ok({ size: sz, items: out })'));
 });
 
-test('photo-perf: client am batch + render uu tien anh da cache (mo chi tiet hien ngay)', () => {
+test('photo-perf: mo chi tiet am bounded + cache 2 lop (hien ngay lan 2)', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes('function serverThumbsBatch(ids){'), 'batch chunk 20, dedup photoLoading');
+  assert.ok(html.includes('function serverThumbsBatch(ids){'), 'batch on-demand van giu');
   assert.ok(html.includes("gs('getThumbs',[ch,400])"), 'batch dung thumb nho w400');
-  assert.ok(html.includes('function putPhotoCache(k,u){'), 'LRU memory-only');
-  assert.ok(html.includes('photoCacheOrder.length>=200'), 'cap 200 data-URL chong OOM mobile');
-  assert.ok(html.includes('function cachedSrc(url){'), 'render uu tien data-URL da cache');
+  const wi = html.indexOf('function warmDetailImages(code){');
+  assert.ok(wi > 0);
+  assert.ok(html.slice(wi, wi + 700).includes('ids.slice(0,3)'), 'warm chi tiet toi da 3 id, khong dot GAS');
+  const pi = html.indexOf('function prefetchHeadThumbs(){');
+  assert.ok(!html.slice(pi, pi + 700).includes('warmPhotoCache'), 'prefetch khong goi batch');
+  assert.ok(html.includes('function hydrateFromIdb(code){'), 'hydrate local truoc khi warm mang');
+  assert.ok(html.includes('try{primeImages_(it.code);}catch(e){}'), 'paint nao cung prime anh');
+  assert.ok(html.includes('function idbGet(id){') && html.includes('function idbPut(id,blob,mime){'), 'IDB blob song qua reload');
+  assert.ok(html.includes('IDB_MAX=200'), 'cap 200 muc');
+  assert.ok(html.includes('URL.revokeObjectURL(ou)'), 'evict blob thi revoke, khong leak');
+  assert.ok(html.includes('function cachedSrc(url){'), 'render uu tien ban da cache');
   assert.ok(html.includes('var src=cachedSrc(thumb(it));'), 'grid dung anh cache');
-  assert.ok(html.includes("src=\"'+esc(cachedSrc(p[1]))+'\""), 'chi tiet dung anh cache');
-  assert.ok(html.includes('warmDetailImages(code);'), 'mo chi tiet am ngay anh thieu nen');
-  assert.ok(html.includes('function swapCachedImgs(){'), 'doi img sang data-URL tai cho khong render lai');
+  assert.ok(html.includes('cachedSrc(p[1])'), 'chi tiet dung anh cache');
+  assert.ok(html.includes('<link rel="preconnect" href="https://drive.google.com">'), 'preconnect host anh');
 });
 
 // Mirror LRU that (KHOP index.html putPhotoCache): toi da 200, evict cu nhat.

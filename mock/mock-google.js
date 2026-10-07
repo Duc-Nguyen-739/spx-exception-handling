@@ -18,9 +18,12 @@
   var ITEMS = [
     {
       code: 'Box.06-10-2026.1', kind: 'Box', createdAt: '06/10/2026 08:02:00',
-      createdBy: 'duc.nguyenvan05@spxexpress.com', imgOuter: '', imgProduct: '',
+      createdBy: 'duc.nguyenvan05@spxexpress.com',
+      imgOuter: 'https://drive.google.com/thumbnail?id=MOCKouter01AB3456789012&sz=w400',
+      imgProduct: 'https://drive.google.com/thumbnail?id=MOCKproduct02CD3456789012&sz=w400',
       description: 'Thùng 12 áo thun hoàn, seal còn nguyên', note: 'Kệ B2',
-      status: 'chua_xu_ly', statusLabel: 'Lưu kho', bill: '', days: 0, extras: [],
+      status: 'chua_xu_ly', statusLabel: 'Lưu kho', bill: '', days: 0,
+      extras: ['https://drive.google.com/thumbnail?id=MOCKextra03EF3456789012&sz=w400'],
       slots: [
         { slot: 'ngoai_quan', url: '' },
         { slot: 'san_pham', url: '' }
