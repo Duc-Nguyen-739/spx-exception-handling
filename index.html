@@ -296,7 +296,13 @@ header .hact{grid-column:3}
 #createModal,#editModal,#printKindModal{align-items:center;justify-content:center;padding:0 16px}
 #leaveModal{align-items:center;justify-content:center;padding:0 16px}
 #leaveModal .sheet{height:auto}
-#createModal .sheet,#editModal .sheet,#printKindModal .sheet{max-width:440px;width:100%;height:auto;max-height:92%;border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(23,43,72,.35)}
+#createModal .sheet,#printKindModal .sheet{max-width:440px;width:100%;height:auto;max-height:92%;border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(23,43,72,.35)}
+#editModal .sheet{max-width:440px;width:100%;height:auto;max-height:92%;border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(23,43,72,.35)}
+.ehead{display:flex;align-items:flex-start;gap:10px}
+.ehead h2{flex:1;min-width:0}
+.ehead .hact{display:flex;gap:2px;flex:none}
+.ehead .hact .lnk{white-space:nowrap;padding-top:2px}
+@media(min-width:900px){#editModal .sheet{max-width:760px}#editPhotos{display:grid;grid-template-columns:1fr 1fr;gap:10px}#editPhotos>div{margin-bottom:0!important}}
 
 /* ===== mobile-fix (mockup v2-v6) ===== */
 @media(max-width:899px){
@@ -544,7 +550,7 @@ header{flex-wrap:wrap}
 </div></div></div>
 
 <div class="modal" id="editModal"><div class="sheet">
-<h2 id="editTitle">Edit</h2>
+<div class="ehead"><h2 id="editTitle">Edit</h2><div class="hact"><button id="btnBackEdit" class="lnk">‹ Quay lại</button><button id="btnCloseEdit" class="lnk">Đóng</button></div></div>
 <div class="csub">Điền sẵn thông tin như lúc Create. Sửa xong bấm Confirm để lưu.</div>
 <div class="field"><label>MÃ (giữ nguyên khi lưu)</label><input id="editCode" class="mono" readonly></div>
 <div id="editStatusWrap" style="display:none">
@@ -559,8 +565,6 @@ header{flex-wrap:wrap}
 <div class="csub" id="editStaffHint" style="display:none">Bạn đang sửa với quyền thường — chỉ đổi được Mô tả + Ghi chú.</div>
 <div class="row"><button id="btnPrintEdit" class="printOnly">🖨 In Mã</button><button id="btnConfirmEdit" class="primary">Confirm</button></div>
 <div class="msg" id="msgEdit"></div>
-<button id="btnBackEdit" class="lnk">‹ Quay lại</button>
-<button id="btnCloseEdit" class="lnk">Đóng</button>
 </div></div>
 
 <div class="modal" id="createModal"><div class="sheet">
