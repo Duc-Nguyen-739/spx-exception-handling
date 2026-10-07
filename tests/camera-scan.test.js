@@ -13,7 +13,7 @@ function routeOf(target) {
   if (target === 'scanLiq') return 'liqAdd';
   if (target === 'resolveBill') return 'fillBill';
   if (target === 'scanPrint') return 'autoPrint';
-  return 'openDetail';
+  return 'fillSearch';
 }
 
 function dedupOk(lastCode, lastTs, code, now) {
@@ -22,7 +22,7 @@ function dedupOk(lastCode, lastTs, code, now) {
 }
 
 test('camera-scan: route đúng 4 điểm quét', () => {
-  assert.strictEqual(routeOf('scanMain'), 'openDetail');
+  assert.strictEqual(routeOf('scanMain'), 'fillSearch');
   assert.strictEqual(routeOf('scanLiq'), 'liqAdd');
   assert.strictEqual(routeOf('resolveBill'), 'fillBill');
   assert.strictEqual(routeOf('scanPrint'), 'autoPrint');
@@ -94,4 +94,16 @@ test('camera-scan: nhạy hơn — fps cao + khung rộng + native detector + HD
   assert.ok(!html.includes('qrbox:250'), 'còn qrbox:250 vuông hẹp (barcode 128 dài bị cắt)');
   assert.ok(html.includes('ideal') && html.includes('1920'), 'chưa xin camera HD 1920 cho barcode nhỏ');
   assert.ok(html.includes('CODE_128') && html.includes('QR_CODE'), 'thiếu QR/Code128');
+});
+
+test("camera-scan: quet o tim kiem chinh chi dien + loc, khong tu mo chi tiet", () => {
+  const html = require("node:fs").readFileSync(__dirname + "/../index.html", "utf8");
+  const i = html.indexOf("function onPhoneDecoded(");
+  assert.ok(i >= 0, "thieu onPhoneDecoded");
+  const tail = html.slice(i, i + 2500);
+  const sm = tail.indexOf("getElementById('scanMain')");
+  assert.ok(sm >= 0, "thieu nhanh scanMain");
+  const branch = tail.slice(sm, sm + 600);
+  assert.ok(!branch.includes("openDetail"), "quet xong con tu mo chi tiet");
+  assert.ok(branch.includes("dispatchEvent(new Event('input'") || (branch.includes("state.filter") && branch.includes("renderGrid")), "phai kich hoat loc luoi sau khi dien");
 });

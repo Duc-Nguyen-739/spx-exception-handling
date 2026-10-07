@@ -1726,8 +1726,8 @@ if(t==='scanLiq'){var s=document.getElementById('scanLiq');if(s)s.value=code;liq
 if(t==='resolveBill'){var rb=document.getElementById('resolveBill');if(rb){rb.value=code;rb.focus();}closePhoneScan();return;}
 if(t==='scanPrint'){var sp=document.getElementById('scanPrint');if(sp)sp.value=code;closePhoneScan();clearTimeout(autoT);autoT=setTimeout(autoPrintSingle,300);return;}
 if(t==='boxCode'||t==='itemCode'){var ci=document.getElementById(t);var kk=t==='boxCode'?'Box':'Item';if(ci)ci.value=code;if(!state.codeEdit[kk])state.codeEdit[kk]=true;paintCodeEdit_(kk);closePhoneScan();var cf=document.getElementById(t);if(cf)cf.focus();msg('msgCreate','Đã quét: '+code+' — kiểm tra rồi ấn Ok.',true);return;}
-var sm=document.getElementById('scanMain');if(sm)sm.value=code;
-closePhoneScan();openDetail(code);
+var sm=document.getElementById('scanMain');if(sm){sm.value=code;try{sm.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){try{state.filter=code;renderGrid();}catch(_){}}}
+closePhoneScan();
 }
 function camFileDecode_(file){
 if(!file)return;
