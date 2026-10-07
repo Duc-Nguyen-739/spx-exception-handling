@@ -83,8 +83,6 @@ test('sort-newest: create_ van insert dau + doc cot A + batch Photos', () => {
   const gs = fs.readFileSync('Code.gs', 'utf8');
   assert.ok(gs.includes('function nextSeqBothCodes_('));
   assert.ok(gs.includes('sh.getRange(2, 1, last - 1, 1).getValues()'));
-  assert.ok(gs.includes('sh.insertRowBefore(2);'), 'giu insert dau sheet theo contract');
-  const j = gs.indexOf('var phRows = jobs.map(');
-  assert.ok(j > 0);
-  assert.ok(gs.slice(j, j + 300).includes('.setValues(phRows)'));
+  assert.ok(gs.includes('prependRows_(sh, [row]);'), 'giu insert dau sheet theo contract');
+  assert.ok(gs.includes("prependRows_(getSheet_('Photos', PHOTOS_HEADER), phRows);"));
 });
