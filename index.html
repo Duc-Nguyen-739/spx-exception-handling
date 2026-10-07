@@ -213,9 +213,15 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 #detailBody{flex:none}
 #histCard{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 #histCard h4{flex:none}
-#detailHist{overflow-y:auto;max-height:220px;scroll-behavior:smooth}
-@media(max-width:899px){#detailBody .kv{padding:6px 0}#detailBody .phstrip.n1 .thumb{max-width:160px}#detailHist{max-height:38dvh}}
-#resolveCard{flex:none}
+#detailHist{overflow-y:auto;max-height:300px;scroll-behavior:smooth}
+@media(max-width:899px){#detailBody .kv{padding:6px 0}#detailBody .phstrip.n1 .thumb{max-width:160px}#detailHist{max-height:46dvh}}
+#resolveCard{flex:none;padding-bottom:8px}
+#resolveCard .btnrow{margin-top:6px}
+#resolveCard .btnrow button{padding:8px 13px;font-size:12.5px}
+#editModal .ph img{height:96px}
+#editModal .camSlot{padding:12px 8px;font-size:12px}
+#editModal .camSlot .big{font-size:22px}
+#editModal .field{margin:7px 0}
 .hist b{color:var(--navy)}
 .seg{display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;margin:10px 0}
 .seg button{flex:1;border:none;background:transparent;color:var(--mut);border-radius:9px;padding:9px;font-size:12px}
@@ -568,7 +574,6 @@ header{flex-wrap:wrap}
 
 <div class="modal" id="editModal"><div class="sheet">
 <div class="ehead"><h2 id="editTitle">Edit</h2><div class="hact"><button id="btnBackEdit" class="btnBack">‹ Quay lại</button><button id="btnCloseEdit" class="btnClose">Đóng</button></div></div>
-<div class="csub">Điền sẵn thông tin như lúc Create. Sửa xong bấm Confirm để lưu.</div>
 <div class="field"><label>MÃ (giữ nguyên khi lưu)</label><input id="editCode" class="mono" readonly></div>
 <div id="editStatusWrap" style="display:none">
 <div class="field"><label>TRẠNG THÁI (không chọn = giữ nguyên)</label><div class="statgrid" id="editStatGrid"></div></div>
@@ -1005,6 +1010,7 @@ document.getElementById('editModal').classList.remove('open');
 try{if(!state.me)await loadMe();}catch(e){}
 var done=it.status&&it.status!=='chua_xu_ly';
 document.getElementById('btnGoResolve').style.display=done?'none':'';
+document.getElementById('resolveCard').style.display=done?'none':'';
 if(!done&&rsDraft.code===it.code){
 document.getElementById('rsStep2').style.display='block';
 document.getElementById('btnGoResolve').style.display='none';
@@ -1087,8 +1093,19 @@ var editDel=[],editAdd=[],editOrig={desc:'',note:''},editStatusSel='';
 var EDIT_ST={'Lưu kho':'chua_xu_ly','Resolve':'da_tim_bill','Thanh Lý':'thanh_ly'};
 var SLOT_VN={'ngoai_quan':'Ảnh ngoại quan','san_pham':'Ảnh sản phẩm','bo_sung':'Ảnh bổ sung','bo_sung_1':'Ảnh bổ sung 1','bo_sung_2':'Ảnh bổ sung 2','bo_sung_3':'Ảnh bổ sung 3'};
 function slotVn(s){return SLOT_VN[s]||'Ảnh bổ sung';}
+function slotsFromItem_(it){
+it=it||{};
+var s=[];
+if(it.imgOuter)s.push({slot:'ngoai_quan',url:it.imgOuter});
+if(it.imgProduct)s.push({slot:'san_pham',url:it.imgProduct});
+(it.extras||[]).forEach(function(u,i){if(u)s.push({slot:i?'bo_sung_'+i:'bo_sung',url:u});});
+return s;
+}
 function renderEditPhotos(){
-var slots=(state.detail&&state.detail.slots)||[];
+var det=state.detail||{};
+var raw=(det.slots&&det.slots.length)?det.slots:((det.item&&det.item.slots&&det.item.slots.length)?det.item.slots:[]);
+var valid=raw.filter(function(x){return x&&x.url;});
+var slots=valid.length?valid:slotsFromItem_(det.item);
 var keep=slots.filter(function(x){return editDel.indexOf(String(x.slot))<0;});
 var w=document.getElementById('editPhotos');w.innerHTML='';
 keep.forEach(function(x){
