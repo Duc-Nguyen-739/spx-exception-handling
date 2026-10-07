@@ -1658,10 +1658,21 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')rgClose();})
 
 var camTarget=null,camHtml5=null,camPopup=null,camLastCode='',camLastTs=0,camTorchOn=false;
 var CAM_CODE_COOLDOWN_MS=1500;
-var CAM_FPS=25;
-function camFormats_(){try{if(typeof Html5QrcodeSupportedFormats!=='undefined'){var F=Html5QrcodeSupportedFormats;return [F.QR_CODE,F.CODE_128,F.CODE_39,F.CODE_93,F.EAN_13,F.EAN_8,F.UPC_A,F.UPC_E,F.ITF,F.CODABAR,F.DATA_MATRIX,F.AZTEC].filter(Boolean);}}catch(e){}return undefined;}
-function camQrbox_(w,h){try{w=+w||640;h=+h||480;var bw=Math.floor(Math.min(w*0.92,1920));var bh=Math.floor(Math.min(Math.max(h*0.5,200),1080));if(bw<200)bw=Math.min(w,310);if(bh<120)bh=Math.min(h,180);return {width:bw,height:bh};}catch(e){return {width:310,height:180};}}
-function camScanConfig_(){var cfg={fps:CAM_FPS,qrbox:camQrbox_,disableFlip:false};var fm=camFormats_();if(fm&&fm.length)cfg.formatsToSupport=fm;try{cfg.experimentalFeatures={useBarCodeDetectorIfSupported:true};}catch(e){}try{cfg.useBarCodeDetectorIfSupported=true;}catch(e){}try{cfg.videoConstraints={facingMode:{ideal:'environment'},width:{min:640,ideal:1920,max:1920},height:{min:480,ideal:1080,max:1080}};}catch(e){}return cfg;}
+var CAM_FPS=25,CAM_FMT_NAMES=['QR_CODE','CODE_128','CODE_39','EAN_13'];
+// Gotcha: html5-qrcode CHI doc formatsToSupport/useBarCodeDetectorIfSupported o
+// config cua CONSTRUCTOR new Html5Qrcode(id,cfg); dat vao start() bi bo qua nen
+// quet ca 17 dinh dang moi khung (cham, mat do nhay).
+function camFormats_(){try{if(typeof Html5QrcodeSupportedFormats==='undefined')return undefined;var F=Html5QrcodeSupportedFormats,o=[];for(var i=0;i<CAM_FMT_NAMES.length;i++){if(F[CAM_FMT_NAMES[i]]!==undefined)o.push(F[CAM_FMT_NAMES[i]]);}return o.length?o:undefined;}catch(e){return undefined;}}
+// Gotcha: thu vien cat video theo qrbox roi decode (canvas = dung kich khung nen
+// khong don bang resolution camera). Khung rong x thap se cat QR vuong -> lay ca
+// chieu cao, chi giu vien 8% moi canh de nhin thay vien khung.
+function camQrbox_(w,h){try{w=+w||640;h=+h||480;var bw=Math.floor(Math.min(w*0.92,1920));var bh=Math.floor(Math.min(h*0.88,1080));if(bw<200)bw=Math.min(w,310);if(bh<160)bh=Math.min(h,180);return {width:bw,height:bh};}catch(e){return {width:310,height:180};}}
+function camCtorCfg_(){var c={};var fm=camFormats_();if(fm&&fm.length)c.formatsToSupport=fm;c.useBarCodeDetectorIfSupported=true;return c;}
+// disableFlip: mac dinh cu la false -> that bai decode lai 1 lan voi anh lat ngược
+// (nhan in khong bao gi mirror nen vô ích, ton 2x CPU moi khung).
+function camScanConfig_(){var cfg={fps:CAM_FPS,qrbox:camQrbox_,disableFlip:true};try{cfg.videoConstraints={facingMode:{ideal:'environment'},width:{min:640,ideal:1920,max:1920},height:{min:480,ideal:1080,max:1080}};}catch(e){}return cfg;}
+// Popup GAS iframe la 1 document rieng: serialize config chung de 2 duong khong lech.
+function camCfgSrc_(v){if(typeof v==='function')return v.toString();if(v===null)return 'null';if(Array.isArray(v))return '['+v.map(camCfgSrc_).join(',')+']';if(typeof v==='object'){var k=[];for(var x in v)if(Object.prototype.hasOwnProperty.call(v,x))k.push(JSON.stringify(x)+':'+camCfgSrc_(v[x]));return '{'+k.join(',')+'}';}return JSON.stringify(v);}
 function syncTorchBtn_(show){var b=document.getElementById('camTorchBtn');if(!b)return;b.style.display=show?'':'none';if(!show){camTorchOn=false;b.textContent='\uD83D\uDD26 Đèn';}}
 function paintTorch_(){var b=document.getElementById('camTorchBtn');if(b)b.textContent=camTorchOn?'\uD83D\uDD26 Tắt đèn':'\uD83D\uDD26 Đèn';}
 function camBoostFocus_(){try{if(!camHtml5||typeof camHtml5.getRunningTrackCapabilities!=='function'){syncTorchBtn_(false);return;}var caps=camHtml5.getRunningTrackCapabilities();var want={};if(caps&&caps.focusMode&&caps.focusMode.indexOf&&caps.focusMode.indexOf('continuous')>=0)want.focusMode='continuous';if(caps&&caps.exposureMode&&caps.exposureMode.indexOf&&caps.exposureMode.indexOf('continuous')>=0)want.exposureMode='continuous';if(Object.keys(want).length&&typeof camHtml5.applyVideoConstraints==='function'){try{var p=camHtml5.applyVideoConstraints({advanced:[want]});if(p&&p.catch)p.catch(function(){});}catch(e){}}syncTorchBtn_(!!(caps&&('torch' in caps)));}catch(e){try{syncTorchBtn_(false);}catch(_){}}}
@@ -1680,10 +1691,8 @@ return ['<!doctype html>',
 '<div id="bar"><button id="go" type="button" style="display:none">Bật camera</button><button id="x" type="button">Đóng</button></div>',
 '<script>',
 '(function(){var last="",ts=0;function send(c){c=String(c||"").trim();if(!c)return;var n=Date.now();if(c===last&&n-ts<1500)return;last=c;ts=n;try{window.opener.postMessage({type:"spxScanResult",code:c},"*");}catch(e){}document.getElementById("st").textContent="Đã nhận: "+c+" — quét tiếp";}',
-'function pickFm(){try{if(typeof Html5QrcodeSupportedFormats==="undefined")return undefined;var F=Html5QrcodeSupportedFormats;return [F.QR_CODE,F.CODE_128,F.CODE_39,F.CODE_93,F.EAN_13,F.EAN_8,F.UPC_A,F.UPC_E,F.ITF,F.CODABAR,F.DATA_MATRIX,F.AZTEC].filter(Boolean);}catch(e){return undefined;}}',
-'function pickBox(w,h){w=+w||640;h=+h||480;return {width:Math.floor(Math.min(w*0.92,1920)),height:Math.floor(Math.min(Math.max(h*0.5,200),1080))};}',
-'function pickCfg(){var c={fps:25,qrbox:pickBox,disableFlip:false};var f=pickFm();if(f&&f.length)c.formatsToSupport=f;try{c.experimentalFeatures={useBarCodeDetectorIfSupported:true};}catch(e){}try{c.useBarCodeDetectorIfSupported=true;}catch(e){}try{c.videoConstraints={facingMode:{ideal:"environment"},width:{min:640,ideal:1920,max:1920},height:{min:480,ideal:1080,max:1080}};}catch(e){}return c;}',
-'var h=new Html5Qrcode("live");h.start({facingMode:"environment"},pickCfg(),send,function(){}).then(function(){try{var cp=h.getRunningTrackCapabilities();var w={};if(cp&&cp.focusMode&&cp.focusMode.indexOf("continuous")>=0)w.focusMode="continuous";if(cp&&cp.exposureMode&&cp.exposureMode.indexOf("continuous")>=0)w.exposureMode="continuous";if(Object.keys(w).length)h.applyVideoConstraints({advanced:[w]}).catch(function(){});}catch(e){}}).catch(function(){document.getElementById("st").textContent="Bấm Bật camera để bắt đầu.";var g=document.getElementById("go");g.style.display="";g.onclick=function(){location.reload();};});',
+'var CTOR_CFG='+camCfgSrc_(camCtorCfg_())+',SCAN_CFG='+camCfgSrc_(camScanConfig_())+';',
+'var h=new Html5Qrcode("live",CTOR_CFG);h.start({facingMode:"environment"},SCAN_CFG,send,function(){}).then(function(){try{var cp=h.getRunningTrackCapabilities();var w={};if(cp&&cp.focusMode&&cp.focusMode.indexOf("continuous")>=0)w.focusMode="continuous";if(cp&&cp.exposureMode&&cp.exposureMode.indexOf("continuous")>=0)w.exposureMode="continuous";if(Object.keys(w).length)h.applyVideoConstraints({advanced:[w]}).catch(function(){});}catch(e){}}).catch(function(){document.getElementById("st").textContent="Bấm Bật camera để bắt đầu.";var g=document.getElementById("go");g.style.display="";g.onclick=function(){location.reload();};});',
 'document.getElementById("x").onclick=function(){window.close();};',
 '})();',
 '<'+'/script></body></html>'].join('');
@@ -1703,7 +1712,7 @@ if(typeof Html5Qrcode==='undefined'){camStatus_('Không tải được thư vi�
 stopCamStream_();
 try{
 var cfg=camScanConfig_();
-camHtml5=new Html5Qrcode('camView');
+camHtml5=new Html5Qrcode('camView',camCtorCfg_());
 camHtml5.start({facingMode:'environment'},cfg,function(txt){onPhoneDecoded(txt);},function(){}).then(function(){camStatus_('Đưa mã QR / barcode vào giữa khung — giữ yên 1-2 giây.');try{camBoostFocus_();}catch(e){}},function(){camStatus_('Không mở được camera trực tiếp — bấm Chụp ảnh.');});
 }catch(e){camStatus_('Không mở được camera — bấm Chụp ảnh.');}
 }
@@ -1725,7 +1734,7 @@ if(!file)return;
 if(typeof Html5Qrcode==='undefined'){camStatus_('Không tải được thư viện camera.');return;}
 stopCamStream_();
 try{
-var tmp=new Html5Qrcode('camView');
+var tmp=new Html5Qrcode('camView',camCtorCfg_());
 tmp.scanFile(file,false).then(function(txt){try{tmp.clear();}catch(e){}onPhoneDecoded(txt);}).catch(function(){try{tmp.clear();}catch(e){}camStatus_('Không đọc được mã trong ảnh — chụp gần hơn.');});
 }catch(e){camStatus_('Không đọc được ảnh vừa chụp.');}
 }

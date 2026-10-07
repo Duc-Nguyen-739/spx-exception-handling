@@ -7,7 +7,7 @@ const assert = require('node:assert');
 const CAM_CODE_COOLDOWN_MS = 1500;
 const CAM_FPS = 25;
 const SCAN_MSG_TYPE = 'spxScanResult';
-const FORMATS = ['QR_CODE', 'CODE_128', 'CODE_39', 'CODE_93', 'EAN_13', 'EAN_8', 'UPC_A', 'UPC_E', 'ITF', 'CODABAR', 'DATA_MATRIX', 'AZTEC'];
+const FORMATS = ['QR_CODE', 'CODE_128', 'CODE_39', 'EAN_13'];
 
 function routeOf(target) {
   if (target === 'scanLiq') return 'liqAdd';
@@ -35,9 +35,42 @@ test('camera-scan: dedup cùng mã trong 1.5s', () => {
 });
 
 test('camera-scan: đủ QR + Code128 cho mã Box/Item và bill SPXVN', () => {
-  assert.ok(FORMATS.includes('QR_CODE'));
-  assert.ok(FORMATS.includes('CODE_128'));
+  const html = require('node:fs').readFileSync(__dirname + '/../index.html', 'utf8');
+  const m = html.match(/CAM_FMT_NAMES=\[([^\]]+)\]/);
+  assert.ok(m, 'thiếu CAM_FMT_NAMES trong index.html');
+  assert.deepStrictEqual(m[1].split(',').map((s) => s.replace(/'/g, '')), FORMATS);
   assert.strictEqual(SCAN_MSG_TYPE, 'spxScanResult');
+});
+
+test('camera-scan: formatsToSupport phải nằm trong CONSTRUCTOR, không phải start()', () => {
+  const html = require('node:fs').readFileSync(__dirname + '/../index.html', 'utf8');
+  // html5-qrcode 2.3.8 chỉ đọc formatsToSupport ở new Html5Qrcode(id, cfg);
+  // đặt trong start() bị bỏ qua -> decode cả 17 format mỗi khung (chạy chậm, kém nhạy).
+  const ctors = [...html.matchAll(/new Html5Qrcode\((['"][^'"]+['"])\s*,\s*([^)]*)\)/g)];
+  assert.ok(ctors.length >= 3, 'thiếu new Html5Qrcode(id,cfg) — còn chỗ khởi tạo không truyền config');
+  for (const c of ctors) assert.ok(/camCtorCfg_|CTOR_CFG/.test(c[2]), 'constructor thiếu config format: ' + c[0]);
+  assert.ok(!/new Html5Qrcode\([^,()]+\)/.test(html.replace(/new Html5Qrcode\([^,]+,[^()]+\(\)\)/g, '')),
+    'còn new Html5Qrcode(id) không truyền config');
+  assert.ok(!/start\([^;]*formatsToSupport/.test(html), 'formatsToSupport nhét vào start() bị lib bỏ qua');
+});
+
+test('camera-scan: ROI gần full-frame + disableFlip (nhạy hơn, rẻ hơn)', () => {
+  const html = require('node:fs').readFileSync(__dirname + '/../index.html', 'utf8');
+  const fps = html.match(/var CAM_FPS=(\d+)/);
+  assert.ok(fps && +fps[1] === CAM_FPS && CAM_FPS >= 20, 'fps phải khớp CAM_FPS và >= 20, đang ' + (fps && fps[1]));
+  // ROI rộng x thấp sẽ cắt QR vuông -> chiều cao phải ≥ 80% chiều cao video
+  const bh = html.match(/Math\.min\(h\*(0\.\d+),1080\)/);
+  assert.ok(bh && parseFloat(bh[1]) >= 0.8, 'chiều cao ROI phải ≥80%, đang ' + (bh && bh[1]));
+  assert.ok(/disableFlip:true/.test(html), 'disableFlip phải true — bỏ decode lần 2 ảnh lật ngược');
+  assert.ok(!html.includes('qrbox:250'), 'còn qrbox:250 vuông cứng');
+  assert.ok(/qrbox:camQrbox_/.test(html), 'qrbox phải là hàm theo viewport');
+});
+
+test('camera-scan: popup GAS iframe dùng chung config, không copy riêng', () => {
+  const html = require('node:fs').readFileSync(__dirname + '/../index.html', 'utf8');
+  assert.ok(!/function pickFm|function pickCfg|function pickBox|function pickCtor/.test(html), 'popup còn copy config riêng (dễ lệch)');
+  assert.ok(/camCfgSrc_\(camCtorCfg_\(\)\)/.test(html), 'popup chưa nối config constructor chung');
+  assert.ok(/camCfgSrc_\(camScanConfig_\(\)\)/.test(html), 'popup chưa nối config scan chung');
 });
 
 test('camera-scan: index.html có engine mới, hết toggleCam/reader cũ', () => {

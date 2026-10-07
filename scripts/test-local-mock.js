@@ -265,6 +265,29 @@ async function main() {
     const scGone = await evalIn(ws, `JSON.stringify({v: document.getElementById('scanMain').value, show: document.getElementById('scanClear').classList.contains('show')})`);
     const SG = JSON.parse(scGone.value);
     check('Bam nut xoa -> sach + an nut', SG.v === '' && SG.show === false, scGone.value);
+    // Camera: headless khong co camera nen assert CONFIG thuc te (popup la duong dung tren GAS iframe)
+    const camCfg = await evalIn(ws, `JSON.stringify({
+      enumLoaded: typeof Html5QrcodeSupportedFormats !== 'undefined',
+      ctor: camCtorCfg_(),
+      fps: camScanConfig_().fps,
+      flip: camScanConfig_().disableFlip,
+      qrFn: typeof camScanConfig_().qrbox,
+      box: camQrbox_(360, 240),
+      popupCtor: buildScanPopupHtml_().indexOf('new Html5Qrcode("live",CTOR_CFG)') >= 0,
+      popupFmt: /CTOR_CFG=\\{?"?formatsToSupport/.test(buildScanPopupHtml_()),
+      popupDup: /function pickCfg|function pickBox|function pickFm/.test(buildScanPopupHtml_())
+    })`);
+    const CAM = camCfg.err ? null : JSON.parse(camCfg.value);
+    check('Camera config: fps cao + disableFlip + qrbox la ham',
+      !!(CAM && CAM.fps >= 20 && CAM.flip === true && CAM.qrFn === 'function'), camCfg.value);
+    check('Camera ROI gan full-frame (khong cat QR vuong)',
+      !!(CAM && CAM.box.width >= 360 * 0.85 && CAM.box.height >= 240 * 0.8), CAM && JSON.stringify(CAM.box));
+    check('Camera gioi han format o CONSTRUCTOR (QR+Code128+Code39+EAN13)',
+      !!(CAM && CAM.ctor.useBarCodeDetectorIfSupported === true
+        && (!CAM.enumLoaded || (CAM.ctor.formatsToSupport.length === 4 && CAM.ctor.formatsToSupport[1] === 5))),
+      CAM && (CAM.enumLoaded ? JSON.stringify(CAM.ctor.formatsToSupport) : 'enum chua nap (offline)'));
+    check('Popup quet lay config chung, khong copy rieng',
+      !!(CAM && CAM.popupCtor && CAM.popupFmt && !CAM.popupDup), CAM && (CAM.popupCtor + '/' + CAM.popupFmt + '/' + !CAM.popupDup));
     await evalIn(ws, `window.print = function(){ window.__PRINTED__ = (window.__PRINTED__ || 0) + 1; };`);
     await evalIn(ws, `document.getElementById('btnPrintMain').click()`);
     const pvOk = await waitUntil(ws, "document.getElementById('viewPrint').style.display === 'block'", 3000);
