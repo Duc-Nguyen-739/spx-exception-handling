@@ -10,6 +10,7 @@ var PROP_FOLDER = 'FOLDER_ID';
 var PROP_ADMINS = 'ADMIN_EMAILS';
 var USERS_HEADER = ['email', 'role', 'added_at', 'added_by'];
 var LIST_LIMIT = 150; // listItems/listFull chỉ đọc tối đa 150 dòng đầu (đơn mới insert ở dòng 2)
+var TAIL_ROWS = 3000; // list paths chỉ đọc tail Photos/Log (anh/log cua head-150 nam o cuoi do append)
 
 var ITEMS_HEADER = ['code', 'created_at', 'description', 'kind', 'photo_path_outer',
   'photo_path_product', 'status', 'status_note', 'mvdn', 'trip', 'reporter', 'note'];
@@ -76,8 +77,14 @@ function getSpreadsheet_() {
   return ss;
 }
 
+var SS_ = null;
+function ss_() {
+  if (!SS_) SS_ = getSpreadsheet_();
+  return SS_;
+}
+
 function getSheet_(name, header) {
-  var ss = getSpreadsheet_();
+  var ss = ss_();
   var sh = ss.getSheetByName(name);
   if (!sh) {
     sh = ss.insertSheet(name);
@@ -129,18 +136,26 @@ function thumbUrl_(v) {
 
 function photoIds_() {
   var ids = {};
-  var ph = readPhotosAll_();
-  for (var i = 0; i < ph.length; i++) {
-    var pid = String(ph[i][2] || '').trim() || driveIdFromUrl_(ph[i][2]);
-    if (pid) ids[pid] = true;
+  var phSh = getSheet_('Photos', PHOTOS_HEADER);
+  var phLast = phSh.getLastRow();
+  if (phLast >= 2) {
+    var colC = phSh.getRange(2, 3, phLast - 1, 1).getValues();
+    for (var i = 0; i < colC.length; i++) {
+      var pid = String(colC[i][0] || '').trim() || driveIdFromUrl_(colC[i][0]);
+      if (pid) ids[pid] = true;
+    }
   }
-  var r = readAllItems_();
-  for (var j = 0; j < r.items.length; j++) {
-    var cols = [r.items[j].photo_path_outer, r.items[j].photo_path_product];
-    for (var k = 0; k < cols.length; k++) {
-      var t = String(cols[k] || '').trim();
-      var cid = (/^[a-zA-Z0-9_-]{10,}$/.test(t) ? t : driveIdFromUrl_(t));
-      if (cid) ids[cid] = true;
+  var ish = getSheet_('Items', ITEMS_HEADER);
+  var ilast = ish.getLastRow();
+  if (ilast >= 2) {
+    var icols = ish.getRange(2, 5, ilast - 1, 2).getValues();
+    for (var j = 0; j < icols.length; j++) {
+      var cols = [icols[j][0], icols[j][1]];
+      for (var k = 0; k < cols.length; k++) {
+        var t = String(cols[k] || '').trim();
+        var cid = (/^[a-zA-Z0-9_-]{10,}$/.test(t) ? t : driveIdFromUrl_(t));
+        if (cid) ids[cid] = true;
+      }
     }
   }
   return ids;
@@ -208,6 +223,25 @@ function storageDays_(createdAt, code) {
   return Math.max(0, Math.floor(ms / 86400000));
 }
 
+// Chi cot A (code) de tinh seq/check trung/tim dong — re hon full read.
+function readItemCodes_() {
+  var sh = getSheet_('Items', ITEMS_HEADER);
+  var last = sh.getLastRow();
+  if (last < 2) return { sh: sh, codes: [] };
+  var codes = sh.getRange(2, 1, last - 1, 1).getValues()
+    .map(function (x) { return String(x[0] || ''); }).filter(Boolean);
+  return { sh: sh, codes: codes };
+}
+
+// Tim dong sheet (2-based) cua 1 ma bang quet cot A — tra row=-1 neu khong thay.
+function findItemRow_(code) {
+  var rc = readItemCodes_();
+  for (var i = 0; i < rc.codes.length; i++) {
+    if (rc.codes[i] === String(code)) return { sh: rc.sh, row: i + 2 };
+  }
+  return { sh: rc.sh, row: -1 };
+}
+
 function readAllItems_() {
   var sh = getSheet_('Items', ITEMS_HEADER);
   var last = sh.getLastRow();
@@ -229,14 +263,24 @@ function firstExtraMap_(codes) {
   var want = {};
   for (var i = 0; i < codes.length; i++) want[codes[i]] = true;
   var map = {};
+  function pick(code, slot, fileId) {
+    if (map[code]) return;
+    if (slot === 'ngoai_quan' || slot === 'san_pham') return;
+    var url = thumbUrl_(fileId);
+    if (url) map[code] = url;
+  }
+  var grouped = photosForCodes_(want);
+  if (grouped) {
+    for (var k in grouped) {
+      for (var i = 0; i < grouped[k].length; i++) pick(k, grouped[k][i].slot, grouped[k][i].fileId);
+    }
+    return map;
+  }
   var vals = readPhotosAll_();
   for (var j = 0; j < vals.length; j++) {
     var code = String(vals[j][0]);
-    if (!want[code] || map[code]) continue;
-    var slot = String(vals[j][1]);
-    if (slot === 'ngoai_quan' || slot === 'san_pham') continue;
-    var url = thumbUrl_(vals[j][2]);
-    if (url) map[code] = url;
+    if (!want[code]) continue;
+    pick(code, String(vals[j][1]), vals[j][2]);
   }
   return map;
 }
@@ -268,13 +312,18 @@ function listFull(limit) {
     var want = {};
     for (var w = 0; w < r.items.length; w++) want[r.items[w].code] = true;
     var phByCode = photosByCode_(want);
+    var grp = logsForCodes_(want);
     var histByCode = {};
-    var log = readLogRows_();
-    if (log.cols && log.cols.code >= 0) {
-      for (var j = 0; j < log.rows.length; j++) {
-        var hc = String(log.rows[j][log.cols.code] || '').trim();
-        if (!want[hc]) continue;
-        (histByCode[hc] = histByCode[hc] || []).push(logEntry_(log.rows[j], log.cols, hc));
+    if (grp) {
+      histByCode = grp.byCode;
+    } else {
+      var log = readLogRows_();
+      if (log.cols && log.cols.code >= 0) {
+        for (var j = 0; j < log.rows.length; j++) {
+          var hc = String(log.rows[j][log.cols.code] || '').trim();
+          if (!want[hc]) continue;
+          (histByCode[hc] = histByCode[hc] || []).push(logEntry_(log.rows[j], log.cols, hc));
+        }
       }
     }
     var out = r.items.map(function (o) {
@@ -299,6 +348,8 @@ function photosFor_(code) {
 
 // Gom 1 lần đọc Photos theo code cho cả list lẫn getItem (batch, không loop sheet).
 function photosByCode_(want) {
+  var grouped = photosForCodes_(want);
+  if (grouped) return grouped;
   var vals = readPhotosAll_();
   var map = {};
   for (var i = 0; i < vals.length; i++) {
@@ -307,6 +358,56 @@ function photosByCode_(want) {
     (map[code] = map[code] || []).push({ slot: cellText_(vals[i][1]), fileId: cellText_(vals[i][2]) });
   }
   return map;
+}
+
+// Anh/log cua head-150 nam o vung tail (append cuoi) — doc bounded; thieu coverage
+// (moi want-code phai co >=1 dong) thi tra null de caller fallback full read.
+function readPhotosTail_(maxRows) {
+  var sh = getSheet_('Photos', PHOTOS_HEADER);
+  var last = sh.getLastRow();
+  if (last < 2) return [];
+  var n = Math.min(last - 1, Math.max(1, maxRows || TAIL_ROWS));
+  return sh.getRange(last - n + 1, 1, n, PHOTOS_HEADER.length).getValues();
+}
+
+function readLogTail_(maxRows) {
+  var sh = getSheet_('ActivityLog', LOG_HEADER);
+  var last = sh.getLastRow();
+  if (last < 2) return { cols: null, rows: [] };
+  var width = Math.max(sh.getLastColumn(), LOG_HEADER.length);
+  var n = Math.min(last - 1, Math.max(1, maxRows || TAIL_ROWS));
+  return { cols: logCols_(sh, width), rows: sh.getRange(last - n + 1, 1, n, width).getValues() };
+}
+
+function photosForCodes_(want) {
+  var map = {}, seen = {};
+  var vals = readPhotosTail_();
+  for (var i = 0; i < vals.length; i++) {
+    var code = String(vals[i][0] || '').trim();
+    if (!want[code]) continue;
+    seen[code] = true;
+    (map[code] = map[code] || []).push({ slot: cellText_(vals[i][1]), fileId: cellText_(vals[i][2]) });
+  }
+  for (var k in want) {
+    if (!seen[k]) return null;
+  }
+  return map;
+}
+
+function logsForCodes_(want) {
+  var r = readLogTail_();
+  if (!r.cols || r.cols.code < 0) return null;
+  var byCode = {}, seen = {};
+  for (var i = 0; i < r.rows.length; i++) {
+    var hc = String(r.rows[i][r.cols.code] || '').trim();
+    if (!want[hc]) continue;
+    seen[hc] = true;
+    (byCode[hc] = byCode[hc] || []).push(logEntry_(r.rows[i], r.cols, hc));
+  }
+  for (var k in want) {
+    if (!seen[k]) return null;
+  }
+  return { cols: r.cols, byCode: byCode };
 }
 
 function applyPhotos_(item, photos) {
@@ -379,22 +480,18 @@ function getItem(code) {
   try {
     code = String(code || '').trim();
     if (!code) return fail('Thiếu mã đơn.');
-    var r = readAllItems_();
-    for (var i = 0; i < r.items.length; i++) {
-      if (r.items[i].code === code) {
-        var it = applyPhotos_(toClient_(r.items[i]), photosFor_(code));
-        return ok({ item: it, history: historyFor_(code) });
-      }
-    }
-    return fail('Không Có');
+    var f = findItemRow_(code);
+    if (f.row < 0) return fail('Không Có');
+    var vals = f.sh.getRange(f.row, 1, 1, ITEMS_HEADER.length).getValues();
+    var it = applyPhotos_(toClient_(rowsToItems_(vals)[0]), photosFor_(code));
+    return ok({ item: it, history: historyFor_(code) });
   } catch (e) { Logger.log(e); return fail('Không đọc được đơn: ' + e.message); }
 }
 
 function previewCode(kind) {
   try {
     var k = kind === 'Item' ? 'Item' : 'Box';
-    var r = readAllItems_();
-    var seq = nextSeqBoth_(r.items, readPrintedCodes_(), k, todayPart_());
+    var seq = nextSeqBothCodes_(readItemCodes_().codes, readPrintedCodes_(), k, todayPart_());
     return ok({ code: prefix_(k) + todayPart_() + '.' + seq, datePart: todayPart_(), seq: seq });
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
@@ -404,9 +501,8 @@ function previewBulkCodes(kind, count) {
     var k = kind === 'Item' ? 'Item' : 'Box';
     var n = Math.min(Math.max(parseInt(count, 10) || 10, 1), 10);
     return ok(withLock_(function () {
-      var r = readAllItems_();
       var datePart = todayPart_();
-      var start = nextSeqBoth_(r.items, readPrintedCodes_(), k, datePart);
+      var start = nextSeqBothCodes_(readItemCodes_().codes, readPrintedCodes_(), k, datePart);
       var codes = [];
       for (var i = 0; i < n; i++) codes.push(prefix_(k) + datePart + '.' + (start + i));
       var at = nowStr_(), by = currentEmail_();
@@ -425,16 +521,6 @@ function seqNum_(code, prefix) {
   if (c.indexOf(prefix) !== 0) return 0;
   var n = parseInt(c.slice(prefix.length), 10);
   return isNaN(n) ? 0 : n;
-}
-
-function nextSeq_(items, kind, datePart) {
-  var p = prefix_(kind) + datePart + '.';
-  var best = 0;
-  for (var i = 0; i < items.length; i++) {
-    var n = seqNum_(items[i].code, p);
-    if (n > best) best = n;
-  }
-  return best + 1;
 }
 
 function readPrintedCodes_() {
@@ -460,11 +546,6 @@ function nextSeqBothCodes_(codes, printed, kind, datePart) {
   return best + 1;
 }
 
-function nextSeqBoth_(items, printed, kind, datePart) {
-  var codes = [];
-  for (var i = 0; i < items.length; i++) codes.push(items[i].code);
-  return nextSeqBothCodes_(codes, printed, kind, datePart);
-}
 
 function dataUrlToBlob_(dataUrl, name) {
   var m = String(dataUrl || '').match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=\s]+)$/);
@@ -500,9 +581,14 @@ function monthFolder_() {
     throw new Error('FOLDER_ID không đúng (chỉ dán ID thư mục, không dán cả URL).');
   }
   var name = Utilities.formatDate(new Date(), TZ, 'yyyy-MM');
+  try {
+    var hit = CacheService.getScriptCache().get('folder_' + name);
+    if (hit) return DriveApp.getFolderById(hit);
+  } catch (e1) { /* fallback tra Drive */ }
   var it = root.getFoldersByName(name);
-  if (it.hasNext()) return it.next();
-  return root.createFolder(name);
+  var folder = it.hasNext() ? it.next() : root.createFolder(name);
+  try { CacheService.getScriptCache().put('folder_' + name, folder.getId(), 21600); } catch (e2) {}
+  return folder;
 }
 
 function withLock_(fn) {
@@ -532,10 +618,8 @@ function create_(kind, p) {
 
   return withLock_(function () {
     // Chi doc cot A de tinh seq + check trung — giam cells doc trong lock, van insert dau sheet.
-    var sh = getSheet_('Items', ITEMS_HEADER);
-    var last = sh.getLastRow();
-    var codes = last < 2 ? [] : sh.getRange(2, 1, last - 1, 1).getValues()
-      .map(function (x) { return String(x[0] || ''); }).filter(Boolean);
+    var rc = readItemCodes_();
+    var sh = rc.sh, codes = rc.codes;
     var printedCodes = readPrintedCodes_();
     var datePart = todayPart_();
     var code = custom || (prefix_(kind) + datePart + '.' + nextSeqBothCodes_(codes, printedCodes, kind, datePart));
@@ -595,13 +679,10 @@ function resolveItem(code, bill) {
     if (!code) return fail('Thiếu mã đơn.');
     if (!bill) return fail('Vui lòng nhập mã bill xử lý.');
     return ok(withLock_(function () {
-      var r = readAllItems_();
-      var idx = -1;
-      for (var i = 0; i < r.items.length; i++) {
-        if (r.items[i].code === code) { idx = i; break; }
-      }
-      if (idx < 0) throw new Error('Không Có');
-      var cur = r.items[idx].status || 'chua_xu_ly';
+      var f = findItemRow_(code);
+      if (f.row < 0) throw new Error('Không Có');
+      var it = rowsToItems_(f.sh.getRange(f.row, 1, 1, ITEMS_HEADER.length).getValues())[0];
+      var cur = it.status || 'chua_xu_ly';
       if (cur === 'da_tim_bill') throw new Error('Đã Resolve');
       if (cur === 'thanh_ly') throw new Error('Đã Thanh Lý');
       if (cur !== 'chua_xu_ly') throw new Error('Trạng thái hiện tại: ' + (STATUS_LABEL[cur] || cur));
@@ -609,7 +690,7 @@ function resolveItem(code, bill) {
       var at = nowStr_();
       var by = currentEmail_();
       // G:I 1 lần ghi (status, giữ status_note, mvdn). Không đè reporter/created_at.
-      r.sh.getRange(idx + 2, 7, 1, 3).setValues([['da_tim_bill', r.items[idx].status_note || '', bill]]);
+      f.sh.getRange(f.row, 7, 1, 3).setValues([['da_tim_bill', it.status_note || '', bill]]);
       getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, cur, 'da_tim_bill', by, bill, '']);
       return { code: code, status: 'da_tim_bill', at: at, by: by };
     }));
@@ -639,22 +720,14 @@ function liquidateBatch(codes, liqCode) {
 
       var at = nowStr_();
       var by = currentEmail_();
-      // Batch 1 lần ghi: dựng lại mảng values rồi setValues.
-      var sh = r.sh;
-      var last = sh.getLastRow();
-      var vals = sh.getRange(2, 1, last - 1, ITEMS_HEADER.length).getValues();
-      for (var k = 0; k < vals.length; k++) {
-        if (codes.indexOf(String(vals[k][0])) >= 0) {
-          vals[k][8] = liqCode;
-          vals[k][6] = 'thanh_ly';
-        }
-        vals[k][1] = textDate_(vals[k][1]);
+      // Chi ghi dong matched (cot G:I), khong rewrite toan sheet.
+      for (var k = 0; k < codes.length; k++) {
+        var pi = pos[codes[k]];
+        r.sh.getRange(pi + 2, 7, 1, 3).setValues([['thanh_ly', r.items[pi].status_note || '', liqCode]]);
       }
-      sh.getRange(2, 1, vals.length, ITEMS_HEADER.length).setValues(vals);
-      var log = getSheet_('ActivityLog', LOG_HEADER);
-      for (var m = 0; m < codes.length; m++) {
-        log.appendRow(["'" + at, codes[m], 'chua_xu_ly', 'thanh_ly', by, liqCode, '']);
-      }
+      var logRows = codes.map(function (cd) { return ["'" + at, cd, 'chua_xu_ly', 'thanh_ly', by, liqCode, '']; });
+      var logSh = getSheet_('ActivityLog', LOG_HEADER);
+      logSh.getRange(logSh.getLastRow() + 1, 1, logRows.length, LOG_HEADER.length).setValues(logRows);
       return { count: codes.length, at: at, by: by, liqCode: liqCode };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
@@ -664,19 +737,27 @@ function fixPhotoSharing() {
   try {
     requireAdmin_();
     var ids = {};
-    var ph = readPhotosAll_();
-    for (var i = 0; i < ph.length; i++) {
-      var id = String(ph[i][2] || '').trim() || driveIdFromUrl_(ph[i][2]);
-      if (id) ids[id] = true;
+    var phSh = getSheet_('Photos', PHOTOS_HEADER);
+    var phLast = phSh.getLastRow();
+    if (phLast >= 2) {
+      var colC = phSh.getRange(2, 3, phLast - 1, 1).getValues();
+      for (var i = 0; i < colC.length; i++) {
+        var id = String(colC[i][0] || '').trim() || driveIdFromUrl_(colC[i][0]);
+        if (id) ids[id] = true;
+      }
     }
-    var r = readAllItems_();
-    for (var j = 0; j < r.items.length; j++) {
-      var a = String(r.items[j].photo_path_outer || '').trim();
-      var b = String(r.items[j].photo_path_product || '').trim();
-      var ia = (/^[a-zA-Z0-9_-]{10,}$/.test(a) ? a : driveIdFromUrl_(a));
-      var ib = (/^[a-zA-Z0-9_-]{10,}$/.test(b) ? b : driveIdFromUrl_(b));
-      if (ia) ids[ia] = true;
-      if (ib) ids[ib] = true;
+    var ish = getSheet_('Items', ITEMS_HEADER);
+    var ilast = ish.getLastRow();
+    if (ilast >= 2) {
+      var icols = ish.getRange(2, 5, ilast - 1, 2).getValues();
+      for (var j = 0; j < icols.length; j++) {
+        var a = String(icols[j][0] || '').trim();
+        var b = String(icols[j][1] || '').trim();
+        var ia = (/^[a-zA-Z0-9_-]{10,}$/.test(a) ? a : driveIdFromUrl_(a));
+        var ib = (/^[a-zA-Z0-9_-]{10,}$/.test(b) ? b : driveIdFromUrl_(b));
+        if (ia) ids[ia] = true;
+        if (ib) ids[ib] = true;
+      }
     }
     var shared = 0, domainOnly = false, failed = [];
     for (var fid in ids) {
@@ -720,14 +801,11 @@ function adminEditItem(p) {
       return fail('Đổi sang ' + (STATUS_LABEL[toStatus] || toStatus) + ' phải điền mã bill.');
     }
     return ok(withLock_(function () {
-      var r = readAllItems_();
-      var idx = -1;
-      for (var i = 0; i < r.items.length; i++) {
-        if (r.items[i].code === code) { idx = i; break; }
-      }
-      if (idx < 0) throw new Error('Không Có');
-      var cur = r.items[idx].status || 'chua_xu_ly';
-      var kind = r.items[idx].kind === 'Item' ? 'Item' : 'Box';
+      var f = findItemRow_(code);
+      if (f.row < 0) throw new Error('Không Có');
+      var it0 = rowsToItems_(f.sh.getRange(f.row, 1, 1, ITEMS_HEADER.length).getValues())[0];
+      var cur = it0.status || 'chua_xu_ly';
+      var kind = it0.kind === 'Item' ? 'Item' : 'Box';
       var need = (kind === 'Box') ? ['ngoai_quan', 'san_pham'] : ['san_pham'];
       var curPhotos = photosFor_(code);
       var keep = curPhotos.filter(function (x) { return delSlots.indexOf(String(x.slot)) < 0; });
@@ -757,16 +835,16 @@ function adminEditItem(p) {
         }
       }
       var editNotes = [];
-      if (desc !== null && desc !== String(r.items[idx].description || '')) {
-        editNotes.push('ADMIN Edit Mô tả: ' + String(r.items[idx].description || '') + ' => ' + desc);
+      if (desc !== null && desc !== String(it0.description || '')) {
+        editNotes.push('ADMIN Edit Mô tả: ' + String(it0.description || '') + ' => ' + desc);
       }
-      if (note !== null && note !== String(r.items[idx].note || '')) {
-        editNotes.push('ADMIN Edit Ghi chú: ' + String(r.items[idx].note || '') + ' => ' + note);
+      if (note !== null && note !== String(it0.note || '')) {
+        editNotes.push('ADMIN Edit Ghi chú: ' + String(it0.note || '') + ' => ' + note);
       }
       var photoChanged = (delSlots.length || placed.length) ? true : false;
-      var row = idx + 2;
-      if (desc !== null) r.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
-      if (note !== null) r.sh.getRange(row, 12, 1, 1).setValues([[note]]);
+      var row = f.row;
+      if (desc !== null) f.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
+      if (note !== null) f.sh.getRange(row, 12, 1, 1).setValues([[note]]);
       if (delSlots.length) {
         var ph = getSheet_('Photos', PHOTOS_HEADER);
         var last = ph.getLastRow();
@@ -787,32 +865,38 @@ function adminEditItem(p) {
       });
       if (placed.length) {
         var folder = monthFolder_();
-        var ph2 = getSheet_('Photos', PHOTOS_HEADER);
+        var newPh = [];
         for (var w = 0; w < placed.length; w++) {
           var f = folder.createFile(dataUrlToBlob_(placed[w][1], code + '.' + placed[w][0] + '.jpg'));
           tryShareFile_(f);
-          ph2.appendRow([code, placed[w][0], f.getId(), "'" + at]);
+          newPh.push([code, placed[w][0], f.getId(), "'" + at]);
           if (placed[w][0] === 'ngoai_quan') outerId = f.getId();
           if (placed[w][0] === 'san_pham') productId = f.getId();
         }
+        var ph2 = getSheet_('Photos', PHOTOS_HEADER);
+        ph2.getRange(ph2.getLastRow() + 1, 1, newPh.length, PHOTOS_HEADER.length).setValues(newPh);
       }
-      r.sh.getRange(row, 5, 1, 2).setValues([[outerId, productId]]);
+      f.sh.getRange(row, 5, 1, 2).setValues([[outerId, productId]]);
       var finalSt = cur;
+      var newLogs = [];
       if (toStatus && toStatus !== cur) {
         if (toStatus === 'chua_xu_ly') {
-          r.sh.getRange(row, 7, 1, 1).setValues([[toStatus]]);
+          f.sh.getRange(row, 7, 1, 1).setValues([[toStatus]]);
         } else {
-          r.sh.getRange(row, 7, 1, 3).setValues([[toStatus, r.items[idx].status_note || '', bill]]);
+          f.sh.getRange(row, 7, 1, 3).setValues([[toStatus, it0.status_note || '', bill]]);
         }
-        getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, cur, toStatus, 'ADMIN đổi trạng thái', bill, reason]);
+        newLogs.push(["'" + at, code, cur, toStatus, 'ADMIN đổi trạng thái', bill, reason]);
         finalSt = toStatus;
       }
-      var log = getSheet_('ActivityLog', LOG_HEADER);
       for (var n = 0; n < editNotes.length; n++) {
-        log.appendRow(["'" + at, code, finalSt, finalSt, by, editNotes[n], '']);
+        newLogs.push(["'" + at, code, finalSt, finalSt, by, editNotes[n], '']);
       }
       if (photoChanged) {
-        log.appendRow(["'" + at, code, finalSt, finalSt, by, 'ADMIN chỉnh sửa Ảnh', '']);
+        newLogs.push(["'" + at, code, finalSt, finalSt, by, 'ADMIN chỉnh sửa Ảnh', '']);
+      }
+      if (newLogs.length) {
+        var logSh = getSheet_('ActivityLog', LOG_HEADER);
+        logSh.getRange(logSh.getLastRow() + 1, 1, newLogs.length, LOG_HEADER.length).setValues(newLogs);
       }
       return { code: code };
     }));
@@ -828,29 +912,25 @@ function editItem(p) {
     var note = (p.note == null) ? null : String(p.note).trim();
     if (desc !== null && !desc) return fail('Vui lòng nhập mô tả sản phẩm.');
     return ok(withLock_(function () {
-      var r = readAllItems_();
-      var idx = -1;
-      for (var i = 0; i < r.items.length; i++) {
-        if (r.items[i].code === code) { idx = i; break; }
-      }
-      if (idx < 0) throw new Error('Không Có');
-      var cur = r.items[idx].status || 'chua_xu_ly';
+      var f = findItemRow_(code);
+      if (f.row < 0) throw new Error('Không Có');
+      var it = rowsToItems_(f.sh.getRange(f.row, 1, 1, ITEMS_HEADER.length).getValues())[0];
+      var cur = it.status || 'chua_xu_ly';
       var notes = [];
-      if (desc !== null && desc !== String(r.items[idx].description || '')) {
-        notes.push('Edit Mô tả: ' + String(r.items[idx].description || '') + ' => ' + desc);
+      if (desc !== null && desc !== String(it.description || '')) {
+        notes.push('Edit Mô tả: ' + String(it.description || '') + ' => ' + desc);
       }
-      if (note !== null && note !== String(r.items[idx].note || '')) {
-        notes.push('Edit Ghi chú: ' + String(r.items[idx].note || '') + ' => ' + note);
+      if (note !== null && note !== String(it.note || '')) {
+        notes.push('Edit Ghi chú: ' + String(it.note || '') + ' => ' + note);
       }
       if (!notes.length) throw new Error('Không có gì thay đổi.');
-      var row = idx + 2;
-      if (desc !== null) r.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
-      if (note !== null) r.sh.getRange(row, 12, 1, 1).setValues([[note]]);
+      var row = f.row;
+      if (desc !== null) f.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
+      if (note !== null) f.sh.getRange(row, 12, 1, 1).setValues([[note]]);
       var at = nowStr_(), by = currentEmail_();
-      var log = getSheet_('ActivityLog', LOG_HEADER);
-      for (var n = 0; n < notes.length; n++) {
-        log.appendRow(["'" + at, code, cur, cur, by, notes[n], '']);
-      }
+      var noteRows = notes.map(function (t) { return ["'" + at, code, cur, cur, by, t, '']; });
+      var logSh = getSheet_('ActivityLog', LOG_HEADER);
+      logSh.getRange(logSh.getLastRow() + 1, 1, noteRows.length, LOG_HEADER.length).setValues(noteRows);
       return { code: code };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }

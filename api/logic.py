@@ -103,7 +103,7 @@ BULK_MAX = 10
 
 
 def next_seq_reserved(existing_codes, printed_codes, kind, dt=None):
-    # KHỚP Code.gs nextSeqBoth_: seq tính trên cả Items + tab PrintedCodes
+    # KHỚP Code.gs nextSeqBothCodes_: seq tính trên cả Items + tab PrintedCodes
     # (mã bulk đã giữ chỗ thì Create sau nhảy qua, không cấp lại).
     prefix = f"{'Box' if kind == 'Box' else 'Item'}.{date_part(dt)}."
     return max(_max_seq(existing_codes, prefix), _max_seq(printed_codes, prefix)) + 1

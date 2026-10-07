@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 
-// KHỚP server: Code.gs previewBulkCodes/nextSeqBoth_ + api/logic.py bulk_codes.
+// KHỚP server: Code.gs previewBulkCodes/nextSeqBothCodes_ + api/logic.py bulk_codes.
 // Client chỉ render dãy server trả về; test này khóa format + logic giữ chỗ.
 const BULK_MAX = 10;
 
