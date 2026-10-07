@@ -298,10 +298,20 @@ header .hact{grid-column:3}
 #leaveModal .sheet{height:auto}
 #createModal .sheet,#printKindModal .sheet{max-width:440px;width:100%;height:auto;max-height:92%;border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(23,43,72,.35)}
 #editModal .sheet{max-width:440px;width:100%;height:auto;max-height:92%;border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(23,43,72,.35)}
-.ehead{display:flex;align-items:flex-start;gap:10px}
-.ehead h2{flex:1;min-width:0}
-.ehead .hact{display:flex;gap:2px;flex:none}
-.ehead .hact .lnk{white-space:nowrap;padding-top:2px}
+.ehead{display:flex;align-items:center;gap:10px}
+.ehead h2{flex:1;min-width:0;margin:0}
+.ehead .hact{display:flex;gap:6px;flex:none;align-items:center}
+.ehead .hact .lnk{white-space:nowrap}
+.btnBack{border:1px solid #dfe5ee;background:#fff;color:#5b6572;border-radius:99px;padding:8px 13px;font-size:12px;font-weight:800;min-height:36px;white-space:nowrap}
+.btnClose{border:1px solid #172b48;background:#eef1f6;color:#172b48;border-radius:99px;padding:8px 15px;font-size:12px;font-weight:800;min-height:36px;box-shadow:0 1px 4px rgba(23,43,72,.18);white-space:nowrap}
+.btnBack:active,.btnClose:active{transform:scale(.96)}
+#btnCloseDetail,#rgX{border:1px solid #c9d2e0!important;background:#eef1f6!important;color:#172b48!important;border-radius:10px!important;box-shadow:0 1px 4px rgba(23,43,72,.15)}
+#createModal.done .ph img{height:56px}
+#createModal.done .camSlot{padding:12px 8px;font-size:12px}
+#createModal.done .camSlot .big{font-size:22px}
+#createResult{border:1px solid var(--line);border-radius:13px;background:#f8fafc;padding:10px;margin-top:8px}
+#createQR img,#createQR canvas,#createQR table{width:120px!important;height:120px!important}
+#createQRCode{text-align:center;font-size:12px}
 @media(min-width:900px){#editModal .sheet{max-width:760px}#editPhotos{display:grid;grid-template-columns:1fr 1fr;gap:10px}#editPhotos>div{margin-bottom:0!important}}
 
 /* ===== mobile-fix (mockup v2-v6) ===== */
@@ -550,7 +560,7 @@ header{flex-wrap:wrap}
 </div></div></div>
 
 <div class="modal" id="editModal"><div class="sheet">
-<div class="ehead"><h2 id="editTitle">Edit</h2><div class="hact"><button id="btnBackEdit" class="lnk">‹ Quay lại</button><button id="btnCloseEdit" class="lnk">Đóng</button></div></div>
+<div class="ehead"><h2 id="editTitle">Edit</h2><div class="hact"><button id="btnBackEdit" class="btnBack">‹ Quay lại</button><button id="btnCloseEdit" class="btnClose">Đóng</button></div></div>
 <div class="csub">Điền sẵn thông tin như lúc Create. Sửa xong bấm Confirm để lưu.</div>
 <div class="field"><label>MÃ (giữ nguyên khi lưu)</label><input id="editCode" class="mono" readonly></div>
 <div id="editStatusWrap" style="display:none">
@@ -568,7 +578,7 @@ header{flex-wrap:wrap}
 </div></div>
 
 <div class="modal" id="createModal"><div class="sheet">
-<h2 id="createTitle">Create New Task</h2>
+<div class="ehead"><h2 id="createTitle">Create New Task</h2><div class="hact"><button id="btnBackCreate" class="btnBack" style="display:none">‹ Quay lại</button><button id="btnCloseCreate" class="btnClose">Đóng</button></div></div>
 <div class="csub" id="createSub">Select a task type to start the process.</div>
 <div id="stepTask">
 <div class="opt" id="optLiqGo"><div><b>Thanh Lý</b><small>Gom đơn tồn vào lô thanh lý</small></div><span class="chev">›</span></div>
@@ -601,8 +611,6 @@ header{flex-wrap:wrap}
 <div class="mono" id="createQRCode" style="font-weight:800;margin-top:8px;word-break:break-all"></div>
 </div></div>
 </div>
-<button id="btnBackCreate" class="lnk" style="display:none">‹ Quay lại</button>
-<button id="btnCloseCreate" class="lnk" style="margin-top:8px">Đóng</button>
 </div></div>
 
 <div class="modal" id="printKindModal"><div class="sheet">
@@ -610,7 +618,7 @@ header{flex-wrap:wrap}
 <div class="csub">Server tự sinh 10 mã liên tục rồi tự in, không cần xác nhận.</div>
 <div class="opt" id="optPrintBox"><div><b>BOX</b><small>Nguyên thùng — mã Box.…</small></div><span class="chev">›</span></div>
 <div class="opt" id="optPrintItem"><div><b>ITEM</b><small>Tách lẻ — mã Item.…</small></div><span class="chev">›</span></div>
-<button id="btnClosePrintKind" class="lnk" style="width:100%">Đóng</button>
+<button id="btnClosePrintKind" class="btnClose" style="width:100%">Đóng</button>
 </div></div>
 
 <div class="modal" id="leaveModal"><div class="sheet" style="max-width:360px;text-align:center"><p id="leaveText" style="font-size:13.5px;font-weight:700">Bạn muốn hủy task này chứ?</p><div class="btnrow"><button id="btnLeaveOk" class="primary">Confirm</button><button id="btnLeaveCancel">Cancel</button></div></div></div>
@@ -1234,7 +1242,7 @@ msg('msgDetail',e.message||'Lỗi resolve');
 function showCreateQR(code){
 document.getElementById('createQRCode').textContent=code;
 var q=document.getElementById('createQR');q.innerHTML='';
-try{if(typeof QRCode!=='undefined'){new QRCode(q,{text:code,width:200,height:200});}}catch(e){}
+try{if(typeof QRCode!=='undefined'){new QRCode(q,{text:code,width:120,height:120});}}catch(e){}
 document.getElementById('createResult').style.display='block';
 }
 function doPrintMany(codes){
@@ -1350,8 +1358,7 @@ state.lastCreated=r.data.code;
 var codeInput=document.getElementById(isBox?'boxCode':'itemCode');
 if(codeInput)codeInput.value=r.data.code;
 state.codeEdit[kindKey]=false;paintCodeEdit_(kindKey);
-if(r.data.shareOk===false)msg('msgCreate','Đã tạo '+r.data.code+' — ảnh chưa share được, báo ADMIN kiểm tra quyền share Drive.');
-else msg('msgCreate','Đã tạo '+r.data.code,true);
+msg('msgCreate','Đã tạo '+r.data.code+' ✓',true);
 if(r.data.item)upsertItem(r.data.item);
 else await loadGrid({silent:true});
 renderGrid();renderSummary();
@@ -1360,6 +1367,7 @@ showCreateQR(r.data.code);
 }catch(e){msg('msgCreate',e.message||'Lỗi tạo mã');}
 }
 function setCreateDoneUI(done){
+var cm=document.getElementById('createModal');if(cm)cm.classList.toggle('done',!!done);
 var b1=document.getElementById('btnBoxDone'),b2=document.getElementById('btnItemDone');
 var a1=document.getElementById('btnBoxAgain'),a2=document.getElementById('btnItemAgain');
 if(b1){b1.disabled=!!done;b1.textContent=done?'Đã lưu ✓':'Confirm';}
