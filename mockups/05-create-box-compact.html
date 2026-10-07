@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Mockup 05 — Create Box ảnh gọn (mobile)</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Roboto,Arial;background:#f5f6f9;color:#303844}
+.wrap{max-width:980px;margin:0 auto;padding:14px 14px 40px}
+h1{font-size:16px;color:#172b48;margin:6px 0 4px}
+.sub{font-size:12.5px;color:#5b6572;margin:0 0 10px;line-height:1.6}
+.ctrl{position:sticky;top:0;z-index:5;background:#fff;border:1px solid #e2e8f1;border-radius:14px;padding:10px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.ctrl label{font-size:11.5px;font-weight:800;color:#172b48;display:flex;align-items:center;gap:6px}
+.ctrl input[type=range]{width:110px}
+.ctrl .val{font-size:11.5px;font-weight:800;color:#ee4d2d;min-width:52px}
+.ctrl button{border:1px solid #e2e8f1;background:#fff;border-radius:99px;padding:7px 13px;font-size:11.5px;font-weight:800;color:#172b48}
+.ctrl button.on{background:#172b48;color:#fff;border-color:#172b48}
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:840px){.gallery{grid-template-columns:1fr}}
+.phone{width:100%;max-width:390px;margin:0 auto;background:#fff;border:1px solid #e2e8f1;border-radius:28px;overflow:hidden;box-shadow:0 10px 30px rgba(23,43,72,.12)}
+.pstatus{display:flex;justify-content:space-between;padding:10px 18px 2px;font-size:12px;font-weight:800;color:#172b48}
+.ptag{text-align:center;font-size:11px;font-weight:800;padding:8px;margin:0}
+.ptag.old{background:#fff1e6;color:#b23c1e}
+.ptag.new{background:#e9faf0;color:#0d9a50}
+.sheet{padding:10px 12px 14px;max-height:560px;overflow:hidden}
+.ehead{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.ehead h2{flex:1;margin:0;font-size:14px;color:#172b48}
+.ehead .hact{display:flex;gap:6px}
+.ehead .hact button{border-radius:99px;padding:7px 12px;font-size:11.5px;font-weight:800}
+.ehead .back{border:1px solid #dfe5ee;background:#fff}
+.ehead .close{border:1px solid #172b48;background:#eef1f6}
+.field{margin:8px 0}.field>label{display:block;font-size:10px;font-weight:800;color:#172b48;margin-bottom:5px}
+.coderow{display:flex;gap:8px}.coderow input{flex:1;border:1px solid #e2e8f1;border-radius:9px;padding:9px 10px;font-size:13px;font-family:ui-monospace,monospace}
+.coderow button{border:1px solid #e2e8f1;border-radius:9px;padding:0 14px;font-size:12px;font-weight:800}
+/* A: anh to xep chong */
+.phA{border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#e26a5a,#c0392b);border:1px solid #e2e8f1;position:relative;height:180px;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:700}
+.phA.teal{background:linear-gradient(135deg,#5ab3b3,#2e7f7f)}
+.phA .badge{position:absolute;left:8px;bottom:8px;background:rgba(23,43,72,.75);color:#fff;font-size:10px;font-weight:700;border-radius:7px;padding:3px 8px}
+.delA{width:100%;margin:6px 0 10px;border:1px solid #e2e8f1;background:#fff;border-radius:9px;padding:9px;font-size:12px;font-weight:700}
+/* B: anh gon dang luoi */
+.slotGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.thumbB{position:relative;border-radius:10px;overflow:hidden;border:1px solid #e2e8f1;background:linear-gradient(135deg,#e26a5a,#c0392b);height:var(--th,92px);display:grid;place-items:center;color:#fff;font-size:10px;font-weight:800}
+.thumbB.teal{background:linear-gradient(135deg,#5ab3b3,#2e7f7f)}
+.thumbB.empty{background:#fff5f0;border:1.5px dashed #ffd0c0;color:#d4573a;font-size:20px}
+.thumbB .cap{position:absolute;left:0;right:0;bottom:0;background:rgba(23,43,72,.72);color:#fff;font-size:8px;font-weight:700;padding:2px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thumbB .x{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(23,43,72,.8);color:#fff;font-size:12px;font-weight:800;line-height:1}
+textarea,input.txt{width:100%;border:1px solid #e2e8f1;border-radius:9px;padding:9px 10px;font-size:13px;font-family:inherit}
+.row2{display:flex;gap:8px;margin-top:8px}
+.row2 button{flex:1;border:1px solid #e2e8f1;background:#fff;border-radius:10px;padding:10px;font-size:12.5px;font-weight:800}
+.row2 button.primary{background:#ee4d2d;border-color:#ee4d2d;color:#fff}
+.hint{font-size:10.5px;font-weight:700;text-align:center;margin:6px 0 0}
+.hint.bad{color:#ee4d2d}.hint.good{color:#0d9a50}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#172b48;color:#fff;font-size:12px;font-weight:700;border-radius:99px;padding:9px 16px;display:none;z-index:50}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Mockup 05 — Create Box chụp xong ảnh gọn, bảng không cuộn (mobile 390px)</h1>
+<p class="sub"><b>A — hiện tại:</b> mỗi ảnh 210px xếp chồng + nút Xóa full-width → chụp 3 ảnh là bảng dài phải cuộn.<br><b>B — đề xuất:</b> ảnh đã chụp thu thành thumb 1 hàng 3 cột (bấm <b>✕</b> góc để xóa), ô chưa chụp là nút thêm gọn cùng hàng — cả bảng vừa 1 khung, không cuộn.</p>
+<div class="ctrl">
+<label>Thumb <input type="range" id="thR" min="72" max="120" value="92" step="4"><span class="val" id="thV">92px</span></label>
+<button id="f1" type="button">1 ảnh</button>
+<button id="f2" type="button">2 ảnh</button>
+<button id="f3" class="on" type="button">3 ảnh</button>
+</div>
+<div class="gallery">
+<div class="phone"><div class="pstatus"><span>00:04</span><span>48</span></div>
+<p class="ptag old">A — HIỆN TẠI (ảnh to xếp chồng, cuộn dài)</p>
+<div class="sheet" style="overflow:auto"><div class="ehead"><h2>Create — Box</h2></div>
+<div class="field"><label>MÃ BOX (server cấp khi lưu)</label><div class="coderow"><input value="Box.08-10-2026.1" readonly><button>Sửa</button></div></div>
+<div class="field"><label>Ảnh *</label>
+<div class="phA">ảnh chụp<span class="badge">Ảnh ngoại quan *</span></div><button class="delA">Xóa Ảnh ngoại quan</button>
+<div class="phA teal">ảnh chụp<span class="badge">Ảnh sản phẩm *</span></div><button class="delA">Xóa Ảnh sản phẩm</button>
+<div class="phA teal">ảnh chụp<span class="badge">Ảnh bổ sung</span></div><button class="delA">Xóa Ảnh bổ sung</button>
+</div>
+<div style="height:200px;display:grid;place-items:center;color:#97a0ad;font-size:11px">… Mô tả + Ghi chú + Confirm nằm dưới — phải cuộn ↓ …</div>
+</div><p class="hint bad">↕ 3 ảnh × 180px + 3 nút Xóa → cuộn dài</p></div></div>
+<div class="phone"><div class="pstatus"><span>00:04</span><span>48</span></div>
+<p class="ptag new">B — ĐỀ XUẤT (thumb 1 hàng, không cuộn)</p>
+<div class="sheet"><div class="ehead"><h2>Create — Box</h2><div class="hact"><button class="back">‹ Quay lại</button><button class="close">Đóng</button></div></div>
+<div class="field"><label>MÃ BOX (server cấp khi lưu)</label><div class="coderow"><input value="Box.08-10-2026.1" readonly><button>Sửa</button></div></div>
+<div class="field"><label>Ảnh *</label><div class="slotGrid" id="gridB"></div></div>
+<div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea rows="2" placeholder="VD: Thùng 12 áo thun hoàn…"></textarea></div>
+<div class="field"><label>GHI CHÚ</label><input class="txt" placeholder="Nơi để, bù đơn hàng…"></div>
+<div class="row2"><button type="button" onclick="toast('Demo: In Mã')">🖨 In Mã</button><button class="primary" type="button" onclick="toast('Demo: Confirm')">Confirm</button></div>
+</div><p class="hint good">✓ thumb <span id="thV2">92</span>px 1 hàng + form gọn, không cuộn</p></div></div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function toast(t){var e=document.getElementById('toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(function(){e.style.display='none';},1500);}
+var N=3,labels=['Ngoại quan','Sản phẩm','Bổ sung'];
+function render(){var g=document.getElementById('gridB');g.innerHTML='';for(var i=0;i<3;i++){var d=document.createElement('div');if(i<N){d.className='thumbB'+(i>0?' teal':'');d.innerHTML='ảnh<span class="cap">'+labels[i]+'</span><button class="x" type="button">✕</button>';(function(idx,el){el.querySelector('.x').onclick=function(ev){ev.stopPropagation();toast('Demo: Xóa '+labels[idx]);};})(i,d);}else{d.className='thumbB empty';d.innerHTML='📷';d.onclick=function(){toast('Demo: Chụp ảnh');};}g.appendChild(d);}}
+var thR=document.getElementById('thR');
+function paint(){document.getElementById('thV').textContent=thR.value+'px';document.getElementById('thV2').textContent=thR.value;document.getElementById('gridB').style.setProperty('--th',thR.value+'px');}
+thR.addEventListener('input',paint);
+[['f1',1],['f2',2],['f3',3]].forEach(function(p){document.getElementById(p[0]).onclick=function(){N=p[1];['f1','f2','f3'].forEach(function(id){document.getElementById(id).classList.remove('on');});this.classList.add('on');render();};});
+paint();render();
+</script>
+</body>
+</html>
