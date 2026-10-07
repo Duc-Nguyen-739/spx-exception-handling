@@ -199,7 +199,7 @@ async function main() {
     const R = rs.err ? null : JSON.parse(rs.value);
     check('Resolve đủ bill → token Resolve + mốc bill', !!(rsOk && R && R.token), R && R.calls);
 
-    // Edit: đơn Resolve có 2 ô, bill bắt buộc, Confirm ghi ADMIN (không email)
+    // Edit ADMIN: đủ 3 ô trạng thái + ô lý do, bill bắt buộc, Confirm ghi ADMIN (không email)
     await evalIn(ws, `document.getElementById('btnEditDetail').click()`);
     await waitUntil(ws, "document.getElementById('editModal').classList.contains('open')", 5000);
     const eo = await evalIn(ws, `JSON.stringify({
@@ -207,11 +207,12 @@ async function main() {
       desc: document.getElementById('editDesc').value
     })`);
     const E = eo.err ? null : JSON.parse(eo.value);
-    check('Edit điền sẵn + 2 ô Lưu kho/Thanh Lý', !!(E && E.opts === 'Lưu kho/Thanh Lý' && /áo thun/.test(E.desc || '')), E && (E.opts + ' / ' + E.desc));
+    check('Edit điền sẵn + 3 ô Lưu kho/Resolve/Thanh Lý', !!(E && E.opts === 'Lưu kho/Resolve/Thanh Lý' && /áo thun/.test(E.desc || '')), E && (E.opts + ' / ' + E.desc));
     await evalIn(ws, `(function(){
       var g = document.getElementById('editStatGrid').children;
       for (var i = 0; i < g.length; i++) if (g[i].textContent === 'Lưu kho') g[i].click();
     })()`);
+    await evalIn(ws, `document.getElementById('editReason').value='Thao tác sai'`);
     await evalIn(ws, `document.getElementById('btnConfirmEdit').click()`);
     const edOk = await waitUntil(ws, "document.getElementById('detailHist').innerText.includes('ADMIN đổi trạng thái')"
       + " && document.querySelectorAll('#detailHist .tl.pending').length === 0", 8000);
@@ -235,7 +236,31 @@ async function main() {
     const D = ed.err ? null : JSON.parse(ed.value);
     check('Edit về Lưu kho → mốc ADMIN đổi trạng thái', !!edOk, D && ('adminEditItem x' + D.editCalls));
     check('Mốc Edit không lộ email ADMIN', !!(D && /ADMIN đổi trạng thái/.test(D.adminEntry) && !/@/.test(D.adminEntry)), D && D.adminEntry.replace(/\n/g, ' | '));
+    check('Mốc đổi trạng thái hiện Lý do đã điền', !!/Lý do:[\s\S]*Thao tác sai/.test(D.adminEntry), D && D.adminEntry.replace(/\n/g, ' | ').slice(0, 160));
     check('Mốc Resolve nút thường vẫn hiện email', !!(D && /@/.test(D.resolveEntry)), D && D.resolveEntry.replace(/\n/g, ' | ').slice(0, 120));
+
+    // STAFF: nút Edit vẫn hiện, chỉ sửa Mô tả + Ghi chú qua editItem
+    await evalIn(ws, `state.me={email:'son.nguyenngoc@spxexpress.com',role:'STAFF'};openDetail('Box.06-10-2026.1')`);
+    await waitUntil(ws, "document.getElementById('detailTitle').textContent.includes('Box.06-10-2026.1')", 5000);
+    await evalIn(ws, `document.getElementById('btnEditDetail').click()`);
+    await waitUntil(ws, "document.getElementById('editModal').classList.contains('open')", 5000);
+    const stf = await evalIn(ws, `JSON.stringify({
+      status: document.getElementById('editStatusWrap').style.display,
+      photos: document.getElementById('editPhotosWrap').style.display,
+      hint: document.getElementById('editStaffHint').style.display
+    })`);
+    const ST = stf.err ? null : JSON.parse(stf.value);
+    check('STAFF: ẩn ô trạng thái/ảnh, hiện gợi ý quyền thường', !!(ST && ST.status === 'none' && ST.photos === 'none' && ST.hint === 'block'), stf.value);
+    await evalIn(ws, `document.getElementById('editDesc').value='Thùng áo thun STAFF sửa';document.getElementById('btnConfirmEdit').click()`);
+    const stOk = await waitUntil(ws, "document.getElementById('detailHist').innerText.includes('Edit Mô tả')"
+      + " && document.querySelectorAll('#detailHist .tl.pending').length === 0", 8000);
+    const st2 = await evalIn(ws, `JSON.stringify({
+      hist: document.getElementById('detailHist').innerText,
+      editCalls: (window.__MOCK_CALLS__ || []).filter(function(c){return c[0]==='editItem';}).length
+    })`);
+    const S2 = st2.err ? null : JSON.parse(st2.value);
+    check('STAFF: Confirm ghi mốc email + Edit cũ => mới', !!(stOk && S2 && /son\.nguyenngoc@spxexpress\.com/.test(S2.hist) && S2.editCalls >= 1), S2 && ('editItem x' + S2.editCalls));
+    await evalIn(ws, `state.me={email:'admin.mock@spxexpress.com',role:'ADMIN'}`);
 
     await evalIn(ws, `openLightbox('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','Demo')`);
     const lbOk = await waitUntil(ws, "document.getElementById('lightbox').classList.contains('open')", 3000);

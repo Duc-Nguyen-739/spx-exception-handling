@@ -14,7 +14,7 @@ var LIST_LIMIT = 150; // listItems/listFull chỉ đọc tối đa 150 dòng đ�
 var ITEMS_HEADER = ['code', 'created_at', 'description', 'kind', 'photo_path_outer',
   'photo_path_product', 'status', 'status_note', 'mvdn', 'trip', 'reporter', 'note'];
 var PHOTOS_HEADER = ['code', 'slot', 'drive_file_id', 'uploaded_at'];
-var LOG_HEADER = ['at', 'code', 'from_status', 'to_status', 'by', 'note'];
+var LOG_HEADER = ['at', 'code', 'from_status', 'to_status', 'by', 'note', 'reason'];
 var PRINTED_HEADER = ['code', 'printed_at', 'printed_by', 'kind'];
 
 // KHỚP import: scripts/import-csv.js STATUS_RULES (copy, không tự bịa thêm).
@@ -332,7 +332,8 @@ function logCols_(sh, width) {
   return {
     code: col(['code']), at: col(['at']),
     from: col(['from_status', 'from']), to: col(['to_status', 'to']),
-    by: col(['by']), note: col(['note'])
+    by: col(['by']), note: col(['note']),
+    reason: col(['reason', 'ly_do', 'lydo'])
   };
 }
 
@@ -344,7 +345,8 @@ function logEntry_(row, c, code) {
     at: c.at >= 0 ? normAt_(cellText_(row[c.at]), code) : '',
     code: code, from: from, to: to,
     by: c.by >= 0 ? String(row[c.by] || '') : '',
-    note: note, bill: billOf_(from, to, note)
+    note: note, bill: billOf_(from, to, note),
+    reason: c.reason >= 0 ? String(row[c.reason] || '') : ''
   };
 }
 
@@ -566,7 +568,7 @@ function create_(kind, p) {
       ph.appendRow([code, jobs[k][0], ids[jobs[k][0]], "'" + at]);
     }
 
-    getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, '', 'chua_xu_ly', by, 'Tạo mới']);
+    getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, '', 'chua_xu_ly', by, 'Tạo mới', '']);
     var created = { code: code, created_at: at, description: desc, kind: kind, photo_path_outer: outerId, photo_path_product: productId, status: 'chua_xu_ly', status_note: '', mvdn: '', trip: '', reporter: by, note: String(p.note || '').trim() };
     return { code: code, shareOk: shareOk, item: toClient_(created) };
   });
@@ -604,7 +606,7 @@ function resolveItem(code, bill) {
       var by = currentEmail_();
       // G:I 1 lần ghi (status, giữ status_note, mvdn). Không đè reporter/created_at.
       r.sh.getRange(idx + 2, 7, 1, 3).setValues([['da_tim_bill', r.items[idx].status_note || '', bill]]);
-      getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, cur, 'da_tim_bill', by, bill]);
+      getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, cur, 'da_tim_bill', by, bill, '']);
       return { code: code, status: 'da_tim_bill', at: at, by: by };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
@@ -647,7 +649,7 @@ function liquidateBatch(codes, liqCode) {
       sh.getRange(2, 1, vals.length, ITEMS_HEADER.length).setValues(vals);
       var log = getSheet_('ActivityLog', LOG_HEADER);
       for (var m = 0; m < codes.length; m++) {
-        log.appendRow(["'" + at, codes[m], 'chua_xu_ly', 'thanh_ly', by, liqCode]);
+        log.appendRow(["'" + at, codes[m], 'chua_xu_ly', 'thanh_ly', by, liqCode, '']);
       }
       return { count: codes.length, at: at, by: by, liqCode: liqCode };
     }));
@@ -706,6 +708,7 @@ function adminEditItem(p) {
     var adds = (p.addPhotos || []).filter(Boolean);
     var toStatus = p.toStatus ? String(p.toStatus) : '';
     var bill = String(p.bill || '').trim();
+    var reason = String(p.reason || '').trim();
     if (desc !== null && !desc) return fail('Vui lòng nhập mô tả sản phẩm.');
     if (adds.length > 3) return fail('Tối đa 3 ảnh.');
     if (toStatus && ['chua_xu_ly', 'da_tim_bill', 'thanh_ly'].indexOf(toStatus) < 0) return fail('Trạng thái không hợp lệ.');
@@ -749,10 +752,14 @@ function adminEditItem(p) {
           throw new Error(kind === 'Box' ? 'Box cần đủ Ảnh ngoại quan + Ảnh sản phẩm.' : 'Item cần Ảnh sản phẩm.');
         }
       }
-      var changed = [];
-      if (desc !== null && desc !== String(r.items[idx].description || '')) changed.push('Mô tả sản phẩm');
-      if (note !== null && note !== String(r.items[idx].note || '')) changed.push('Ghi chú');
-      if (delSlots.length || placed.length) changed.push('Ảnh');
+      var editNotes = [];
+      if (desc !== null && desc !== String(r.items[idx].description || '')) {
+        editNotes.push('ADMIN Edit Mô tả: ' + String(r.items[idx].description || '') + ' => ' + desc);
+      }
+      if (note !== null && note !== String(r.items[idx].note || '')) {
+        editNotes.push('ADMIN Edit Ghi chú: ' + String(r.items[idx].note || '') + ' => ' + note);
+      }
+      var photoChanged = (delSlots.length || placed.length) ? true : false;
       var row = idx + 2;
       if (desc !== null) r.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
       if (note !== null) r.sh.getRange(row, 12, 1, 1).setValues([[note]]);
@@ -793,11 +800,52 @@ function adminEditItem(p) {
         } else {
           r.sh.getRange(row, 7, 1, 3).setValues([[toStatus, r.items[idx].status_note || '', bill]]);
         }
-        getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, cur, toStatus, 'ADMIN đổi trạng thái', bill]);
+        getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, cur, toStatus, 'ADMIN đổi trạng thái', bill, reason]);
         finalSt = toStatus;
       }
-      if (changed.length) {
-        getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, finalSt, finalSt, by, 'ADMIN chỉnh sửa ' + changed.join(', ')]);
+      var log = getSheet_('ActivityLog', LOG_HEADER);
+      for (var n = 0; n < editNotes.length; n++) {
+        log.appendRow(["'" + at, code, finalSt, finalSt, by, editNotes[n], '']);
+      }
+      if (photoChanged) {
+        log.appendRow(["'" + at, code, finalSt, finalSt, by, 'ADMIN chỉnh sửa Ảnh', '']);
+      }
+      return { code: code };
+    }));
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function editItem(p) {
+  try {
+    p = p || {};
+    var code = String(p.code || '').trim();
+    if (!code) return fail('Thiếu mã đơn.');
+    var desc = (p.description == null) ? null : String(p.description).trim();
+    var note = (p.note == null) ? null : String(p.note).trim();
+    if (desc !== null && !desc) return fail('Vui lòng nhập mô tả sản phẩm.');
+    return ok(withLock_(function () {
+      var r = readAllItems_();
+      var idx = -1;
+      for (var i = 0; i < r.items.length; i++) {
+        if (r.items[i].code === code) { idx = i; break; }
+      }
+      if (idx < 0) throw new Error('Không Có');
+      var cur = r.items[idx].status || 'chua_xu_ly';
+      var notes = [];
+      if (desc !== null && desc !== String(r.items[idx].description || '')) {
+        notes.push('Edit Mô tả: ' + String(r.items[idx].description || '') + ' => ' + desc);
+      }
+      if (note !== null && note !== String(r.items[idx].note || '')) {
+        notes.push('Edit Ghi chú: ' + String(r.items[idx].note || '') + ' => ' + note);
+      }
+      if (!notes.length) throw new Error('Không có gì thay đổi.');
+      var row = idx + 2;
+      if (desc !== null) r.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
+      if (note !== null) r.sh.getRange(row, 12, 1, 1).setValues([[note]]);
+      var at = nowStr_(), by = currentEmail_();
+      var log = getSheet_('ActivityLog', LOG_HEADER);
+      for (var n = 0; n < notes.length; n++) {
+        log.appendRow(["'" + at, code, cur, cur, by, notes[n], '']);
       }
       return { code: code };
     }));

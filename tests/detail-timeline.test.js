@@ -48,6 +48,10 @@ function makeEnv(fakeItem, fakeHistory) {
       calls.push(['resolveItem', code, bill]);
       okCb({ ok: true, data: {} });
     },
+    editItem(p) {
+      calls.push(['editItem', p]);
+      okCb({ ok: true, data: { code: p.code } });
+    },
     adminEditItem(p) {
       calls.push(['adminEditItem', p]);
       okCb({ ok: true, data: { code: p.code } });
@@ -131,7 +135,7 @@ test('resolve: thiếu bill báo lỗi, đủ bill gọi server + ghi mốc kèm
   assert.ok(calls.filter((c) => c[0] === 'getItem').length >= 2);
 });
 
-test('edit: mở điền sẵn, đơn Resolve có 2 ô Lưu kho/Thanh Lý, bill bắt buộc', async () => {
+test('edit: ADMIN thấy đủ 3 ô trạng thái + ô lý do, bill bắt buộc', async () => {
   const item2 = { ...ITEM, status: 'da_tim_bill', statusLabel: 'Resolve' };
   const { sandbox, registry, calls, listeners } = makeEnv(item2, HIST);
   await listeners.DOMContentLoaded();
@@ -141,28 +145,49 @@ test('edit: mở điền sẵn, đơn Resolve có 2 ô Lưu kho/Thanh Lý, bill 
   assert.strictEqual(registry.editDesc.value, 'Thùng 12 áo thun');
   assert.strictEqual(registry.editNote.value, 'Kệ B2');
   const labels = registry.editStatGrid.children.map((b) => b.textContent);
-  assert.deepStrictEqual(labels, ['Lưu kho', 'Thanh Lý']);
-  const thanhLy = registry.editStatGrid.children[1];
+  assert.deepStrictEqual(labels, ['Lưu kho', 'Resolve', 'Thanh Lý']);
+  const thanhLy = registry.editStatGrid.children[2];
   thanhLy.onclick();
   assert.strictEqual(registry.editBillWrap.style.display, 'block');
+  assert.strictEqual(registry.editReasonWrap.style.display, 'block');
   // Chưa điền bill -> chặn
   await registry.btnConfirmEdit.onclick();
   assert.match(String(registry.msgEdit.textContent), /mã bill/);
   assert.ok(!calls.some((c) => c[0] === 'adminEditItem'));
-  // Điền bill + đổi mô tả -> gọi server đúng payload
+  // Điền bill + lý do + đổi mô tả -> gọi server đúng payload
   registry.editBill.value = 'SPXVN777';
+  registry.editReason.value = 'Thao tác sai';
   registry.editDesc.value = 'Thùng 12 áo thun mới';
   await registry.btnConfirmEdit.onclick();
   const last = calls.filter((c) => c[0] === 'adminEditItem').pop();
   assert.strictEqual(last[1].code, 'Box.05-10-2026.1');
   assert.strictEqual(last[1].toStatus, 'thanh_ly');
   assert.strictEqual(last[1].bill, 'SPXVN777');
+  assert.strictEqual(last[1].reason, 'Thao tác sai');
   assert.strictEqual(last[1].description, 'Thùng 12 áo thun mới');
   assert.match(String(registry.msgEdit.textContent), /Đã lưu/);
   assert.strictEqual(registry.editModal._has('open'), false);
   const eh = registry.detailHist.innerHTML;
   assert.match(eh, /ADMIN đổi trạng thái/);
-  assert.ok(!eh.includes('a@spxexpress.com'));
+  assert.match(eh, /Lý do:/);
+  assert.match(eh, /Thao tác sai/);
+  assert.match(eh, /ADMIN Edit Mô tả: Thùng 12 áo thun =&gt; Thùng 12 áo thun mới/);
+});
+
+test('timeline: STAFF hiện email + Edit cũ => mới; ADMIN hiện ADMIN Edit; lý do trống thì ẩn', async () => {
+  const { sandbox, listeners } = makeEnv(ITEM, []);
+  await listeners.DOMContentLoaded();
+  const s = sandbox.tlHTML({ at: '10/06/2026 01:56:00', from: 'chua_xu_ly', to: 'chua_xu_ly', by: 'son.nguyenngoc@spxexpress.com', note: 'Edit Mô tả: Áo Cam => Áo xanh', bill: '', reason: '' });
+  assert.match(s, /son\.nguyenngoc@spxexpress\.com/);
+  assert.match(s, /Edit Mô tả: Áo Cam =&gt; Áo xanh/);
+  const a = sandbox.tlHTML({ at: '10/06/2026 01:56:00', from: 'chua_xu_ly', to: 'chua_xu_ly', by: 'a@spxexpress.com', note: 'ADMIN Edit Mô tả: Áo Cam => Áo xanh', bill: '', reason: '' });
+  assert.match(a, /ADMIN Edit Mô tả: Áo Cam =&gt; Áo xanh/);
+  assert.ok(!a.includes('a@spxexpress.com'));
+  const r = sandbox.tlHTML({ at: '06/10/2026 19:21:00', from: 'da_tim_bill', to: 'chua_xu_ly', by: 'ADMIN đổi trạng thái', note: '', bill: '', reason: 'Thao tác sai' });
+  assert.match(r, /Lý do:/);
+  assert.match(r, /Thao tác sai/);
+  const r0 = sandbox.tlHTML({ at: '06/10/2026 19:21:00', from: 'da_tim_bill', to: 'chua_xu_ly', by: 'ADMIN đổi trạng thái', note: '', bill: '', reason: '' });
+  assert.ok(!r0.includes('Lý do:'));
 });
 
 test('timeline: moc doi trang thai trong Edit hien ADMIN; moc nut thuong hien email', async () => {
@@ -234,13 +259,37 @@ test('mergeHist: server co roi thi xoa pending, chua co thi giu', async () => {
   assert.match(sandbox.nowClientStr(), /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/);
 });
 
-test('edit: đơn Lưu kho không có ô đổi trạng thái; không đổi gì thì không gọi server', async () => {
+test('edit: STAFF không thấy ô trạng thái/ảnh, chỉ sửa Mô tả + Ghi chú qua editItem', async () => {
   const { sandbox, registry, calls, listeners } = makeEnv(ITEM, HIST);
   await listeners.DOMContentLoaded();
   await sandbox.openDetail('Box.05-10-2026.1');
+  sandbox.state.me = { email: 'son.nguyenngoc@spxexpress.com', role: 'STAFF' };
   sandbox.openEdit();
+  assert.ok(registry.editModal._has('open'));
   assert.strictEqual(registry.editStatusWrap.style.display, 'none');
+  assert.strictEqual(registry.editPhotosWrap.style.display, 'none');
+  assert.strictEqual(registry.editStaffHint.style.display, 'block');
+  // Không đổi gì -> không gọi server
   await registry.btnConfirmEdit.onclick();
   assert.match(String(registry.msgEdit.textContent), /Không có gì thay đổi/);
+  assert.ok(!calls.some((c) => c[0] === 'editItem'));
+  // Đổi mô tả -> gọi editItem, timeline hiện email + Edit cũ => mới
+  registry.editDesc.value = 'Áo xanh';
+  await registry.btnConfirmEdit.onclick();
+  const last = calls.filter((c) => c[0] === 'editItem').pop();
+  assert.strictEqual(last[1].code, 'Box.05-10-2026.1');
+  assert.strictEqual(last[1].description, 'Áo xanh');
   assert.ok(!calls.some((c) => c[0] === 'adminEditItem'));
+  const eh = registry.detailHist.innerHTML;
+  assert.match(eh, /son\.nguyenngoc@spxexpress\.com/);
+  assert.match(eh, /Edit Mô tả: Thùng 12 áo thun =&gt; Áo xanh/);
+});
+
+test('edit: ADMIN cũng thấy ô trạng thái trên đơn Lưu kho', async () => {
+  const { sandbox, registry, listeners } = makeEnv(ITEM, HIST);
+  await listeners.DOMContentLoaded();
+  await sandbox.openDetail('Box.05-10-2026.1');
+  sandbox.openEdit();
+  assert.strictEqual(registry.editStatusWrap.style.display, 'block');
+  assert.strictEqual(registry.editStaffHint.style.display, 'none');
 });

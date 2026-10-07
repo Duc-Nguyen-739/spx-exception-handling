@@ -248,10 +248,27 @@ def can_delete_user(user_rows, target_email, me_email):
 
 
 def can_edit(role):
-    # Sua task (mo ta/anh): chi ADMIN, ke ca don da xong. STAFF khong co UI sua.
+    # Sua full task (anh/trang thai): chi ADMIN, ke ca don da xong.
     if role == "ADMIN":
         return (True, "")
     return (False, "Chỉ ADMIN được sửa.")
+
+
+def can_edit_basic(role):
+    # Sua co ban (mo ta/ghi chu): moi email deu duoc nut Edit.
+    return (True, "")
+
+
+def staff_edit_notes(old_desc, old_note, new_desc, new_note, admin=False):
+    # KHỚP Code.gs editItem/adminEditItem: moi truong doi sinh 1 moc
+    # "Edit Mô tả: cu => moi" (STAFF) / "ADMIN Edit ..." (ADMIN thay email).
+    prefix = "ADMIN Edit" if admin else "Edit"
+    notes = []
+    if new_desc is not None and (new_desc or "").strip() != (old_desc or ""):
+        notes.append(f"{prefix} Mô tả: {old_desc or ''} => {(new_desc or '').strip()}")
+    if new_note is not None and (new_note or "").strip() != (old_note or ""):
+        notes.append(f"{prefix} Ghi chú: {old_note or ''} => {(new_note or '').strip()}")
+    return notes
 
 
 EDIT_STATUS_OK = ("chua_xu_ly", "da_tim_bill", "thanh_ly")
@@ -300,6 +317,7 @@ def map_history_row(header, row, want_code):
         "to": cell("to_status", "to"),
         "by": cell("by"),
         "note": cell("note"),
+        "reason": cell("reason", "ly_do", "lydo"),
     }
 
 

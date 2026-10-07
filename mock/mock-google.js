@@ -51,19 +51,19 @@
 
   var HIST = {
     'Box.06-10-2026.1': [
-      { at: '06/10/2026 08:02:00', code: 'Box.06-10-2026.1', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '' }
+      { at: '06/10/2026 08:02:00', code: 'Box.06-10-2026.1', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '', reason: '' }
     ],
     'Item.06-10-2026.2': [
-      { at: '06/10/2026 09:15:00', code: 'Item.06-10-2026.2', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '' },
-      { at: '06/10/2026 18:01:00', code: 'Item.06-10-2026.2', from: 'chua_xu_ly', to: 'da_tim_bill', by: 'son.nguyenngoc@spxexpress.com', note: 'SPXVN123456789', bill: 'SPXVN123456789' },
-      { at: '06/10/2026 18:05:00', code: 'Item.06-10-2026.2', from: 'da_tim_bill', to: 'da_tim_bill', by: ME, note: 'ADMIN chỉnh sửa Mô tả sản phẩm', bill: '' }
+      { at: '06/10/2026 09:15:00', code: 'Item.06-10-2026.2', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '', reason: '' },
+      { at: '06/10/2026 18:01:00', code: 'Item.06-10-2026.2', from: 'chua_xu_ly', to: 'da_tim_bill', by: 'son.nguyenngoc@spxexpress.com', note: 'SPXVN123456789', bill: 'SPXVN123456789', reason: '' },
+      { at: '06/10/2026 18:05:00', code: 'Item.06-10-2026.2', from: 'da_tim_bill', to: 'da_tim_bill', by: ME, note: 'ADMIN chỉnh sửa Mô tả sản phẩm', bill: '', reason: '' }
     ],
     'Box.05-10-2026.9': [
-      { at: '05/10/2026 08:00:00', code: 'Box.05-10-2026.9', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '' },
-      { at: '06/10/2026 17:00:00', code: 'Box.05-10-2026.9', from: 'chua_xu_ly', to: 'thanh_ly', by: 'son.nguyenngoc@spxexpress.com', note: 'SPXVN999', bill: 'SPXVN999' }
+      { at: '05/10/2026 08:00:00', code: 'Box.05-10-2026.9', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '', reason: '' },
+      { at: '06/10/2026 17:00:00', code: 'Box.05-10-2026.9', from: 'chua_xu_ly', to: 'thanh_ly', by: 'son.nguyenngoc@spxexpress.com', note: 'SPXVN999', bill: 'SPXVN999', reason: '' }
     ],
     'Box.06-10-2026.5': [
-      { at: '06/10/2026 11:00:00', code: 'Box.06-10-2026.5', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '' }
+      { at: '06/10/2026 11:00:00', code: 'Box.06-10-2026.5', from: '', to: 'chua_xu_ly', by: 'duc.nguyenvan05@spxexpress.com', note: 'Tạo mới', bill: '', reason: '' }
     ]
   };
 
@@ -110,7 +110,7 @@
       if (!bill) return { ok: false, error: 'Vui lòng nhập mã bill xử lý.' };
       if (it.status !== 'chua_xu_ly') return { ok: false, error: 'Trạng thái hiện tại: ' + it.status };
       it.status = 'da_tim_bill'; it.statusLabel = 'Resolve'; it.bill = bill;
-      (HIST[code] = HIST[code] || []).push({ at: '06/10/2026 18:10:00', code: code, from: 'chua_xu_ly', to: 'da_tim_bill', by: ME, note: bill, bill: bill });
+      (HIST[code] = HIST[code] || []).push({ at: '06/10/2026 18:10:00', code: code, from: 'chua_xu_ly', to: 'da_tim_bill', by: ME, note: bill, bill: bill, reason: '' });
       return { ok: true, data: { code: code } };
     },
     liquidateBatch: function (codes, liqCode) {
@@ -118,27 +118,46 @@
         var it = find(cd);
         if (it && it.status === 'chua_xu_ly') {
           it.status = 'thanh_ly'; it.statusLabel = 'Thanh Lý'; it.bill = liqCode;
-          (HIST[cd] = HIST[cd] || []).push({ at: '06/10/2026 18:10:00', code: cd, from: 'chua_xu_ly', to: 'thanh_ly', by: ME, note: liqCode, bill: liqCode });
+          (HIST[cd] = HIST[cd] || []).push({ at: '06/10/2026 18:10:00', code: cd, from: 'chua_xu_ly', to: 'thanh_ly', by: ME, note: liqCode, bill: liqCode, reason: '' });
         }
       });
       return { ok: true, data: { count: (codes || []).length, liqCode: liqCode } };
     },
+    editItem: function (p) {
+      var it = find(p.code);
+      if (!it) return { ok: false, error: 'Không Có' };
+      var notes = [];
+      if (p.description != null && String(p.description) !== String(it.description)) notes.push('Edit Mô tả: ' + it.description + ' => ' + p.description);
+      if (p.note != null && String(p.note) !== String(it.note)) notes.push('Edit Ghi chú: ' + it.note + ' => ' + p.note);
+      if (!notes.length) return { ok: false, error: 'Không có gì thay đổi.' };
+      if (p.description != null) it.description = String(p.description);
+      if (p.note != null) it.note = String(p.note);
+      notes.forEach(function (n) {
+        (HIST[p.code] = HIST[p.code] || []).push({ at: '06/10/2026 18:22:00', code: p.code, from: it.status, to: it.status, by: 'son.nguyenngoc@spxexpress.com', note: n, bill: '', reason: '' });
+      });
+      return { ok: true, data: { code: p.code } };
+    },
     adminEditItem: function (p) {
       var it = find(p.code);
       if (!it) return { ok: false, error: 'Không Có' };
+      var oldD = it.description, oldN = it.note;
       if (p.description != null) it.description = String(p.description);
       if (p.note != null) it.note = String(p.note);
-      var changed = [];
-      if ((p.deleteSlots || []).length || (p.addPhotos || []).length) changed.push('Ảnh');
-      if (changed.length || p.description !== undefined) changed.push('Mô tả sản phẩm');
       if (p.toStatus && p.toStatus !== it.status) {
         var map = { chua_xu_ly: 'Lưu kho', da_tim_bill: 'Resolve', thanh_ly: 'Thanh Lý' };
+        var from = it.status;
         it.status = p.toStatus; it.statusLabel = map[p.toStatus] || p.toStatus;
         if (p.bill) it.bill = p.bill;
-        (HIST[p.code] = HIST[p.code] || []).push({ at: '06/10/2026 18:20:00', code: p.code, from: 'da_tim_bill', to: p.toStatus, by: 'ADMIN đổi trạng thái', note: p.bill || '', bill: p.bill || '' });
+        (HIST[p.code] = HIST[p.code] || []).push({ at: '06/10/2026 18:20:00', code: p.code, from: from, to: p.toStatus, by: 'ADMIN đổi trạng thái', note: p.bill || '', bill: p.bill || '', reason: p.reason || '' });
       }
-      if (changed.length) {
-        (HIST[p.code] = HIST[p.code] || []).push({ at: '06/10/2026 18:21:00', code: p.code, from: it.status, to: it.status, by: ME, note: 'ADMIN chỉnh sửa ' + changed.join(', '), bill: '' });
+      if (p.description != null && String(p.description) !== String(oldD)) {
+        (HIST[p.code] = HIST[p.code] || []).push({ at: '06/10/2026 18:21:00', code: p.code, from: it.status, to: it.status, by: ME, note: 'ADMIN Edit Mô tả: ' + oldD + ' => ' + p.description, bill: '', reason: '' });
+      }
+      if (p.note != null && String(p.note) !== String(oldN)) {
+        (HIST[p.code] = HIST[p.code] || []).push({ at: '06/10/2026 18:21:00', code: p.code, from: it.status, to: it.status, by: ME, note: 'ADMIN Edit Ghi chú: ' + oldN + ' => ' + p.note, bill: '', reason: '' });
+      }
+      if (((p.deleteSlots || []).length || (p.addPhotos || []).length)) {
+        (HIST[p.code] = HIST[p.code] || []).push({ at: '06/10/2026 18:21:00', code: p.code, from: it.status, to: it.status, by: ME, note: 'ADMIN chỉnh sửa Ảnh', bill: '', reason: '' });
       }
       return { ok: true, data: { code: p.code } };
     },
@@ -168,7 +187,7 @@
       status: 'chua_xu_ly', statusLabel: 'Lưu kho', bill: '', days: 0, extras: [], slots: []
     };
     ITEMS.unshift(it);
-    HIST[code] = [{ at: '06/10/2026 18:30:00', code: code, from: '', to: 'chua_xu_ly', by: ME, note: 'Tạo mới', bill: '' }];
+    HIST[code] = [{ at: '06/10/2026 18:30:00', code: code, from: '', to: 'chua_xu_ly', by: ME, note: 'Tạo mới', bill: '', reason: '' }];
     return { ok: true, data: { code: code, shareOk: true, item: clone(it) } };
   }
 

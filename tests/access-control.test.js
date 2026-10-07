@@ -30,10 +30,19 @@ test('access: ADMIN đổi trạng thái trong Edit, bill bắt buộc khi sang 
   assert.deepStrictEqual(canEditStatus('ADMIN', 'da_cho_di', 'SPXVN1'), [false, 'Trạng thái không hợp lệ.']);
 });
 
-test('access: chỉ ADMIN được sửa task (kể cả đơn đã xong)', () => {
-  const canEdit = (role) => role === 'ADMIN';
-  assert.strictEqual(canEdit('ADMIN'), true);
-  assert.strictEqual(canEdit('STAFF'), false);
+test('access: mọi email đều thấy nút Edit, chỉ sửa Mô tả + Ghi chú', () => {
+  const canEditBasic = () => true;
+  const canEditFull = (role) => role === 'ADMIN';
+  assert.strictEqual(canEditBasic('STAFF'), true);
+  assert.strictEqual(canEditBasic('ADMIN'), true);
+  assert.strictEqual(canEditFull('ADMIN'), true);
+  assert.strictEqual(canEditFull('STAFF'), false);
+});
+
+test('access: mốc Edit ghi cũ => mới, ADMIN thay email thành ADMIN', () => {
+  const editNote = (oldV, newV, field, admin) => (admin ? 'ADMIN ' : '') + 'Edit ' + field + ': ' + oldV + ' => ' + newV;
+  assert.strictEqual(editNote('Áo Cam', 'Áo xanh', 'Mô tả', false), 'Edit Mô tả: Áo Cam => Áo xanh');
+  assert.strictEqual(editNote('Áo Cam', 'Áo xanh', 'Mô tả', true), 'ADMIN Edit Mô tả: Áo Cam => Áo xanh');
 });
 
 test('access: xóa user — chặn tự xóa và ADMIN cuối', () => {

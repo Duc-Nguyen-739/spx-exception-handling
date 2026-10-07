@@ -330,6 +330,9 @@ header{flex-wrap:wrap}
 .tl-by{font-size:11.5px;font-weight:600;color:var(--mut);margin:2px 0 6px;word-break:break-all}
 .tl-by.admin{color:var(--navy);font-weight:800}
 .tl-bill{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;font-weight:700;color:var(--navy);margin-top:5px;word-break:break-all}
+.tl-edit{font-size:11.5px;font-weight:600;color:var(--ink);word-break:break-word}
+.tl-reason{font-size:11.5px;color:var(--ink);margin-top:2px}
+.tl-reason b{color:var(--mut)}
 @media(max-width:899px){.printOnly{display:none!important}}
 @media(max-width:899px){input,textarea,select,.scanbar input{font-size:16px}}
 @media(max-width:480px){.head-brand span:last-child{display:none}}
@@ -517,7 +520,7 @@ header{flex-wrap:wrap}
 <button id="btnPrevDetail" class="iconBtn" title="Đơn trước">‹</button>
 <button id="btnNextDetail" class="iconBtn" title="Đơn sau">›</button>
 <button id="btnWideDetail" class="iconBtn" title="Phóng to / thu nhỏ">⤢</button>
-<button id="btnEditDetail" class="iconBtn" title="Sửa (ADMIN)" style="display:none;font-size:13px">Edit</button>
+<button id="btnEditDetail" class="iconBtn" title="Sửa" style="display:none;font-size:13px">Edit</button>
 <button id="btnCloseDetail" class="iconBtn" title="Đóng">✕</button>
 </div>
 <div class="pcard" id="detailBody"></div>
@@ -547,11 +550,13 @@ header{flex-wrap:wrap}
 <div id="editStatusWrap" style="display:none">
 <div class="field"><label>TRẠNG THÁI (không chọn = giữ nguyên)</label><div class="statgrid" id="editStatGrid"></div></div>
 <div class="field" id="editBillWrap" style="display:none"><label>MÃ BILL * (bắt buộc khi chọn Resolve / Thanh Lý)</label><input id="editBill" class="mono" placeholder="Điền mã bill…"></div>
+<div class="field" id="editReasonWrap" style="display:none"><label>LÝ DO (hiện ở bảng chi tiết, để trống thì không hiện)</label><input id="editReason" placeholder="VD: Thao tác sai"></div>
 </div>
-<div class="field"><label>ẢNH *</label><div id="editPhotos"></div></div>
+<div class="field" id="editPhotosWrap"><label>ẢNH *</label><div id="editPhotos"></div></div>
 <div class="field" id="editAddWrap" style="display:none"><label>Thêm ảnh</label><div id="editAddSlot"></div></div>
 <div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea id="editDesc" rows="2"></textarea></div>
 <div class="field"><label>GHI CHÚ</label><input id="editNote"></div>
+<div class="csub" id="editStaffHint" style="display:none">Bạn đang sửa với quyền thường — chỉ đổi được Mô tả + Ghi chú.</div>
 <div class="row"><button id="btnPrintEdit" class="printOnly">🖨 In Mã</button><button id="btnConfirmEdit" class="primary">Confirm</button></div>
 <div class="msg" id="msgEdit"></div>
 <button id="btnBackEdit" class="lnk">‹ Quay lại</button>
@@ -663,7 +668,7 @@ var g={};p.forEach(function(x){g[x.type]=x.value;});
 return g.day+'/'+g.month+'/'+g.year+' '+(g.hour==='24'?'00':g.hour)+':'+g.minute+':'+g.second;
 }catch(e){var d=new Date();function q(n){return('0'+n).slice(-2);}return q(d.getDate())+'/'+q(d.getMonth()+1)+'/'+d.getFullYear()+' '+q(d.getHours())+':'+q(d.getMinutes())+':'+q(d.getSeconds());}
 }
-function sameEntry(a,b){return a.from===b.from&&a.to===b.to&&String(a.bill||'')===String(b.bill||'')&&String(a.note||'')===String(b.note||'');}
+function sameEntry(a,b){return a.from===b.from&&a.to===b.to&&String(a.bill||'')===String(b.bill||'')&&String(a.note||'')===String(b.note||'')&&String(a.reason||'')===String(b.reason||'');}
 function mergeHist(server,pending){
 var out=(server||[]).slice();
 (pending||[]).forEach(function(p){
@@ -677,11 +682,19 @@ function dropPending(code,e){state.pending[code]=(state.pending[code]||[]).filte
 function meEmail(){return (state.me&&state.me.email)||'';}
 function tlHTML(x){
 var isEdit=x.from===x.to;
+var h='<div class="tl-time">'+esc(fmtAt(x.at))+'</div>';
+if(isEdit&&/^Edit /.test(x.note||'')){
+h+='<div class="tl-by">'+esc(x.by||'')+'</div><div class="tl-edit">'+esc(x.note)+'</div>';
+}else if(isEdit){
+h+='<div class="tl-by admin">'+esc(x.note||x.by||'')+'</div>';
+}else{
 var adminBy=/^ADMIN/.test(x.by||'');
-return '<div class="tl-time">'+esc(fmtAt(x.at))+'</div>'
-+'<div class="tl-by'+((isEdit||adminBy)?' admin':'')+'">'+(isEdit?esc(x.note||x.by||''):esc(x.by||''))+'</div>'
-+'<span class="st '+stClass(x.to)+'">'+esc(stLabel(x.to))+'</span>'
+h+='<div class="tl-by'+(adminBy?' admin':'')+'">'+esc(x.by||'')+'</div>';
+if(x.reason)h+='<div class="tl-reason"><b>Lý do:</b> '+esc(x.reason)+'</div>';
+}
+h+='<span class="st '+stClass(x.to)+'">'+esc(stLabel(x.to))+'</span>'
 +(x.bill?'<div class="tl-bill">'+esc(x.bill)+'</div>':'');
+return h;
 }
 
 function normItem_(it){if(it&&it.days==null)it.days=daysOf(it.createdAt,it.code);return it;}
@@ -967,8 +980,7 @@ var rbEl=document.getElementById('resolveBill');
 var curBill=rbEl.value;
 rbEl.value='';
 document.getElementById('rsStep2').style.display='none';
-var isAdm=(state.me&&state.me.role)==='ADMIN';
-document.getElementById('btnEditDetail').style.display=isAdm?'':'none';
+document.getElementById('btnEditDetail').style.display='';
 document.getElementById('editModal').classList.remove('open');
 try{if(!state.me)await loadMe();}catch(e){}
 var done=it.status&&it.status!=='chua_xu_ly';
@@ -1089,7 +1101,7 @@ sw.appendChild(b);sw.appendChild(inp);
 function openEdit(){
 var it=state.detail&&state.detail.item;
 if(!it)return;
-if(!(state.me&&state.me.role==='ADMIN')){msg('msgDetail','Chỉ ADMIN được sửa.');return;}
+var adm=(state.me&&state.me.role)==='ADMIN';
 document.getElementById('editTitle').textContent='Edit — '+(it.code||'');
 document.getElementById('editCode').value=it.code||'';
 document.getElementById('editDesc').value=it.description||'';
@@ -1098,44 +1110,80 @@ editOrig={desc:it.description||'',note:it.note||''};
 editDel=[];editAdd=[];renderEditPhotos();
 editStatusSel='';
 document.getElementById('editBill').value='';
+document.getElementById('editReason').value='';
 document.getElementById('editBillWrap').style.display='none';
+document.getElementById('editReasonWrap').style.display='none';
 var sw=document.getElementById('editStatusWrap');
-var cur=it.status||'chua_xu_ly';
-if(cur==='chua_xu_ly'){sw.style.display='none';}
-else{
+var pw=document.getElementById('editPhotosWrap');
+var aw=document.getElementById('editAddWrap');
+var hint=document.getElementById('editStaffHint');
+if(adm){
 sw.style.display='block';
-var other=cur==='da_tim_bill'?'Thanh Lý':'Resolve';
+if(pw)pw.style.display='block';
+if(hint)hint.style.display='none';
 var g=document.getElementById('editStatGrid');g.innerHTML='';
-['Lưu kho',other].forEach(function(label){
+['Lưu kho','Resolve','Thanh Lý'].forEach(function(label){
 var b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('data-st',label);
 b.onclick=function(){
 editStatusSel=(editStatusSel===label?'':label);
 Array.prototype.forEach.call(g.children,function(ch){ch.classList.toggle('sel',ch.getAttribute('data-st')===editStatusSel);});
-document.getElementById('editBillWrap').style.display=(editStatusSel==='Resolve'||editStatusSel==='Thanh Lý')?'block':'none';};
+document.getElementById('editBillWrap').style.display=(editStatusSel==='Resolve'||editStatusSel==='Thanh Lý')?'block':'none';
+document.getElementById('editReasonWrap').style.display=editStatusSel?'block':'none';};
 g.appendChild(b);});
+}else{
+sw.style.display='none';
+if(pw)pw.style.display='none';
+if(aw)aw.style.display='none';
+if(hint)hint.style.display='block';
 }
 msg('msgEdit','');
 document.getElementById('editModal').classList.add('open');
 }
 async function confirmEdit(){
+var adm=(state.me&&state.me.role)==='ADMIN';
 var code=state.detail&&state.detail.item&&state.detail.item.code;
 var desc=document.getElementById('editDesc').value.trim();
 if(!desc){msg('msgEdit','Vui lòng nhập mô tả sản phẩm.');return;}
+var noteV=document.getElementById('editNote').value.trim();
+if(!adm){
+var staffNotes=[];
+if(desc!==editOrig.desc)staffNotes.push('Edit Mô tả: '+editOrig.desc+' => '+desc);
+if(noteV!==editOrig.note)staffNotes.push('Edit Ghi chú: '+editOrig.note+' => '+noteV);
+if(!staffNotes.length){msg('msgEdit','Không có gì thay đổi.');return;}
+var itS=state.detail&&state.detail.item;
+var curS=(itS&&itS.status)||'chua_xu_ly';
+var sentries=staffNotes.map(function(n){return {at:nowClientStr(),code:code,from:curS,to:curS,by:meEmail(),note:n,bill:'',reason:''};});
+sentries.forEach(function(e){pushPending(code,e);});
+applyLocalItem(code,function(x){x.description=desc;x.note=noteV;});
+msg('msgEdit','Đã lưu thay đổi.',true);
+document.getElementById('editModal').classList.remove('open');
+try{
+var rs=await gs('editItem',[{code:code,description:desc,note:noteV}]);
+if(!rs||!rs.ok)throw new Error((rs&&rs.error)||'Lỗi lưu');
+await refreshDetail(code);
+}catch(err){
+sentries.forEach(function(e){dropPending(code,e);});
+await loadGrid({silent:true});await refreshDetail(code);
+msg('msgDetail',err.message||'Lỗi lưu');
+}
+return;
+}
 var needBill=(editStatusSel==='Resolve'||editStatusSel==='Thanh Lý');
 var bill=document.getElementById('editBill').value.trim();
 if(needBill&&!bill){msg('msgEdit','Đổi sang '+editStatusSel+' phải điền mã bill mới Confirm được.');document.getElementById('editBill').focus();return;}
-var noteV=document.getElementById('editNote').value.trim();
-var changed=[];
-if(editDel.length||editAdd.length)changed.push('Ảnh');
-if(desc!==editOrig.desc)changed.push('Mô tả sản phẩm');
-if(noteV!==editOrig.note)changed.push('Ghi chú');
-if(!changed.length&&!editStatusSel){msg('msgEdit','Không có gì thay đổi.');return;}
+var reason=document.getElementById('editReason').value.trim();
+var descChanged=desc!==editOrig.desc,noteChanged=noteV!==editOrig.note;
+var photoChanged=(editDel.length||editAdd.length)>0;
+if(!descChanged&&!noteChanged&&!photoChanged&&!editStatusSel){msg('msgEdit','Không có gì thay đổi.');return;}
 var it0=state.detail&&state.detail.item;
 var from0=(it0&&it0.status)||'chua_xu_ly';
 var to0=editStatusSel?EDIT_ST[editStatusSel]:from0;
+if(to0==='chua_xu_ly')bill='';
 var entries=[];
-if(editStatusSel)entries.push({at:nowClientStr(),code:code,from:from0,to:to0,by:'ADMIN đổi trạng thái',note:bill,bill:bill});
-if(changed.length)entries.push({at:nowClientStr(),code:code,from:to0,to:to0,by:'ADMIN chỉnh sửa '+changed.join(', '),note:'ADMIN chỉnh sửa '+changed.join(', '),bill:''});
+if(editStatusSel)entries.push({at:nowClientStr(),code:code,from:from0,to:to0,by:'ADMIN đổi trạng thái',note:bill,bill:bill,reason:reason});
+if(descChanged)entries.push({at:nowClientStr(),code:code,from:to0,to:to0,by:meEmail(),note:'ADMIN Edit Mô tả: '+editOrig.desc+' => '+desc,bill:'',reason:''});
+if(noteChanged)entries.push({at:nowClientStr(),code:code,from:to0,to:to0,by:meEmail(),note:'ADMIN Edit Ghi chú: '+editOrig.note+' => '+noteV,bill:'',reason:''});
+if(photoChanged)entries.push({at:nowClientStr(),code:code,from:to0,to:to0,by:meEmail(),note:'ADMIN chỉnh sửa Ảnh',bill:'',reason:''});
 entries.forEach(function(e){pushPending(code,e);});
 var slots=((it0&&it0.slots)||[]).filter(function(s){return editDel.indexOf(String(s.slot))<0;});
 editAdd.forEach(function(du){slots.push({slot:'bo_sung_moi',url:du});});
@@ -1148,7 +1196,7 @@ x.slots=slots;
 msg('msgEdit','Đã lưu thay đổi.',true);
 document.getElementById('editModal').classList.remove('open');
 try{
-var r=await gs('adminEditItem',[{code:code,description:desc,note:noteV,deleteSlots:editDel,addPhotos:editAdd,toStatus:editStatusSel?EDIT_ST[editStatusSel]:'',bill:bill}]);
+var r=await gs('adminEditItem',[{code:code,description:desc,note:noteV,deleteSlots:editDel,addPhotos:editAdd,toStatus:editStatusSel?EDIT_ST[editStatusSel]:'',bill:bill,reason:reason}]);
 if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi lưu');
 await refreshDetail(code);
 }catch(e){

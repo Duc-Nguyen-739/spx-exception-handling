@@ -7,7 +7,7 @@ from api.logic import (
     canonical_status, canonical_kind, valid_liq_code, can_edit_status,
     history_bill, map_history_row,
     check_create_photos, can_delete_user, extract_drive_id, can_edit, CODE_RE, TZ,
-    valid_custom_code, custom_code_exists,
+    valid_custom_code, custom_code_exists, can_edit_basic, staff_edit_notes,
 )
 
 
@@ -111,6 +111,20 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(can_edit("STAFF"), (False, "Chỉ ADMIN được sửa."))
         self.assertEqual(can_edit(""), (False, "Chỉ ADMIN được sửa."))
 
+    def test_edit_basic_gate(self):
+        self.assertEqual(can_edit_basic("ADMIN"), (True, ""))
+        self.assertEqual(can_edit_basic("STAFF"), (True, ""))
+        self.assertEqual(can_edit_basic(""), (True, ""))
+
+    def test_staff_edit_notes(self):
+        self.assertEqual(staff_edit_notes("Áo Cam", "Kệ B2", "Áo xanh", "Kệ B2"),
+                         ["Edit Mô tả: Áo Cam => Áo xanh"])
+        self.assertEqual(staff_edit_notes("Áo Cam", "Kệ B2", "Áo Cam", "Kệ B3"),
+                         ["Edit Ghi chú: Kệ B2 => Kệ B3"])
+        self.assertEqual(staff_edit_notes("Áo Cam", "Kệ B2", "Áo Cam", "Kệ B2"), [])
+        self.assertEqual(staff_edit_notes("Áo Cam", "Kệ B2", "Áo xanh", "Kệ B2", admin=True),
+                         ["ADMIN Edit Mô tả: Áo Cam => Áo xanh"])
+
     def test_extract_drive_id(self):
         self.assertEqual(extract_drive_id("1AbCdefGhIjKlMnOp"), "1AbCdefGhIjKlMnOp")
         self.assertEqual(extract_drive_id("https://drive.google.com/file/d/1AbCdefGhIjKlMnOp/view"), "1AbCdefGhIjKlMnOp")
@@ -201,6 +215,15 @@ class TestListFullBatch(unittest.TestCase):
                                      "chua_xu_ly", "thanh_ly", "a@x.com", "SPXVN9"], "Box.06-10-2026.1")
         self.assertEqual((e["from"], e["to"]), ("chua_xu_ly", "thanh_ly"))
         self.assertEqual(history_bill(e["from"], e["to"], e["note"]), "SPXVN9")
+        self.assertEqual(e["reason"], "")
+
+    def test_history_reason_column(self):
+        header = ["at", "code", "from_status", "to_status", "by", "note", "reason"]
+        e = map_history_row(header, ["06/10/2026 19:21:00", "Box.06-10-2026.1",
+                                     "da_tim_bill", "chua_xu_ly", "ADMIN đổi trạng thái",
+                                     "", "Thao tác sai"], "Box.06-10-2026.1")
+        self.assertEqual(e["reason"], "Thao tác sai")
+        self.assertEqual(history_bill(e["from"], e["to"], e["note"]), "")
 
 
 if __name__ == "__main__":
