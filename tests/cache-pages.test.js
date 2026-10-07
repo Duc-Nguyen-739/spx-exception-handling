@@ -1,6 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
+const vm = require('node:vm');
 
 // Contract cache-first: phan trang offset, merge tich luy, poll 5', prefetch anh.
 // Mirror logic thuan (khong network).
@@ -68,4 +69,62 @@ test('pages: prefetch anh bounded sau render (khong chan, co dedup)', () => {
   assert.ok(block.includes('preWarmed'));
   assert.ok(block.includes('new Image()'));
   assert.ok(html.includes('setTimeout(prefetchHeadThumbs,600)'));
+});
+
+// Prefetch THAT trong sandbox co timers (cach test code deferred): nap ham that
+// prefetchHeadThumbs + thumb that tu index.html, stub visibleItems/document/Image.
+function makePrefetchEnv(items, hidden) {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const thumbSrc = html.match(/function thumb\(it\)\{[^}]*\}/)[0];
+  const start = html.indexOf('function prefetchHeadThumbs(){');
+  let depth = 0, end = start;
+  for (let i = start; i < html.length; i++) {
+    if (html[i] === '{') depth++;
+    if (html[i] === '}') { depth--; if (!depth) { end = i + 1; break; } }
+  }
+  const preSrc = html.slice(start, end);
+  const loaded = [];
+  function FakeImage() {}
+  Object.defineProperty(FakeImage.prototype, 'src', { set(u) { loaded.push(u); } });
+  const sandbox = {
+    setTimeout, clearTimeout, Image: FakeImage,
+    document: { hidden: !!hidden },
+    preWarmed: {},
+    visibleItems: () => items.slice(),
+  };
+  vm.createContext(sandbox);
+  vm.runInContext(thumbSrc + '\n' + preSrc, sandbox, { filename: 'prefetch-inline.js' });
+  return { sandbox, loaded };
+}
+function fakeItems(n) {
+  const out = [];
+  for (let i = 0; i < n; i++) out.push({ code: 'Box.08-10-2026.' + i, imgProduct: 'https://x/img' + i });
+  return out;
+}
+
+test('pages: prefetch that chi nap 30 thumb dau (sandbox co timers)', async () => {
+  const { sandbox, loaded } = makePrefetchEnv(fakeItems(35), false);
+  vm.runInContext('prefetchHeadThumbs()', sandbox);
+  assert.strictEqual(loaded.length, 30);
+  assert.strictEqual(loaded[0], 'https://x/img0');
+  assert.strictEqual(loaded[29], 'https://x/img29');
+});
+
+test('pages: prefetch that dedup — chay lai khong nap them', async () => {
+  const { sandbox, loaded } = makePrefetchEnv(fakeItems(35), false);
+  vm.runInContext('prefetchHeadThumbs()', sandbox);
+  vm.runInContext('prefetchHeadThumbs()', sandbox);
+  assert.strictEqual(loaded.length, 30);
+});
+
+test('pages: prefetch that bo qua khi tab an', async () => {
+  const { loaded } = makePrefetchEnv(fakeItems(35), true);
+  assert.strictEqual(loaded.length, 0);
+});
+
+test('pages: deferred prefetch chay duoc qua setTimeout trong sandbox', async () => {
+  const { sandbox, loaded } = makePrefetchEnv(fakeItems(5), false);
+  vm.runInContext('setTimeout(prefetchHeadThumbs,10)', sandbox);
+  await new Promise((r) => setTimeout(r, 60));
+  assert.strictEqual(loaded.length, 5);
 });
