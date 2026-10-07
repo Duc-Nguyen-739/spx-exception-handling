@@ -22,3 +22,6 @@ plan.md
 __pycache__/
 *.pyc
 index.local.html
+
+# Chrome binary cho test:chrome (tai bang npm run setup:chrome)
+.chrome/

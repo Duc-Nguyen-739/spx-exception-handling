@@ -8,6 +8,7 @@
     "test": "node --test tests/*.test.js",
     "test:py": "python3 -m unittest discover -s api -p 'test_*.py'",
     "test:chrome": "node scripts/test-local-mock.js",
+    "setup:chrome": "node scripts/setup-chrome.js",
     "build:local": "node scripts/build-local.js"
   },
   "engines": {

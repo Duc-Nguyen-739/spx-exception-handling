@@ -34,4 +34,4 @@ Workflows giống repo `spx-diem-danh`:
 
 ## Verify
 
-`npm test` · `npm run test:py` · `npm run build:local` · `npm run test:chrome`.
+`npm test` · `npm run test:py` · `npm run build:local` · `npm run test:chrome` (lần đầu chạy `npm run setup:chrome` để tải Chrome for Testing chính chủ về `.chrome/`).

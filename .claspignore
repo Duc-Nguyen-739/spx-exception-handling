@@ -8,6 +8,7 @@ scripts/**
 mock/**
 mockups/**
 dist/**
+.chrome/**
 
 # ===== Node.js =====
 node_modules/**

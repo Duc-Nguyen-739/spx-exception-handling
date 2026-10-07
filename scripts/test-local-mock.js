@@ -25,6 +25,17 @@ const INDEX_FILE = 'file:///' + path.resolve(__dirname, '..', 'index.local.html'
 
 function findChrome() {
   if (process.env.CHROME_PATH) return { exe: process.env.CHROME_PATH, shell: false };
+  try {
+    const local = path.join(__dirname, '..', '.chrome');
+    if (fs.existsSync(local)) {
+      const vers = fs.readdirSync(local).filter((v) => !v.startsWith('.')).sort().reverse();
+      const subs = ['chrome-headless-shell-linux64/chrome-headless-shell', 'chrome-headless-shell-linux-arm64/chrome-headless-shell', 'chrome-headless-shell-mac-arm64/chrome-headless-shell', 'chrome-headless-shell-mac-x64/chrome-headless-shell', 'chrome-headless-shell-win64/chrome-headless-shell.exe', 'chrome-headless-shell-win32/chrome-headless-shell.exe'];
+      for (const v of vers) for (const sub of subs) {
+        const p = path.join(local, v, sub);
+        if (fs.existsSync(p)) return { exe: p, shell: true };
+      }
+    }
+  } catch (e) { /* bo qua */ }
   const cands = [
     '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable',
     '/usr/bin/chromium', '/usr/bin/chromium-browser', '/snap/bin/chromium',
