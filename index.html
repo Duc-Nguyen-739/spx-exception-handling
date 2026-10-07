@@ -50,10 +50,47 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 
 /* ===== scan bar ===== */
 .scanbar{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 13px;margin-bottom:10px}
-#viewMain .scanbar{background:none;border:none;padding:0;position:relative;justify-content:center}
-#viewMain .search-group{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 13px;flex:0 1 600px;min-width:0}
-#viewMain .search-group input{flex:1;min-width:0;margin:0;text-align:center}
-#viewMain .topbtns{display:flex;gap:8px;flex:none}
+header .scanbar{flex:1 1 auto;min-width:0;margin:0;background:none;border:none;padding:0;display:flex;align-items:center;justify-content:center;gap:8px;position:relative}
+header .search-group{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:5px 6px 5px 13px;flex:0 1 560px;min-width:0}
+header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
+header .topbtns{display:flex;gap:8px;flex:none}
+#rangebar{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:9px 14px;margin-bottom:10px;font-size:12.5px;flex-wrap:wrap}
+#rangebar .rg-info{color:var(--blue);font-weight:800}
+#rangebar #rgRangeLabel{font-weight:600}
+#rangebar #rgEdit{border:none;background:none;color:var(--blue);font-weight:800;text-decoration:underline;padding:4px;font-size:12.5px}
+#rangebar .rg-cap{margin-left:auto;font-size:11px;color:var(--mut);font-weight:600}
+#rangeModal{align-items:center;justify-content:center;padding:0 16px}
+#rangeModal .rgsheet{max-width:860px;width:100%;height:auto;max-height:92%;border-radius:16px;padding:0;overflow:hidden}
+.rghead{padding:12px 16px;border-bottom:1px solid var(--line);font-size:13.5px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px}
+.rghead .iconBtn{margin-left:auto}
+.rgbody{display:flex;min-height:300px}
+.rgpresets{width:170px;flex:none;border-right:1px solid var(--line);padding:8px 0}
+.rgpresets button{display:block;width:100%;text-align:left;border:none;background:none;padding:11px 16px;font-size:13px;font-weight:600;color:var(--ink)}
+.rgpresets button.on{background:var(--tint);color:var(--o);font-weight:800;box-shadow:inset 3px 0 0 var(--o)}
+.rgover{font-size:10.5px;color:var(--mut);padding:8px 16px;line-height:1.5}
+.rgcals{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px 16px;min-width:0}
+.rgcal h4{margin:0 0 8px;font-size:13px;color:var(--navy);display:flex;align-items:center;justify-content:space-between}
+.rgcal h4 .nv{border:none;background:none;font-size:15px;color:var(--mut);font-weight:800;padding:2px 8px}
+.rgcal table{width:100%;border-collapse:collapse;font-size:12px}
+.rgcal th{font-size:10.5px;color:var(--mut);font-weight:700;padding:5px 0}
+.rgcal td{text-align:center;padding:0}
+.rgcal td span{display:inline-grid;place-items:center;min-width:30px;height:30px;border-radius:50%;cursor:pointer;font-weight:600;transition:background .12s,transform .12s}
+.rgcal td span.dim{color:#c9d2e0}
+.rgcal td span.in{background:#ffe9df;color:#b23c1e;border-radius:8px;width:100%}
+.rgcal td span.edge{background:var(--o);color:#fff;font-weight:800;box-shadow:0 2px 8px rgba(238,77,45,.45)}
+.rgcal td span.solo{background:#fff;color:var(--o);outline:2px solid var(--o);outline-offset:-2px}
+.rgcal td span.pre{background:#fff1e6;color:#b23c1e;border-radius:8px;width:100%}
+.rgcal td span.today{outline:2px solid var(--blue);outline-offset:-2px}
+.rgcal td span:hover{outline:2px solid var(--o);outline-offset:-2px}
+.rgcal td span.pick{animation:rgpop .25s ease}
+@keyframes rgpop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.rgcal{user-select:none;-webkit-user-select:none}
+.rgfoot{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.rgfoot .msg{flex:1}
+.rgfoot button{border-radius:9px;padding:9px 22px;font-size:13px;font-weight:800;border:1px solid var(--line);background:#fff}
+.rgfoot button.primary{background:var(--o);border-color:var(--o);color:#fff}
+.rgfoot button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:640px){.rgcals{grid-template-columns:1fr}.rgbody{flex-direction:column}.rgpresets{width:100%;border-right:none;border-bottom:1px solid var(--line);display:flex;overflow:auto}.rgpresets button{white-space:nowrap}.rgover{display:none}}
 #viewPrint .psect{margin:6px 0 12px;font-size:15px;color:var(--navy);padding-left:10px;border-left:4px solid var(--o)}
 #viewPrint .pstep{font-size:12.5px;color:var(--mut);margin:12px 0 8px}
 #viewPrint .pstep::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#c3ccd8;margin-right:8px}
@@ -90,7 +127,7 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 #viewLiq .lnextrow{margin-top:12px;display:flex}
 #viewLiq .lnextrow .primary{flex:0 0 280px;max-width:100%}
 #viewLiq #liqCodeWrap{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px;margin-top:12px;max-width:520px}
-@media(min-width:600px){#viewMain .topbtns{position:absolute;right:0;top:50%;transform:translateY(-50%)}}
+@media(max-width:899px){header .scanbar{flex:1 1 100%;order:10}header .search-group{flex:1 1 auto}}
 #scanClear{display:none;width:30px;height:30px;flex:none;border:none;border-radius:50%;background:#e8ecf1;color:#5b6572;font-size:13px;font-weight:800;line-height:1;padding:0}
 #scanClear.show{display:block}
 .scanbar svg{color:var(--o);flex:none}
@@ -343,6 +380,15 @@ header{flex-wrap:wrap}
     <path d="M6.91737 30L10.1751 25.8334H18.9126L15.6549 30H6.91737Z" fill="#EE4D2D"/>
     </svg><span>Exception Handling</span></span>
 <div id="hdrSummary"></div>
+<div class="scanbar">
+<div class="search-group">
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+<input id="scanMain" placeholder="Nhập thông tin để tìm kiếm..." inputmode="text">
+<button id="scanClear" title="Xóa tìm kiếm">✕</button>
+<button id="camMain">📷 Quét</button>
+</div>
+<span class="topbtns"><button id="btnCreateMain" class="primary create-big">＋ Create</button><button id="btnPrintMain" class="create-big">🖨 In Mã</button></span>
+</div>
 <button id="btnTheme" type="button">☾ Tối</button>
 <div id="whoChip" title="Tài khoản đăng nhập"><i id="whoIni">?</i><span id="whoTxt"></span></div>
 <button id="btnCreateTop" class="primary" style="display:none">＋ Create</button>
@@ -380,16 +426,13 @@ header{flex-wrap:wrap}
 </nav>
 
 <main id="viewMain">
-<div class="scanbar">
-<div class="search-group">
-<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-<input id="scanMain" placeholder="Nhập mã để tìm kiếm…" inputmode="text">
-<button id="scanClear" title="Xóa tìm kiếm">✕</button>
-<button id="camMain">📷 Quét</button>
-</div>
-<span class="topbtns"><button id="btnCreateMain" class="primary create-big">＋ Create</button><button id="btnPrintMain" class="create-big">🖨 In Mã</button></span>
-</div>
+<div id="rangebar"><span class="rg-info">ⓘ Display Range:</span><span id="rgRangeLabel"></span><button id="rgEdit" type="button">Edit</button><span class="rg-cap">Chỉ lọc danh sách · tìm kiếm không giới hạn ngày</span></div>
 <div id="camModal" role="dialog" aria-label="Quét mã bằng camera"><div class="cam-box"><div id="camView"></div><div id="camStatus">Đưa mã vào khung — tự nhận diện.</div><div class="cam-btnrow"><button id="camFileBtn" type="button">Chụp ảnh</button><button id="camCloseBtn" type="button">Đóng</button></div></div></div><input type="file" id="camFile" accept="image/*" capture="environment" style="display:none">
+<div class="modal" id="rangeModal" role="dialog" aria-label="Chọn Display Range"><div class="sheet rgsheet">
+<div class="rghead">ⓘ Display Range: <span id="rgLabel"></span><button id="rgX" class="iconBtn" type="button">✕</button></div>
+<div class="rgbody"><div class="rgpresets" id="rgPresets"><button data-d="7" type="button">Last 7 Days</button><button data-d="14" type="button">Last 14 Days</button><button data-d="30" class="on" type="button">Last 30 Days</button><button data-d="60" type="button">Last 60 Days</button><div class="rgover">Phạm vi hiển thị tối đa 60 ngày. Mặc định 30 ngày gần nhất.</div></div><div class="rgcals"><div class="rgcal" id="rgCalL"></div><div class="rgcal" id="rgCalR"></div></div></div>
+<div class="rgfoot"><span class="msg" id="rgMsg"></span><button id="rgReset" type="button">Reset</button><button id="rgOk" class="primary" type="button">Confirm</button></div>
+</div></div>
 <div class="createrow"><button id="btnCreate" class="primary">＋ Create</button></div>
 <div class="pills" id="pillsRow"></div>
 <div class="msg" id="msgMain"></div>
@@ -570,7 +613,7 @@ var DEMO=[
 {code:'Item.01-10-2026.3',kind:'Item',createdAt:'01/10/2026 10:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo item',note:'',status:'da_tim_bill',statusLabel:'Resolve',bill:'SPXVN1',days:5}
 ];
 var DETAIL_TTL_MS=5*60*1000;
-var state={items:[],itemMap:{},detailCache:{},detailAt:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{},codeEdit:{Box:false,Item:false}};
+var state={items:[],itemMap:{},detailCache:{},detailAt:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{},codeEdit:{Box:false,Item:false},range:{f:null,t:null}};
 function hasGs(){return typeof google!=='undefined'&&google.script&&google.script.run;}
 function gs(fn,args){return new Promise(function(res,rej){
 if(!hasGs()){rej(new Error('LOCAL'));return;}
@@ -580,6 +623,12 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 function msg(id,t,ok){var e=document.getElementById(id);e.textContent=t||'';e.className='msg '+(t?(ok?'ok':'err'):'');}
 function todayPart(){try{return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date()).replace(/\//g,'-');}catch(e){var d=new Date();return('0'+d.getDate()).slice(-2)+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+d.getFullYear();}}
 function parseCreated(s){var m=String(s||'').match(/(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?/);if(!m)return null;return new Date(+m[3],+m[2]-1,+m[1],+(m[4]||0),+(m[5]||0));}
+function todayYMD_(){try{var p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());var g={};p.forEach(function(x){g[x.type]=x.value;});return {y:+g.year,m:+g.month,d:+g.day};}catch(e){var t=new Date();return {y:t.getFullYear(),m:t.getMonth()+1,d:t.getDate()};}}
+function addDaysYMD_(o,n){var t=new Date(o.y,o.m-1,o.d);t.setDate(t.getDate()+n);return {y:t.getFullYear(),m:t.getMonth()+1,d:t.getDate()};}
+function ymdNum_(o){return o.y*10000+o.m*100+o.d;}
+function rangeDiff_(a,b){return Math.round((new Date(b.y,b.m-1,b.d)-new Date(a.y,a.m-1,a.d))/86400000);}
+function fmtRange_(a,b){function q(n){return (n<10?'0':'')+n;}return a.y+'/'+q(a.m)+'/'+q(a.d)+' 00:00-'+b.y+'/'+q(b.m)+'/'+q(b.d)+' 23:59';}
+function inRangeDay_(createdAt){var r=state.range;if(!r||!r.f||!r.t)return true;var m=String(createdAt||'').match(/(\d{2})\/(\d{2})\/(\d{4})/);if(!m)return true;var n=(+m[3])*10000+(+m[2])*100+(+m[1]);return n>=ymdNum_(r.f)&&n<=ymdNum_(r.t);}
 function daysOf(c){var d=parseCreated(c);if(!d)return 0;return Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));}
 function thumb(it){return it.imgProduct||it.imgOuter||(it.extras&&it.extras[0])||'';}
 function extractDriveId(u){var s=String(u||'');var m=s.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);if(m)return m[1];m=s.match(/\/d\/([a-zA-Z0-9_-]{10,})/);return m?m[1]:'';}
@@ -726,7 +775,7 @@ if(k==='open'&&it.status!=='chua_xu_ly')return false;
 if(k==='resolve'&&it.status!=='da_tim_bill')return false;
 if(k==='liq'&&it.status!=='thanh_ly')return false;
 if(!state.kinds[it.kind])return false;
-if(!q)return true;
+if(!q)return inRangeDay_(it.createdAt);
 return String(it.code).toLowerCase().indexOf(q)>=0
 ||String(it.description||'').toLowerCase().indexOf(q)>=0
 ||String(it.kind||'').toLowerCase().indexOf(q)>=0;
@@ -1387,6 +1436,164 @@ async function delUser(email){
 msg('msgAccess','Đang xóa…',true);
 try{var r=await gs('deleteUser',[email]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi xóa');msg('msgAccess','Đã xóa '+email+'.',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi xóa');}
 }
+var RANGE_MAXD=60;
+var RG_MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var RG_WD=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var rgSel=null,rgHoverT=0,rgDragging=false,rgAnchorT=0,rgDragEnd=0,rgVisited=false,rgViewY=0,rgViewM=0;
+function rgRenderCal(el,y,m,left){
+var first=new Date(y,m,1),start=(first.getDay()+6)%7,dim=new Date(y,m+1,0).getDate(),prev=new Date(y,m,0).getDate();
+var h='<h4>'+(left?'<span><button class="nv" data-n="-2" type="button">«</button><button class="nv" data-n="-1" type="button">‹</button></span><span>'+y+'&nbsp;&nbsp;'+RG_MN[m]+'</span><span></span>'
+:'<span></span><span>'+y+'&nbsp;&nbsp;'+RG_MN[m]+'</span><span><button class="nv" data-n="1" type="button">›</button><button class="nv" data-n="2" type="button">»</button></span>')+'</h4>';
+h+='<table><tr>'+RG_WD.map(function(w){return '<th>'+w+'</th>';}).join('')+'</tr>';
+var day=1,next=1;
+for(var r=0;r<6;r++){
+h+='<tr>';
+for(var cI=0;cI<7;cI++){
+var idx=r*7+cI,dt=null,isDim=false;
+if(idx<start){dt=new Date(y,m-1,prev-start+1+idx);isDim=true;}
+else if(day>dim){dt=new Date(y,m+1,next++);isDim=true;}
+else{dt=new Date(y,m,day++);}
+var t=dt.getTime();
+h+='<td><span data-t="'+t+'"'+(isDim?' data-dim="1"':'')+'>'+dt.getDate()+'</span></td>';
+}
+h+='</tr>';
+if(day>dim&&next>7)break;
+}
+el.innerHTML=h+'</table>';
+}
+function ymdOfMs_(ms){var x=new Date(ms);return {y:x.getFullYear(),m:x.getMonth()+1,d:x.getDate()};}
+function rgBandCls(t,dim){
+var td=ymdNum_(ymdOfMs_(t));
+var n1=rgSel&&rgSel.a?ymdNum_(rgSel.a):-1,n2=rgSel&&rgSel.b?ymdNum_(rgSel.b):-1;
+var hv=(!rgDragging&&rgSel&&rgSel.a&&!rgSel.b&&rgHoverT)?ymdNum_(ymdOfMs_(rgHoverT)):-1;
+var r=dim?'dim':'';
+if(n1>=0&&n2>=0&&td>=Math.min(n1,n2)&&td<=Math.max(n1,n2))r+=' in';
+if(hv>=0&&n1>=0&&td>Math.min(n1,hv)&&td<=Math.max(n1,hv))r+=' pre';
+if(n1>=0&&n2>=0){if(td===n1||td===n2)r+=' edge';}
+else if(n1>=0&&td===n1)r+=' solo';
+if(t===TODAY_NUM)r+=' today';
+return r.trim();
+}
+var TODAY_NUM=(function(){var t=todayYMD_();return new Date(t.y,t.m-1,t.d).getTime();})();
+function rgPaintBand(){
+if(rgSel&&rgSel.b)rgHoverT=0;
+var spans=document.querySelectorAll('.rgcals span[data-t]');
+for(var i=0;i<spans.length;i++){
+var s=spans[i];
+var keep=s.classList.contains('pick')?' pick':'';
+s.className=rgBandCls(+s.getAttribute('data-t'),s.hasAttribute('data-dim'))+keep;
+}
+rgHeads();
+}
+function rgHeads(){
+var ok=false;
+if(rgSel&&rgSel.a&&rgSel.b){
+var n=rangeDiff_(rgSel.a,rgSel.b);
+if(n>RANGE_MAXD){msg('rgMsg',n+' ngày — vượt quá tối đa '+RANGE_MAXD+' ngày.');}
+else{msg('rgMsg',n+' ngày — hợp lệ.',true);ok=true;}
+var lb=fmtRange_(rgSel.a,rgSel.b);
+document.getElementById('rgLabel').textContent=lb;
+}else{
+msg('rgMsg','');
+document.getElementById('rgLabel').textContent='Chưa chọn đủ từ–đến';
+}
+var btns=document.querySelectorAll('#rgPresets button[data-d]');
+btns.forEach(function(b){
+var n2=parseInt(b.getAttribute('data-d'),10);
+var e2=todayYMD_(),s2=addDaysYMD_(e2,-(n2-1));
+b.classList.toggle('on',!!(rgSel&&rgSel.a&&rgSel.b)&&ymdNum_(rgSel.a)===ymdNum_(s2)&&ymdNum_(rgSel.b)===ymdNum_(e2));
+});
+document.getElementById('rgOk').disabled=!ok;
+}
+function rgPaint(){
+var rm=(rgViewM+12)%12,ry=rgViewY+(rgViewM<0?-1:(rgViewM>11?1:0));
+rgRenderCal(document.getElementById('rgCalL'),ry,rm,true);
+var rm2=(rm+1)%12,ry2=ry+(rm===11?1:0);
+rgRenderCal(document.getElementById('rgCalR'),ry2,rm2,false);
+rgPaintBand();
+}
+function renderRangebar(){
+if(state.range&&state.range.f&&state.range.t){
+document.getElementById('rgRangeLabel').textContent=fmtRange_(state.range.f,state.range.t);
+}}
+function rgOpen(){
+rgSel={a:{y:state.range.f.y,m:state.range.f.m,d:state.range.f.d},b:{y:state.range.t.y,m:state.range.t.m,d:state.range.t.d}};
+rgHoverT=0;rgDragging=false;rgDragEnd=0;rgVisited=false;
+rgViewY=state.range.t.y;rgViewM=state.range.t.m-1-1;
+document.getElementById('rangeModal').classList.add('open');
+rgPaint();
+}
+function rgClose(){var m=document.getElementById('rangeModal');if(m)m.classList.remove('open');}
+function setupRange(){
+var t=todayYMD_();
+state.range={f:addDaysYMD_(t,-29),t:t};
+renderRangebar();
+document.getElementById('rgEdit').onclick=rgOpen;
+document.getElementById('rgX').onclick=rgClose;
+document.getElementById('rangeModal').addEventListener('click',function(e){if(e.target===this)rgClose();});
+document.getElementById('rgPresets').addEventListener('click',function(e){
+var b=e.target.closest?e.target.closest('button[data-d]'):null;
+if(!b||b.disabled)return;
+var n=parseInt(b.getAttribute('data-d'),10);
+var e2=todayYMD_();
+rgSel={a:addDaysYMD_(e2,-(n-1)),b:e2};
+rgViewY=e2.y;rgViewM=e2.m-1-1;
+rgPaint();
+});
+var cals=document.querySelector('.rgcals');
+cals.addEventListener('mousedown',function(e){
+var s=e.target.closest?e.target.closest('span[data-t]'):null;
+if(!s)return;
+var x=new Date(+s.getAttribute('data-t'));
+rgAnchorT=x.getTime();
+if(rgSel&&rgSel.a&&!rgSel.b){}
+else{rgSel={a:{y:x.getFullYear(),m:x.getMonth()+1,d:x.getDate()},b:null};rgVisited=false;}
+rgDragging=true;rgDragEnd=0;rgHoverT=0;rgPaintBand();
+var pk=document.querySelector('.rgcals span[data-t="'+s.getAttribute('data-t')+'"]');if(pk)pk.classList.add('pick');
+e.preventDefault();
+});
+cals.addEventListener('mouseover',function(e){
+var s=e.target.closest?e.target.closest('span[data-t]'):null;
+if(!s)return;
+var tt=+s.getAttribute('data-t');
+if(rgDragging){
+if(tt!==rgAnchorT)rgVisited=true;
+if(!rgSel.b||ymdNum_(rgSel.b)!==ymdNum_(ymdOfMs_(tt))){var xd=new Date(tt);rgSel.b={y:xd.getFullYear(),m:xd.getMonth()+1,d:xd.getDate()};rgDragEnd=tt;rgPaintBand();}
+return;
+}
+if(rgSel&&rgSel.a&&!rgSel.b){if(tt===rgHoverT)return;rgHoverT=tt;rgPaintBand();}
+});
+document.addEventListener('mouseup',function(){
+if(!rgDragging)return;
+rgDragging=false;
+var endT=rgDragEnd||rgAnchorT;
+if(rgSel&&rgSel.a&&!rgSel.b){
+if(endT===new Date(rgSel.a.y,rgSel.a.m-1,rgSel.a.d).getTime()&&!rgVisited){rgSel.b=null;}
+else{var xe=new Date(endT);rgSel.b={y:xe.getFullYear(),m:xe.getMonth()+1,d:xe.getDate()};}
+}
+if(rgSel&&rgSel.a&&rgSel.b){
+var na=new Date(rgSel.a.y,rgSel.a.m-1,rgSel.a.d).getTime(),nb=new Date(rgSel.b.y,rgSel.b.m-1,rgSel.b.d).getTime();
+if(nb<na){var tmp=rgSel.a;rgSel.a=rgSel.b;rgSel.b=tmp;}
+}
+rgPaintBand();
+});
+cals.addEventListener('click',function(e){
+var nv=e.target.getAttribute&&e.target.getAttribute('data-n');
+if(nv){rgViewM+=parseInt(nv,10);if(rgViewM<0){rgViewM+=12;rgViewY--;}if(rgViewM>12){rgViewM-=12;rgViewY++;}rgPaint();}
+});
+document.getElementById('rgReset').onclick=function(){
+var tt=todayYMD_();
+rgSel={a:addDaysYMD_(tt,-29),b:tt};rgViewY=tt.y;rgViewM=tt.m-1-1;rgPaint();
+};
+document.getElementById('rgOk').onclick=function(){
+if(!rgSel||!rgSel.a||!rgSel.b||rangeDiff_(rgSel.a,rgSel.b)>RANGE_MAXD)return;
+state.range={f:{y:rgSel.a.y,m:rgSel.a.m,d:rgSel.a.d},t:{y:rgSel.b.y,m:rgSel.b.m,d:rgSel.b.d}};
+renderRangebar();renderGrid();rgClose();
+msg('msgMain','Đã áp dụng Display Range (lọc danh sách): '+fmtRange_(state.range.f,state.range.t),true);
+};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')rgClose();});
+}
+
 var camTarget=null,camHtml5=null,camPopup=null,camLastCode='',camLastTs=0;
 var CAM_CODE_COOLDOWN_MS=1500;
 function camFormats_(){try{if(typeof Html5QrcodeSupportedFormats!=='undefined'){return [Html5QrcodeSupportedFormats.QR_CODE,Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,Html5QrcodeSupportedFormats.EAN_13];}}catch(e){}return undefined;}
@@ -1466,6 +1673,7 @@ try{if(!state._poll)state._poll=setInterval(function(){if(!document.hidden)loadG
 try{initLightbox();}catch(e){}
 try{syncScanClear();}catch(e){}
 try{setupCodeEdit('Box');setupCodeEdit('Item');}catch(e){}
+try{setupRange();}catch(e){}
 renderSlots('Box');renderSlots('Item');
 document.getElementById('btnTheme').onclick=function(){
 applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');

@@ -162,6 +162,12 @@ async function main() {
     const L = load.err ? null : JSON.parse(load.value);
     check('App load + mock google.script.run', !!(ready && L && L.hasMock), L ? JSON.stringify(L) : load.err);
     check('Grid render ≥ 1 card từ mock', !!(L && L.cards >= 1), L && String(L.cards));
+    await evalIn(ws, `document.getElementById('rgEdit').click()`);
+    await waitUntil(ws, "document.getElementById('rangeModal').classList.contains('open')", 3000);
+    await evalIn(ws, `document.querySelector('#rgPresets button[data-d="60"]').click(); document.getElementById('rgOk').click()`);
+    await sleep(300);
+    const rgW = await evalIn(ws, `document.getElementById('rgRangeLabel').textContent`);
+    check('Range mo rong 60d sau load', /2026\/08\/09 00:00-2026\/10\/07 23:59/.test(rgW.value || ''), rgW.value);
 
     // Chi tiết + timeline (mock Item đã Resolve, có bill + mốc ADMIN)
     await evalIn(ws, `openDetail('Item.06-10-2026.2')`);
@@ -337,6 +343,19 @@ async function main() {
     check('Ma dung -> Ok chot, khoa lai', ce3.value === '{"ro":true,"btn":"Sửa","v":"Box.07-10-2026.88"}', ce3.value);
     await evalIn(ws, `document.getElementById('btnCloseCreate').click()`);
 
+    const hd = await evalIn(ws, `JSON.stringify({inHead: !!document.querySelector('header .scanbar #scanMain'), ph: document.getElementById('scanMain').placeholder})`);
+    check('Search tren header + placeholder moi', hd.value === '{"inHead":true,"ph":"Nhập thông tin để tìm kiếm..."}', hd.value);
+    await evalIn(ws, `state.range={f:{y:2020,m:1,d:1},t:{y:2020,m:2,d:1}};renderGrid();`);
+    const z0 = await evalIn(ws, `document.querySelectorAll('#grid .card').length`);
+    check('Range cu -> luoi 0 don', z0.value === 0, String(z0.value));
+    await evalIn(ws, `var s=document.getElementById('scanMain');s.value='áo thun';s.dispatchEvent(new Event('input'))`);
+    await sleep(400);
+    const z1 = await evalIn(ws, `document.querySelectorAll('#grid .card').length`);
+    check('Search mo ta bypass Range', z1.value >= 1, String(z1.value));
+    await evalIn(ws, `var s=document.getElementById('scanMain');s.value='';s.dispatchEvent(new Event('input'));document.getElementById('rgEdit').click()`);
+    await waitUntil(ws, "document.getElementById('rangeModal').classList.contains('open')", 3000);
+    await evalIn(ws, `document.querySelector('#rgPresets button[data-d="30"]').click();document.getElementById('rgOk').click()`);
+    await sleep(300);
     const errs = await evalIn(ws, `JSON.stringify(window.__PAGE_ERRORS__ || [])`);
     check('Không lỗi JS trên trang', errs.value === '[]', errs.value);
   } catch (e) {
