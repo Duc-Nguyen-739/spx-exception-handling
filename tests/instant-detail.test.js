@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 
-// Contract: detail mo tuc thi tu list cache; Item khong co ngoai quan; poll 5' silent.
+// Contract: detail mo tuc thi tu list cache; Item khong co ngoai quan; poll 3' silent.
 function shouldShowOuter(kind, imgOuter) {
   return kind === 'Box' || !!imgOuter;
 }
@@ -31,7 +31,8 @@ test('instant-detail: log Tao moi gon, khong suffix share', () => {
   assert.ok(gs.includes('shareOk'));
 });
 
-test('instant-detail: poll 5 phut silent + bo qua khi tab an', () => {
+test('instant-detail: poll 3 phut silent + bo qua khi tab an', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes('setInterval(function(){if(!document.hidden)loadGrid({silent:true});},300000)'));
+  assert.ok(html.includes('setInterval(function(){if(!document.hidden)loadGrid({silent:true});},180000)'));
+  assert.ok(html.includes("gs('listFull',[150])"));
 });

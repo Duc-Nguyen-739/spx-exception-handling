@@ -78,7 +78,12 @@
     me: function () { return { ok: true, data: { email: ME, role: 'ADMIN', deployer: ME } }; },
     listItems: function (limit) {
       var out = ITEMS.slice().sort(function (a, b) { return b.code < a.code ? -1 : 1; });
-      return { ok: true, data: clone(out.slice(0, limit || 100)) };
+      return { ok: true, data: clone(out.slice(0, limit || 150)) };
+    },
+    listFull: function (limit) {
+      var out = ITEMS.slice().sort(function (a, b) { return b.code < a.code ? -1 : 1; });
+      var n = limit || 150;
+      return { ok: true, data: clone(out.slice(0, n).map(function (it) { return { item: it, history: HIST[it.code] || [] }; })) };
     },
     getItem: function (code) {
       var it = find(code);

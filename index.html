@@ -431,7 +431,7 @@ header{flex-wrap:wrap}
 </nav>
 
 <main id="viewMain">
-<div id="rangebar"><div class="rg-main"><div class="rg-line"><span class="rg-ico"><svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E8F0FE"/><circle cx="10" cy="10" r="8.4" fill="none" stroke="#3274F7" stroke-width="1.1" opacity=".5"/><circle cx="10" cy="6.6" r="1.3" fill="#3274F7"/><rect x="9.05" y="8.8" width="1.9" height="5.6" rx="0.95" fill="#3274F7"/></svg></span><span class="rg-info">Display Range:</span><span id="rgRangeLabel"></span><button id="rgEdit" type="button">Edit</button></div><div class="rg-cap">Dữ liệu được cập nhật mỗi 5 phút. Nếu không tìm thấy, vui lòng mở rộng phạm vi thời gian này hoặc nhập thông tin trên thanh tìm kiếm.</div></div><div class="rg-actions"><span class="topbtns"><button id="btnPrintMain" class="create-big">🖨 In Mã</button><button id="btnCreateMain" class="primary create-big">＋ Create</button></span></div></div>
+<div id="rangebar"><div class="rg-main"><div class="rg-line"><span class="rg-ico"><svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E8F0FE"/><circle cx="10" cy="10" r="8.4" fill="none" stroke="#3274F7" stroke-width="1.1" opacity=".5"/><circle cx="10" cy="6.6" r="1.3" fill="#3274F7"/><rect x="9.05" y="8.8" width="1.9" height="5.6" rx="0.95" fill="#3274F7"/></svg></span><span class="rg-info">Display Range:</span><span id="rgRangeLabel"></span><button id="rgEdit" type="button">Edit</button></div><div class="rg-cap">Dữ liệu được cập nhật mỗi 3 phút. Nếu không tìm thấy, vui lòng mở rộng phạm vi thời gian này hoặc nhập thông tin trên thanh tìm kiếm.</div></div><div class="rg-actions"><span class="topbtns"><button id="btnPrintMain" class="create-big">🖨 In Mã</button><button id="btnCreateMain" class="primary create-big">＋ Create</button></span></div></div>
 <div id="camModal" role="dialog" aria-label="Quét mã bằng camera"><div class="cam-box"><div id="camView"></div><div id="camStatus">Đưa mã vào khung — tự nhận diện.</div><div class="cam-btnrow"><button id="camFileBtn" type="button">Chụp ảnh</button><button id="camTorchBtn" type="button" style="display:none">🔦 Đèn</button><button id="camCloseBtn" type="button">Đóng</button></div></div></div><input type="file" id="camFile" accept="image/*" capture="environment" style="display:none">
 <div class="modal" id="rangeModal" role="dialog" aria-label="Chọn Display Range"><div class="sheet rgsheet">
 <div class="rghead"><span class="rg-ico"><svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E8F0FE"/><circle cx="10" cy="10" r="8.4" fill="none" stroke="#3274F7" stroke-width="1.1" opacity=".5"/><circle cx="10" cy="6.6" r="1.3" fill="#3274F7"/><rect x="9.05" y="8.8" width="1.9" height="5.6" rx="0.95" fill="#3274F7"/></svg></span> Display Range: <span id="rgLabel"></span><button id="rgX" class="iconBtn" type="button">✕</button></div>
@@ -617,7 +617,6 @@ var DEMO=[
 {code:'Box.01-10-2026.21',kind:'Box',createdAt:'01/10/2026 09:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo box',note:'',status:'chua_xu_ly',statusLabel:'Lưu kho',bill:'',days:5},
 {code:'Item.01-10-2026.3',kind:'Item',createdAt:'01/10/2026 10:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo item',note:'',status:'da_tim_bill',statusLabel:'Resolve',bill:'SPXVN1',days:5}
 ];
-var DETAIL_TTL_MS=5*60*1000;
 var state={items:[],itemMap:{},detailCache:{},detailAt:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{},codeEdit:{Box:false,Item:false},range:{f:null,t:null}};
 function hasGs(){return typeof google!=='undefined'&&google.script&&google.script.run;}
 function gs(fn,args){return new Promise(function(res,rej){
@@ -708,11 +707,19 @@ if(state._loadingGrid)return state._loadingGrid;
 if(!opts.silent)msg('msgMain','Đang tải…',true);
 state._loadingGrid=(async function(){
 try{
-var r=await gs('listItems',[100]);
+var full=null;
+try{var rf=await gs('listFull',[150]);if(rf&&rf.ok&&Array.isArray(rf.data))full=rf.data;}catch(fe){full=null;}
+if(full){
+mergeItems(full.map(function(e){return e.item;}));
+full.forEach(function(e){if(e&&e.item&&e.item.code){state.detailCache[e.item.code]={item:e.item,history:e.history||[]};state.detailAt[e.item.code]=Date.now();upsertItem(e.item);}});
+try{var cur=state.detail&&state.detail.item&&state.detail.item.code;if(cur&&state.detailCache[cur]){state.detail=state.detailCache[cur];renderDetailBody();renderTimeline();}}catch(ee){}
+}else{
+var r=await gs('listItems',[150]);
 if(!r.ok)throw new Error(r.error);
 mergeItems(r.data);
+}
 }catch(e){
-if(e&&e.message==='LOCAL'){mergeItems(DEMO.slice());}
+if(e&&e.message==='LOCAL'){mergeItems(DEMO.slice());DEMO.forEach(function(it){state.detailCache[it.code]={item:it,history:[]};state.detailAt[it.code]=Date.now();});}
 else{if(!state.items.length){renderGrid();renderSummary();msg('msgMain','Không tải được dữ liệu từ Sheet — '+(e&&e.message||e));}return;}
 }
 state.items.forEach(function(it){normItem_(it);});
@@ -904,10 +911,6 @@ var cached=state.detailCache[code];
 if(cached){
 state.detail=cached;
 paintDetail(code,'');
-if(Date.now()-((state.detailAt||{})[code]||0)<DETAIL_TTL_MS)return;
-gs('getItem',[code]).then(function(r){
-if(r&&r.ok){state.detailCache[code]=r.data;state.detailAt[code]=Date.now();upsertItem(r.data.item);if(state.detail&&state.detail.item&&state.detail.item.code===code){state.detail=r.data;paintDetail(code,'');}}
-}).catch(function(){});
 return;
 }
 var lc=findCached(code)||state.items.filter(function(x){return x.code===code;})[0]||null;
@@ -1750,7 +1753,7 @@ applyTheme(savedTheme==='dark'?'dark':'light');
 
 window.addEventListener('DOMContentLoaded',function(){
 loadGrid();loadMe();
-try{if(!state._poll)state._poll=setInterval(function(){if(!document.hidden)loadGrid({silent:true});},300000);}catch(e){}
+try{if(!state._poll)state._poll=setInterval(function(){if(!document.hidden)loadGrid({silent:true});},180000);}catch(e){}
 try{initLightbox();}catch(e){}
 try{syncScanClear();}catch(e){}
 try{setupCodeEdit('Box');setupCodeEdit('Item');}catch(e){}

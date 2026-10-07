@@ -9,7 +9,7 @@ var PROP_SHEET = 'SPREADSHEET_ID';
 var PROP_FOLDER = 'FOLDER_ID';
 var PROP_ADMINS = 'ADMIN_EMAILS';
 var USERS_HEADER = ['email', 'role', 'added_at', 'added_by'];
-var LIST_LIMIT = 100; // listItems chỉ đọc tối đa 100 dòng đầu (đơn mới insert ở dòng 2)
+var LIST_LIMIT = 150; // listItems/listFull chỉ đọc tối đa 150 dòng đầu (đơn mới insert ở dòng 2)
 
 var ITEMS_HEADER = ['code', 'created_at', 'description', 'kind', 'photo_path_outer',
   'photo_path_product', 'status', 'status_note', 'mvdn', 'trip', 'reporter', 'note'];
@@ -259,6 +259,66 @@ function listItems(limit) {
     if (limit && out.length > limit) out = out.slice(0, limit);
     return ok(out);
   } catch (e) { Logger.log(e); return fail('Không tải được danh sách: ' + e.message); }
+}
+
+function listFull(limit) {
+  try {
+    var n = limit ? Math.min(limit, LIST_LIMIT) : LIST_LIMIT;
+    var r = readHeadItems_(n);
+    var want = {};
+    for (var w = 0; w < r.items.length; w++) want[r.items[w].code] = true;
+    var phVals = readPhotosAll_();
+    var phByCode = {};
+    for (var i = 0; i < phVals.length; i++) {
+      var pc = String(phVals[i][0] || '').trim();
+      if (!want[pc]) continue;
+      (phByCode[pc] = phByCode[pc] || []).push({ slot: cellText_(phVals[i][1]), fileId: cellText_(phVals[i][2]) });
+    }
+    var histByCode = {};
+    var logSh = getSheet_('ActivityLog', LOG_HEADER);
+    var logLast = logSh.getLastRow();
+    if (logLast > 1) {
+      var logW = Math.max(logSh.getLastColumn(), LOG_HEADER.length);
+      var head = logSh.getRange(1, 1, 1, logW).getValues()[0]
+        .map(function (h) { return String(h || '').trim().toLowerCase(); });
+      var ciCode = head.indexOf('code');
+      var ciAt = head.indexOf('at');
+      var ciFrom = head.indexOf('from_status') >= 0 ? head.indexOf('from_status') : head.indexOf('from');
+      var ciTo = head.indexOf('to_status') >= 0 ? head.indexOf('to_status') : head.indexOf('to');
+      var ciBy = head.indexOf('by');
+      var ciNote = head.indexOf('note');
+      if (ciCode >= 0) {
+        var logVals = logSh.getRange(2, 1, logLast - 1, logW).getValues();
+        for (var j = 0; j < logVals.length; j++) {
+          var hc = String(logVals[j][ciCode] || '').trim();
+          if (!want[hc]) continue;
+          var hf = ciFrom >= 0 ? String(logVals[j][ciFrom] || '') : '';
+          var ht = ciTo >= 0 ? String(logVals[j][ciTo] || '') : '';
+          var hn = ciNote >= 0 ? String(logVals[j][ciNote] || '') : '';
+          (histByCode[hc] = histByCode[hc] || []).push({
+            at: ciAt >= 0 ? normAt_(cellText_(logVals[j][ciAt]), hc) : '',
+            code: hc, from: hf, to: ht,
+            by: ciBy >= 0 ? String(logVals[j][ciBy] || '') : '',
+            note: hn, bill: billOf_(hf, ht, hn)
+          });
+        }
+      }
+    }
+    var out = r.items.map(function (o) {
+      var t = toClient_(o);
+      var phs = phByCode[o.code] || [];
+      t.slots = phs.map(function (p) { return { slot: p.slot, url: thumbUrl_(p.fileId) }; });
+      t.extras = phs.filter(function (p) { return p.slot !== 'ngoai_quan' && p.slot !== 'san_pham'; })
+        .map(function (p) { return thumbUrl_(p.fileId); }).filter(Boolean);
+      return { item: t, history: histByCode[o.code] || [] };
+    });
+    out.sort(function (a, b) {
+      var da = parseCreatedSmart_(a.item.createdAt, a.item.code), db = parseCreatedSmart_(b.item.createdAt, b.item.code);
+      return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
+    });
+    if (limit && out.length > limit) out = out.slice(0, limit);
+    return ok(out);
+  } catch (e) { Logger.log(e); return fail('Không tải được dữ liệu: ' + e.message); }
 }
 
 function photosFor_(code) {
