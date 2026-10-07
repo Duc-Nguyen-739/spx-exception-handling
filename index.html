@@ -57,11 +57,11 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 #viewPrint .psect{margin:6px 0 12px;font-size:15px;color:var(--navy);padding-left:10px;border-left:4px solid var(--o)}
 #viewPrint .pstep{font-size:12.5px;color:var(--mut);margin:12px 0 8px}
 #viewPrint .pstep::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#c3ccd8;margin-right:8px}
-#viewPrint .pcards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#viewPrint .pcards{display:grid;grid-template-columns:repeat(2,minmax(0,370px));gap:12px;justify-content:start}
 #viewPrint .pcard{border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:24px 14px;font-size:15px;font-weight:600;text-align:center;cursor:pointer;color:var(--ink)}
 #viewPrint .pcard small{display:block;font-weight:400;font-size:11px;color:var(--mut);margin-top:6px}
 #viewPrint .pcard.on{border-color:var(--o);background:var(--tint);color:var(--o)}
-#viewPrint .pscan{max-width:420px}
+#viewPrint .pscan{max-width:370px}
 #viewPrint .pscanwrap{position:relative}
 #viewPrint .pscanwrap .pic{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:14px}
 #viewPrint .pscanwrap input{padding-left:32px}
@@ -399,16 +399,21 @@ header{flex-wrap:wrap}
 <h2 class="psect">Chọn cách in</h2>
 <div class="pstep">Chọn cách in</div>
 <div class="pcards">
-<div class="pcard on" id="cardSingle">In 1 Mã<small>Scan đúng định dạng là tự in (cả Box và Item)</small></div>
+<div class="pcard on" id="cardSingle">In Mã<small>Scan đúng định dạng là tự in (cả Box và Item)</small></div>
 <div class="pcard" id="cardBulk">In Nhiều Mã<small>Server tự sinh 10 mã — bấm là tự in cả 10</small></div>
 </div>
-<div class="pstep">Quét mã (cho thẻ In 1 Mã)</div>
+<div id="singleZone">
+<div class="pstep">Quét mã</div>
 <div class="pscan"><div class="pscanwrap"><span class="pic">⌕</span><input id="scanPrint" class="mono" placeholder="Scan or Input"></div>
 <div class="phint" id="scanPrintHint">Nhập/scan mã Box.… hoặc Item.… đúng định dạng sẽ tự in.</div>
 <div class="plast" id="lastPrint"></div>
 </div>
+</div>
+<div id="bulkZone" style="display:none">
 <ul id="bulkList"></ul>
 <div class="phint" id="bulkHint"></div>
+<div class="plast" id="lastBulk"></div>
+</div>
 </main>
 
 <main id="viewAccess" style="display:none">
@@ -1168,10 +1173,13 @@ printHint('Nhập/scan mã Box.… hoặc Item.… đúng định dạng sẽ t�
 document.getElementById('lastPrint').innerHTML='';
 document.getElementById('bulkList').innerHTML='';
 var bh=document.getElementById('bulkHint');bh.textContent='';bh.className='phint';
+document.getElementById('lastBulk').innerHTML='';
 }
 function selectPrintCard(which){
 document.getElementById('cardSingle').classList.toggle('on',which==='single');
 document.getElementById('cardBulk').classList.toggle('on',which==='bulk');
+document.getElementById('singleZone').style.display=which==='single'?'block':'none';
+document.getElementById('bulkZone').style.display=which==='bulk'?'block':'none';
 clearPrintMsgs();
 if(which==='single')document.getElementById('scanPrint').focus();
 }
@@ -1204,7 +1212,7 @@ codes.forEach(function(c){
 var li=document.createElement('li');li.innerHTML='<span>'+esc(c)+'</span>';ul.appendChild(li);
 });
 h.textContent='Đã giữ chỗ '+codes.length+' mã '+k+' — tự in '+codes[0]+' → '+codes[codes.length-1]+' (1 lệnh in, khổ 4x6in).';h.className='phint ok';
-document.getElementById('lastPrint').innerHTML='Đã in 10 mã: <b>'+esc(codes[0])+' → '+esc(codes[codes.length-1])+'</b>.';
+document.getElementById('lastBulk').innerHTML='Đã in 10 mã: <b>'+esc(codes[0])+' → '+esc(codes[codes.length-1])+'</b>.';
 doPrintMany(codes);
 }catch(e){h.textContent=(e&&e.message)||'Lỗi sinh mã';h.className='phint err';}
 }

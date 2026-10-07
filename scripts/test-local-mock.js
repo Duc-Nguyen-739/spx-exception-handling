@@ -270,7 +270,9 @@ async function main() {
     const pkOpen = await waitUntil(ws, "document.getElementById('printKindModal').classList.contains('open')", 3000);
     check('The In Nhieu Ma mo bang chon Box/Item', !!pkOpen, String(pkOpen));
     await evalIn(ws, `document.getElementById('optPrintBox').click()`);
-    const bkOk = await waitUntil(ws, "document.querySelectorAll('#bulkList li').length === 10", 8000);
+    const bkOk = await waitUntil(ws, "document.querySelectorAll('#bulkList li').length === 10"
+      + " && document.getElementById('singleZone').style.display === 'none'"
+      + " && document.getElementById('bulkZone').style.display === 'block'", 8000);
     await sleep(600);
     const bk = await evalIn(ws, `JSON.stringify({
       n: document.querySelectorAll('#bulkList li').length,
@@ -284,7 +286,9 @@ async function main() {
     await evalIn(ws, `document.getElementById('cardSingle').click()`);
     const clOk = await waitUntil(ws, "document.querySelectorAll('#bulkList li').length === 0"
       + " && document.getElementById('bulkHint').textContent === ''"
-      + " && document.getElementById('lastPrint').innerText === ''", 3000);
+      + " && document.getElementById('lastPrint').innerText === ''"
+      + " && document.getElementById('singleZone').style.display !== 'none'"
+      + " && document.getElementById('bulkZone').style.display === 'none'", 3000);
     check('Doi loai in xoa het thong bao cu', !!clOk, String(clOk));
     await evalIn(ws, `document.getElementById('btnBackPrint').click()`);
     const bkMain = await evalIn(ws, `document.getElementById('viewMain').style.display`);
