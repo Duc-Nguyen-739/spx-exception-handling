@@ -100,7 +100,7 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 @media(max-width:899px){#btnPrintMain,#btnPrintTop{display:none!important}}
 .scanbar input:focus{outline:none}
 .scanbar input::placeholder{color:var(--mut);font-weight:500}
-#camModal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(23,43,72,.55);padding:16px}#camModal.open{display:flex}#camModal .cam-box{background:var(--card);border-radius:16px;max-width:440px;width:100%;padding:14px}#camModal #camView{width:100%;min-height:240px;background:#000;border-radius:12px;overflow:hidden}#camStatus{font-size:12px;color:var(--mut);margin:8px 2px 0;min-height:18px;font-weight:600}.cam-btnrow{display:flex;gap:8px;margin-top:8px}.cam-btnrow button{flex:1}#camPrint{width:100%;margin-top:8px}.filterwrap{margin-bottom:10px}#btnFilterToggle{width:100%}#filterPanel{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px;margin-top:8px}#filterPanel .frow{display:flex;gap:8px;margin-bottom:8px}#filterPanel .frow:last-child{margin-bottom:0}#filterPanel .frow>*{flex:1}#filterPanel .field{margin:0}#filterCnt{color:var(--o);font-weight:800}
+#camModal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(23,43,72,.55);padding:16px}#camModal.open{display:flex}#camModal .cam-box{background:var(--card);border-radius:16px;max-width:440px;width:100%;padding:14px}#camModal #camView{width:100%;min-height:240px;background:#000;border-radius:12px;overflow:hidden}#camStatus{font-size:12px;color:var(--mut);margin:8px 2px 0;min-height:18px;font-weight:600}.cam-btnrow{display:flex;gap:8px;margin-top:8px}.cam-btnrow button{flex:1}#camPrint{width:100%;margin-top:8px}
 
 /* ===== chips row ===== */
 .pills{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}
@@ -388,7 +388,6 @@ header{flex-wrap:wrap}
 <span class="topbtns"><button id="btnCreateMain" class="primary create-big">＋ Create</button><button id="btnPrintMain" class="create-big">🖨 In Mã</button></span>
 </div>
 <div id="camModal" role="dialog" aria-label="Quét mã bằng camera"><div class="cam-box"><div id="camView"></div><div id="camStatus">Đưa mã vào khung — tự nhận diện.</div><div class="cam-btnrow"><button id="camFileBtn" type="button">Chụp ảnh</button><button id="camCloseBtn" type="button">Đóng</button></div></div></div><input type="file" id="camFile" accept="image/*" capture="environment" style="display:none">
-<div class="filterwrap"><button id="btnFilterToggle" type="button">Bộ lọc <span id="filterCnt"></span></button><div id="filterPanel" style="display:none"><div class="frow"><div class="field"><label>MÃ SẢN PHẨM</label><input id="fltCode" class="mono" placeholder="Nhập mã…"></div><div class="field"><label>LOẠI</label><select id="fltKind"><option value="">Tất cả</option><option value="Box">Box</option><option value="Item">Item</option></select></div></div><div class="frow"><div class="field"><label>TỪ NGÀY</label><input id="fltFrom" type="date"></div><div class="field"><label>ĐẾN NGÀY</label><input id="fltTo" type="date"></div></div><div class="frow"><div class="field"><label>NGƯỜI TẠO</label><select id="fltBy"><option value="">Tất cả</option></select></div><div class="field"><label>MÔ TẢ</label><input id="fltDesc" placeholder="Nhập thông tin muốn tìm…"></div></div><div class="frow"><button id="btnClearFilter" type="button">Xóa lọc</button></div></div></div>
 <div class="createrow"><button id="btnCreate" class="primary">＋ Create</button></div>
 <div class="pills" id="pillsRow"></div>
 <div class="msg" id="msgMain"></div>
@@ -569,7 +568,7 @@ var DEMO=[
 {code:'Item.01-10-2026.3',kind:'Item',createdAt:'01/10/2026 10:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo item',note:'',status:'da_tim_bill',statusLabel:'Resolve',bill:'SPXVN1',days:5}
 ];
 var DETAIL_TTL_MS=5*60*1000;
-var state={items:[],itemMap:{},detailCache:{},detailAt:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},fltCode:'',fltKind:'',fltFrom:'',fltTo:'',fltBy:'',fltDesc:'',pending:{}};
+var state={items:[],itemMap:{},detailCache:{},detailAt:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{}};
 function hasGs(){return typeof google!=='undefined'&&google.script&&google.script.run;}
 function gs(fn,args){return new Promise(function(res,rej){
 if(!hasGs()){rej(new Error('LOCAL'));return;}
@@ -682,7 +681,6 @@ p.appendChild(b);});
 var rf=document.createElement('button');rf.type='button';rf.className='pill';rf.title='Tải đơn mới từ server (giữ cache cũ)';rf.innerHTML='↻ Mới';rf.onclick=function(){loadGrid();};p.appendChild(rf);
 renderSideFilters();
 }
-renderFilterControls_();
 }
 var RAILNAV=[['navMain','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>','Danh sách'],['navLiq','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>','Thanh lý'],['navAccess','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>','Role']];
 var curNav='navMain';
@@ -718,19 +716,6 @@ var t=document.createElement('span');t.className='txt';t.textContent=kind;
 var n=document.createElement('span');n.className='dash-cnt';n.textContent=c[kind];
 l.appendChild(r);l.appendChild(t);l.appendChild(n);k.appendChild(l);});
 }
-function dateOnly_(iso){var m=String(iso||'').match(/(\d{4})-(\d{2})-(\d{2})/);if(!m)return null;return new Date(+m[1],+m[2]-1,+m[3]).getTime();}
-function activeFilterCount_(){var n=0;if(state.fltCode)n++;if(state.fltKind)n++;if(state.fltFrom||state.fltTo)n++;if(state.fltBy)n++;if(state.fltDesc)n++;return n;}
-function renderFilterControls_(){
-var ks=document.getElementById('fltKind');
-if(ks){var b=!!state.kinds.Box,i=!!state.kinds.Item;var v=(b&&i)||(!b&&!i)?'':(b?'Box':'Item');ks.value=v;state.fltKind=v;}
-var sel=document.getElementById('fltBy');if(!sel)return;
-var cur=state.fltBy||'',seen={},opts=[];
-state.items.forEach(function(it){var e=String(it.createdBy||'').trim();if(e&&!seen[e]){seen[e]=true;opts.push(e);}});
-opts.sort();
-sel.innerHTML='<option value="">Tất cả</option>'+opts.map(function(e){return '<option value="'+esc(e)+'"'+(e===cur?' selected':'')+'>'+esc(e)+'</option>';}).join('');
-if(cur&&opts.indexOf(cur)<0)state.fltBy='';
-var c=document.getElementById('filterCnt');if(c){var n=activeFilterCount_();c.textContent=n?('('+n+')'):'';}
-}
 function visibleItems(){
 var q=(state.filter||'').toLowerCase();
 var k=state.statusFilter||'';
@@ -739,18 +724,6 @@ if(k==='open'&&it.status!=='chua_xu_ly')return false;
 if(k==='resolve'&&it.status!=='da_tim_bill')return false;
 if(k==='liq'&&it.status!=='thanh_ly')return false;
 if(!state.kinds[it.kind])return false;
-var fc=(state.fltCode||'').toLowerCase();
-if(fc&&String(it.code).toLowerCase().indexOf(fc)<0)return false;
-var fd=(state.fltDesc||'').toLowerCase();
-if(fd&&String(it.description||'').toLowerCase().indexOf(fd)<0)return false;
-if(state.fltBy&&String(it.createdBy||'').trim()!==state.fltBy)return false;
-if(state.fltFrom||state.fltTo){
-var pd=parseCreated(it.createdAt);
-if(!pd)return false;
-var day=new Date(pd.getFullYear(),pd.getMonth(),pd.getDate()).getTime();
-if(state.fltFrom){var fr=dateOnly_(state.fltFrom);if(fr!=null&&day<fr)return false;}
-if(state.fltTo){var to=dateOnly_(state.fltTo);if(to!=null&&day>to)return false;}
-}
 if(!q)return true;
 return String(it.code).toLowerCase().indexOf(q)>=0
 ||String(it.description||'').toLowerCase().indexOf(q)>=0
@@ -1501,14 +1474,6 @@ document.getElementById('btnPrevDetail').onclick=function(){detailNav(-1);};
 document.getElementById('btnNextDetail').onclick=function(){detailNav(1);};
 function syncScanClear(){var s=document.getElementById('scanMain'),b=document.getElementById('scanClear');if(s&&b)b.classList.toggle('show',s.value.trim().length>0);}
 document.getElementById('scanMain').addEventListener('input',function(){state.filter=this.value.trim();syncScanClear();renderGrid();});
-document.getElementById('btnFilterToggle').onclick=function(){var p=document.getElementById('filterPanel');p.style.display=p.style.display==='none'?'block':'none';};
-document.getElementById('fltCode').addEventListener('input',function(){state.fltCode=this.value.trim();renderGrid();renderFilterControls_();});
-document.getElementById('fltDesc').addEventListener('input',function(){state.fltDesc=this.value.trim();renderGrid();renderFilterControls_();});
-document.getElementById('fltKind').onchange=function(){var v=this.value;state.fltKind=v;state.kinds={Box:!v||v==='Box',Item:!v||v==='Item'};renderGrid();renderSummary();};
-document.getElementById('fltFrom').onchange=function(){state.fltFrom=this.value;renderGrid();renderFilterControls_();};
-document.getElementById('fltTo').onchange=function(){state.fltTo=this.value;renderGrid();renderFilterControls_();};
-document.getElementById('fltBy').onchange=function(){state.fltBy=this.value;renderGrid();renderFilterControls_();};
-document.getElementById('btnClearFilter').onclick=function(){state.fltCode='';state.fltKind='';state.fltFrom='';state.fltTo='';state.fltBy='';state.fltDesc='';state.kinds={Box:true,Item:true};document.getElementById('fltCode').value='';document.getElementById('fltDesc').value='';document.getElementById('fltKind').value='';document.getElementById('fltFrom').value='';document.getElementById('fltTo').value='';document.getElementById('fltBy').value='';renderGrid();renderSummary();};
 document.getElementById('btnGoResolve').onclick=function(){if(state.detail&&state.detail.item)rsDraft={code:state.detail.item.code,bill:document.getElementById('resolveBill').value};document.getElementById('rsStep2').style.display='block';document.getElementById('btnGoResolve').style.display='none';document.getElementById('resolveBill').focus();};
 document.getElementById('btnCancelResolve').onclick=function(){rsDraft={code:null,bill:''};document.getElementById('rsStep2').style.display='none';document.getElementById('btnGoResolve').style.display='';};
 document.getElementById('btnConfirmResolve').onclick=doResolve;
