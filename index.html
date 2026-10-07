@@ -329,6 +329,16 @@ header .hact{grid-column:3}
 #createQR img,#createQR canvas,#createQR table{width:120px!important;height:120px!important}
 #createQRCode{text-align:center;font-size:12px}
 @media(min-width:900px){#editModal .sheet{max-width:760px}#editPhotos{display:grid;grid-template-columns:1fr 1fr;gap:10px}#editPhotos>div{margin-bottom:0!important}}
+/* Box gon khong cuon: anh grid 3 cot + nut Xoa overlay + Confirm dinh day. */
+#createModal #boxSlots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#createModal #boxSlots>div{margin-bottom:0!important}
+#createModal #boxSlots .ph img{height:84px}
+#createModal #boxSlots .camSlot{padding:14px 4px;font-size:10.5px;gap:4px;border-radius:10px}
+#createModal #boxSlots .camSlot .big{font-size:20px}
+#createModal #boxSlots .ph .delBox{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.6);background:rgba(23,43,72,.72);color:#fff;font-size:12px;font-weight:800;line-height:1;padding:0}
+#createModal #boxSlots .ph .badge{max-width:calc(100% - 34px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#createModal #formBox .field{margin:7px 0}
+#createModal #formBox .row{position:sticky;bottom:-18px;background:var(--card);padding:8px 0 2px;border-top:1px solid var(--line);margin-top:8px}
 
 /* ===== mobile-fix (mockup v2-v6) ===== */
 @media(max-width:899px){
@@ -609,7 +619,7 @@ header{flex-wrap:wrap}
 <div id="formBox">
 <div class="field"><label>MÃ BOX (server cấp khi lưu)</label><div class="coderow"><input id="boxCode" class="mono" readonly placeholder="Box.(ngày-tháng-năm).(số tự sinh)"><button id="btnBoxEdit" class="codebtn" type="button">Sửa</button></div><div class="msg" id="boxCodeHint"></div></div>
 <div class="field"><label>Ảnh *</label><div id="boxSlots"></div></div>
-<div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea id="boxDesc" rows="2" placeholder="VD: Thùng 12 áo thun hoàn, seal còn nguyên…"></textarea></div>
+<div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea id="boxDesc" rows="1" placeholder="VD: Thùng 12 áo thun hoàn, seal còn nguyên…"></textarea></div>
 <div class="field"><label>GHI CHÚ</label><input id="boxNote" placeholder="Nơi để, bù đơn hàng…"></div>
 <div class="row"><button id="btnBoxPrint">🖨 In Mã</button><button id="btnBoxDone" class="primary">Confirm</button></div>
 <button id="btnBoxAgain" style="width:100%;margin-top:8px;display:none">＋ Tạo tiếp</button>
@@ -1313,12 +1323,18 @@ var wrap=document.getElementById(kind==='Box'?'boxSlots':'itemSlots');
 wrap.innerHTML='';
 labels.forEach(function(label,i){
 var du=arr[i];
-var box=document.createElement('div');box.style.marginBottom='10px';
+var box=document.createElement('div');box.style.marginBottom=kind==='Box'?'0':'10px';
 if(du){
+if(kind==='Box'){
+box.innerHTML='<div class="ph"><img src="'+du+'"><span class="badge">'+esc(label)+'</span><button type="button" class="delBox" title="X\u00f3a '+esc(label.replace(' *',''))+'">\u2715</button></div>';
+var delB=box.querySelector('.delBox');
+delB.onclick=(function(idx){return function(){arr[idx]='';renderSlots(kind);};})(i);
+}else{
 box.innerHTML='<div class="ph"><img src="'+du+'"><span class="badge">'+esc(label)+'</span></div>';
-var del=document.createElement('button');del.style.cssText='width:100%;margin-top:6px';del.textContent='Xóa '+label.replace(' *','');
+var del=document.createElement('button');del.style.cssText='width:100%;margin-top:6px';del.textContent='X\u00f3a '+label.replace(' *','');
 del.onclick=(function(idx){return function(){arr[idx]='';renderSlots(kind);};})(i);
 box.appendChild(del);
+}
 }else{
 var b=document.createElement('button');b.type='button';b.className='camSlot';
 b.innerHTML='<span class="big">\uD83D\uDCF7</span><span>'+esc(label)+'</span>';
