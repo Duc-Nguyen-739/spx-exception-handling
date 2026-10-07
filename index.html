@@ -100,7 +100,7 @@ main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 @media(max-width:899px){#btnPrintMain,#btnPrintTop{display:none!important}}
 .scanbar input:focus{outline:none}
 .scanbar input::placeholder{color:var(--mut);font-weight:500}
-#reader{width:100%;max-width:420px;margin:8px auto}
+#camModal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(23,43,72,.55);padding:16px}#camModal.open{display:flex}#camModal .cam-box{background:var(--card);border-radius:16px;max-width:440px;width:100%;padding:14px}#camModal #camView{width:100%;min-height:240px;background:#000;border-radius:12px;overflow:hidden}#camStatus{font-size:12px;color:var(--mut);margin:8px 2px 0;min-height:18px;font-weight:600}.cam-btnrow{display:flex;gap:8px;margin-top:8px}.cam-btnrow button{flex:1}#camPrint{width:100%;margin-top:8px}
 
 /* ===== chips row ===== */
 .pills{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}
@@ -295,6 +295,7 @@ header{flex-wrap:wrap}
 #btnCreateTop{display:none}
 @media(min-width:900px){#btnCreateTop,#btnPrintTop{display:block}.createrow{display:none}}
 @media(min-width:900px){#camMain,#camLiq,#btnScanBill{display:none}}
+@media(min-width:900px){#camPrint{display:none}}
 
 /* ===== lightbox (kieu AppSheet: nen den, giua man hinh) ===== */
 #lightbox{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;z-index:99;touch-action:none}
@@ -386,7 +387,7 @@ header{flex-wrap:wrap}
 </div>
 <span class="topbtns"><button id="btnCreateMain" class="primary create-big">＋ Create</button><button id="btnPrintMain" class="create-big">🖨 In Mã</button></span>
 </div>
-<div id="reader" style="display:none"></div>
+<div id="camModal" role="dialog" aria-label="Quét mã bằng camera"><div class="cam-box"><div id="camView"></div><div id="camStatus">Đưa mã vào khung — tự nhận diện.</div><div class="cam-btnrow"><button id="camFileBtn" type="button">Chụp ảnh</button><button id="camCloseBtn" type="button">Đóng</button></div></div></div><input type="file" id="camFile" accept="image/*" capture="environment" style="display:none">
 <div class="createrow"><button id="btnCreate" class="primary">＋ Create</button></div>
 <div class="pills" id="pillsRow"></div>
 <div class="msg" id="msgMain"></div>
@@ -432,6 +433,7 @@ header{flex-wrap:wrap}
 <div id="singleZone">
 <div class="pstep">Quét mã</div>
 <div class="pscan"><div class="pscanwrap"><span class="pic">⌕</span><input id="scanPrint" class="mono" placeholder="Scan or Input"></div>
+<button id="camPrint" type="button">Quét</button>
 <div class="phint" id="scanPrintHint">Nhập/scan mã Box.… hoặc Item.… đúng định dạng sẽ tự in.</div>
 <div class="plast" id="lastPrint"></div>
 </div>
@@ -1355,19 +1357,67 @@ async function delUser(email){
 msg('msgAccess','Đang xóa…',true);
 try{var r=await gs('deleteUser',[email]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi xóa');msg('msgAccess','Đã xóa '+email+'.',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi xóa');}
 }
-var qr=null;
-function toggleCam(inputId){
-var rd=document.getElementById('reader');
-var show=rd.style.display==='none';
-rd.style.display=show?'block':'none';
-if(!show){try{qr&&qr.stop();}catch(e){}return;}
-if(typeof Html5Qrcode==='undefined'){msg('msgMain','Không tải được camera lib.');rd.style.display='none';return;}
-qr=new Html5Qrcode('reader');
-qr.start({facingMode:'environment'},{fps:10,qrbox:250},
-function(txt){document.getElementById(inputId).value=txt;
-if(inputId==='scanLiq')liqAdd(txt);else if(inputId==='resolveBill'){document.getElementById('resolveBill').focus();}else openDetail(txt);
-try{qr.stop();}catch(e){}rd.style.display='none';},
-function(){}).catch(function(){msg('msgMain','Không mở được camera (cần HTTPS). Nhập tay hoặc dùng súng.');});
+var camTarget=null,camHtml5=null,camPopup=null,camLastCode='',camLastTs=0;
+var CAM_CODE_COOLDOWN_MS=1500;
+function camFormats_(){try{if(typeof Html5QrcodeSupportedFormats!=='undefined'){return [Html5QrcodeSupportedFormats.QR_CODE,Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,Html5QrcodeSupportedFormats.EAN_13];}}catch(e){}return undefined;}
+function camIsFramed_(){try{return window.self!==window.top;}catch(e){return true;}}
+function buildScanPopupHtml_(){
+return ['<!doctype html>',
+'<html lang="vi"><head><meta charset="utf-8">',
+'<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">',
+'<title>Quét mã</title>',
+'<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"><\/script>',
+'<style>body{margin:0;background:#000;color:#fff;font-family:system-ui,sans-serif}#live{width:100%}#st{padding:10px 14px;font-size:14px;text-align:center}#bar{display:flex;gap:10px;justify-content:center;padding:0 14px 16px}button{font-size:16px;padding:12px 20px;border-radius:12px;border:0}#go{background:#ee4d2d;color:#fff}#x{background:rgba(255,255,255,.15);color:#fff}<\/style>',
+'</head><body>',
+'<div id="live"></div>',
+'<div id="st">Đưa mã vào khung — tự nhận diện</div>',
+'<div id="bar"><button id="go" type="button" style="display:none">Bật camera</button><button id="x" type="button">Đóng</button></div>',
+'<script>',
+'(function(){var last="",ts=0;function send(c){c=String(c||"").trim();if(!c)return;var n=Date.now();if(c===last&&n-ts<1500)return;last=c;ts=n;try{window.opener.postMessage({type:"spxScanResult",code:c},"*");}catch(e){}document.getElementById("st").textContent="Đã nhận: "+c+" — quét tiếp";}',
+'var h=new Html5Qrcode("live");h.start({facingMode:"environment"},{fps:10,qrbox:250},send,function(){}).catch(function(){document.getElementById("st").textContent="Bấm Bật camera để bắt đầu.";var g=document.getElementById("go");g.style.display="";g.onclick=function(){location.reload();};});',
+'document.getElementById("x").onclick=function(){window.close();};',
+'})();',
+'<'+'/script></body></html>'].join('');
+}
+window.addEventListener('message',function(e){if(e&&e.data&&e.data.type==='spxScanResult'){onPhoneDecoded(String(e.data.code||''));}});
+function openPhoneScan(target){
+camTarget=target;camLastCode='';camLastTs=0;
+if(camIsFramed_()){try{var pop=window.open('','spxScanPopup');if(pop&&!pop.closed){camPopup=pop;pop.document.write(buildScanPopupHtml_());pop.document.close();try{pop.focus();}catch(e){}var m=target==='scanLiq'?document.getElementById('msgLiq'):document.getElementById('msgMain');if(m){m.textContent='Đã mở cửa sổ quét — đưa mã vào khung camera.';m.className='msg ok';}return;}}catch(e){}}
+openCamModal_();
+}
+function camStatus_(t){var e=document.getElementById('camStatus');if(e)e.textContent=t||'';}
+function stopCamStream_(){if(camHtml5){try{camHtml5.stop();}catch(e){}try{camHtml5.clear();}catch(e){}camHtml5=null;}}
+function openCamModal_(){
+var md=document.getElementById('camModal');if(!md)return;md.classList.add('open');
+camStatus_('Đang mở camera…');
+if(typeof Html5Qrcode==='undefined'){camStatus_('Không tải được thư viện camera. Bấm Chụp ảnh.');return;}
+stopCamStream_();
+try{
+var cfg={fps:10,qrbox:250};var fm=camFormats_();if(fm)cfg.formatsToSupport=fm;
+camHtml5=new Html5Qrcode('camView');
+camHtml5.start({facingMode:'environment'},cfg,function(txt){onPhoneDecoded(txt);},function(){}).then(function(){camStatus_('Đưa mã vào khung — tự nhận diện.');},function(){camStatus_('Không mở được camera trực tiếp — bấm Chụp ảnh.');});
+}catch(e){camStatus_('Không mở được camera — bấm Chụp ảnh.');}
+}
+function closePhoneScan(){stopCamStream_();try{if(camPopup&&!camPopup.closed&&camTarget!=='scanLiq')camPopup.close();}catch(e){}camPopup=null;var md=document.getElementById('camModal');if(md)md.classList.remove('open');}
+function onPhoneDecoded(code){
+code=String(code||'').trim();if(!code)return;
+var now=Date.now();if(code===camLastCode&&now-camLastTs<CAM_CODE_COOLDOWN_MS)return;
+camLastCode=code;camLastTs=now;
+var t=camTarget||'scanMain';
+if(t==='scanLiq'){var s=document.getElementById('scanLiq');if(s)s.value=code;liqAdd(code);camStatus_('Đã nhận '+code+' — quét tiếp mã khác.');return;}
+if(t==='resolveBill'){var rb=document.getElementById('resolveBill');if(rb){rb.value=code;rb.focus();}closePhoneScan();return;}
+if(t==='scanPrint'){var sp=document.getElementById('scanPrint');if(sp)sp.value=code;closePhoneScan();clearTimeout(autoT);autoT=setTimeout(autoPrintSingle,300);return;}
+var sm=document.getElementById('scanMain');if(sm)sm.value=code;
+closePhoneScan();openDetail(code);
+}
+function camFileDecode_(file){
+if(!file)return;
+if(typeof Html5Qrcode==='undefined'){camStatus_('Không tải được thư viện camera.');return;}
+stopCamStream_();
+try{
+var tmp=new Html5Qrcode('camView');
+tmp.scanFile(file,false).then(function(txt){try{tmp.clear();}catch(e){}onPhoneDecoded(txt);}).catch(function(){try{tmp.clear();}catch(e){}camStatus_('Không đọc được mã trong ảnh — chụp gần hơn.');});
+}catch(e){camStatus_('Không đọc được ảnh vừa chụp.');}
 }
 
 function applyTheme(t){
@@ -1427,7 +1477,7 @@ document.getElementById('scanMain').addEventListener('input',function(){state.fi
 document.getElementById('btnGoResolve').onclick=function(){if(state.detail&&state.detail.item)rsDraft={code:state.detail.item.code,bill:document.getElementById('resolveBill').value};document.getElementById('rsStep2').style.display='block';document.getElementById('btnGoResolve').style.display='none';document.getElementById('resolveBill').focus();};
 document.getElementById('btnCancelResolve').onclick=function(){rsDraft={code:null,bill:''};document.getElementById('rsStep2').style.display='none';document.getElementById('btnGoResolve').style.display='';};
 document.getElementById('btnConfirmResolve').onclick=doResolve;
-document.getElementById('btnScanBill').onclick=function(){toggleCam('resolveBill');};
+document.getElementById('btnScanBill').onclick=function(){openPhoneScan('resolveBill');};
 document.getElementById('resolveBill').addEventListener('keydown',function(e){if(e.key==='Enter')doResolve();});
 document.getElementById('resolveBill').addEventListener('input',function(){if(state.detail&&state.detail.item&&rsDraft.code===state.detail.item.code)rsDraft.bill=this.value;});
 document.getElementById('btnPrintDetail').onclick=function(){if(state.detail)doPrint(state.detail.item.code);};
@@ -1455,9 +1505,14 @@ document.getElementById('scanMain').addEventListener('keydown',function(e){if(e.
 document.getElementById('scanLiq').addEventListener('keydown',function(e){if(e.key==='Enter'){liqAdd(e.target.value.trim());e.target.value='';}});
 document.getElementById('btnNext').onclick=function(){document.getElementById('liqCodeWrap').style.display='block';};
 document.getElementById('btnLiqDone').onclick=liqDone;
-document.getElementById('camMain').onclick=function(){toggleCam('scanMain');};
+document.getElementById('camMain').onclick=function(){openPhoneScan('scanMain');};
 document.getElementById('scanClear').onclick=function(){var s=document.getElementById('scanMain');s.value='';state.filter='';syncScanClear();renderGrid();s.focus();};
-document.getElementById('camLiq').onclick=function(){toggleCam('scanLiq');};
+document.getElementById('camLiq').onclick=function(){openPhoneScan('scanLiq');};
+document.getElementById('camPrint').onclick=function(){openPhoneScan('scanPrint');};
+document.getElementById('camCloseBtn').onclick=function(){closePhoneScan();};
+document.getElementById('camFileBtn').onclick=function(){document.getElementById('camFile').click();};
+document.getElementById('camFile').onchange=function(){var f=this.files&&this.files[0];this.value='';camFileDecode_(f);};
+document.getElementById('camModal').addEventListener('click',function(e){if(e.target===this)closePhoneScan();});
 document.getElementById('btnBackPrint').onclick=function(){showPrint(false);};
 document.getElementById('cardSingle').onclick=function(){selectPrintCard('single');};
 document.getElementById('cardBulk').onclick=function(){selectPrintCard('bulk');document.getElementById('printKindModal').classList.add('open');};
