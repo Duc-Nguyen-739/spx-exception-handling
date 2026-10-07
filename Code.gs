@@ -175,6 +175,26 @@ function getPhoto(fileId) {
   } catch (e) { Logger.log(e); return fail('Không xem được ảnh.'); }
 }
 
+// Fallback NHANH cho <img> thumbnail direct: tra base64 thumb nho thay vi full anh.
+// Server tu tao file nen OAuth token cua script du quyen doc.
+function getThumb(fileId, size) {
+  try {
+    fileId = String(fileId || '').trim();
+    if (!/^[a-zA-Z0-9_-]{10,}$/.test(fileId)) return fail('Ảnh không hợp lệ.');
+    if (!photoIds_()[fileId]) return fail('Không xem được ảnh.');
+    var sz = Math.min(Math.max(parseInt(size, 10) || 800, 200), 1200);
+    var resp = UrlFetchApp.fetch('https://drive.google.com/thumbnail?id=' + fileId + '&sz=w' + sz, {
+      headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+      muteHttpExceptions: true
+    });
+    if (resp.getResponseCode() !== 200) return fail('Không tải được ảnh.');
+    var blob = resp.getBlob();
+    var bytes = blob.getBytes();
+    if (!bytes.length || bytes.length > 2 * 1024 * 1024) return fail('Không tải được ảnh.');
+    return ok({ mime: String(blob.getContentType() || 'image/jpeg'), b64: Utilities.base64Encode(bytes) });
+  } catch (e) { Logger.log(e); return fail('Không tải được ảnh.'); }
+}
+
 function parseCreated_(s) {
   var m = String(s || '').match(/(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2})(?::(\d{2}))?)?/);
   if (!m) return null;

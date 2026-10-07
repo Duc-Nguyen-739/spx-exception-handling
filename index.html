@@ -683,8 +683,9 @@ function daysOf(c,code){var d=parseCreated(c,code);if(!d)return 0;return Math.ma
 function thumb(it){return it.imgProduct||it.imgOuter||(it.extras&&it.extras[0])||'';}
 function extractDriveId(u){var s=String(u||'');var m=s.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);if(m)return m[1];m=s.match(/\/d\/([a-zA-Z0-9_-]{10,})/);return m?m[1]:'';}
 var photoCache={},photoLoading={};
+function serverThumb(id){var k='t'+id;if(photoCache[k])return Promise.resolve(photoCache[k]);if(photoLoading[k])return photoLoading[k];photoLoading[k]=gs('getThumb',[id,800]).then(function(r){delete photoLoading[k];if(!r||!r.ok||!r.data||!r.data.b64)throw new Error((r&&r.error)||'loi');var u='data:'+(r.data.mime||'image/jpeg')+';base64,'+r.data.b64;photoCache[k]=u;return u;}).catch(function(e){delete photoLoading[k];throw e;});return photoLoading[k];}
 function serverPhoto(id){if(photoCache[id])return Promise.resolve(photoCache[id]);if(photoLoading[id])return photoLoading[id];photoLoading[id]=gs('getPhoto',[id]).then(function(r){delete photoLoading[id];if(!r||!r.ok||!r.data||!r.data.b64)throw new Error((r&&r.error)||'loi');var u='data:'+(r.data.mime||'image/jpeg')+';base64,'+r.data.b64;photoCache[id]=u;return u;}).catch(function(e){delete photoLoading[id];throw e;});return photoLoading[id];}
-function photoFallback(im,url,showNo){var id=extractDriveId(url||im.src||'');if(id&&!im.dataset.sv){im.dataset.sv='1';serverPhoto(id).then(function(u){im.src=u;}).catch(function(){showNo();});}else{showNo();}}
+function photoFallback(im,url,showNo){var src=url||im.src||'';var id=extractDriveId(src);if(!id){showNo();return;}if(/^https:\/\/drive\.google\.com\/thumbnail/.test(src)&&!im.dataset.rt){im.dataset.rt='1';setTimeout(function(){im.src=src;},400);return;}if(!im.dataset.sv){im.dataset.sv='1';serverThumb(id).then(function(u){im.src=u;}).catch(function(){serverPhoto(id).then(function(u){im.src=u;}).catch(function(){showNo();});});}else{showNo();}}
 function stClass(s){return s==='da_tim_bill'?'Resolve':(s==='thanh_ly'?'thanhly':'');}
 var STATUS_LABEL={chua_xu_ly:'Lưu kho',da_tim_bill:'Resolve',da_cho_di:'Đã cho đi',thanh_ly:'Thanh Lý',tieu_huy:'Tiêu hủy'};
 function stLabel(s){return STATUS_LABEL[s]||s||'';}
@@ -944,6 +945,8 @@ var im=document.getElementById('lbImg');im.src=src;
 document.getElementById('lbCap').textContent=cap||'';
 lbScale=1;lbTx=0;lbTy=0;lbApply();
 lb.classList.add('open');
+var fid=extractDriveId(src);
+if(fid){serverPhoto(fid).then(function(u){try{if(document.getElementById('lightbox').classList.contains('open'))document.getElementById('lbImg').src=u;}catch(e){}}).catch(function(){});}
 }
 function closeLightbox(){var lb=document.getElementById('lightbox');if(lb)lb.classList.remove('open');}
 function lbZoom(f){lbScale=Math.min(5,Math.max(1,lbScale*f));if(lbScale===1){lbTx=0;lbTy=0;}lbApply();}
