@@ -37,10 +37,20 @@ test('range: trong/ngoai/bien + fail-open', () => {
   assert.strictEqual(inRangeDay('06/10/2026 08:02:00', { f: null, t: null }), true);
 });
 
-test('range: diff ngay cho preset/cap 60', () => {
+test('range: diff ngay cho preset/cap 365', () => {
   assert.strictEqual(rangeDiff({ y: 2026, m: 9, d: 8 }, { y: 2026, m: 10, d: 7 }), 29);
   assert.strictEqual(rangeDiff({ y: 2026, m: 8, d: 9 }, { y: 2026, m: 10, d: 7 }), 59);
   assert.strictEqual(rangeDiff({ y: 2026, m: 10, d: 7 }, { y: 2026, m: 10, d: 7 }), 0);
+  assert.strictEqual(rangeDiff({ y: 2025, m: 10, d: 8 }, { y: 2026, m: 10, d: 7 }), 364);
+  assert.ok(rangeDiff({ y: 2026, m: 5, d: 11 }, { y: 2026, m: 10, d: 7 }) <= 365);
+});
+
+test('range: don cu 149 ngay nam trong 365d, ngoai 60d', () => {
+  const r60 = { f: { y: 2026, m: 8, d: 9 }, t: { y: 2026, m: 10, d: 7 } };
+  const r365 = { f: { y: 2025, m: 10, d: 8 }, t: { y: 2026, m: 10, d: 7 } };
+  assert.strictEqual(inRangeDay('11/05/2026 08:00:00', r60), false);
+  assert.strictEqual(inRangeDay('11/05/2026 08:00:00', r365), true);
+  assert.strictEqual(inRangeDay('11/05/2026 08:00:00', null), true);
 });
 
 test('range: co chu tim thi bypass (ke ca mo ta, khong gioi han ngay)', () => {

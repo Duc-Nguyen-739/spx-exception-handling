@@ -430,7 +430,7 @@ header{flex-wrap:wrap}
 <div id="camModal" role="dialog" aria-label="Quét mã bằng camera"><div class="cam-box"><div id="camView"></div><div id="camStatus">Đưa mã vào khung — tự nhận diện.</div><div class="cam-btnrow"><button id="camFileBtn" type="button">Chụp ảnh</button><button id="camCloseBtn" type="button">Đóng</button></div></div></div><input type="file" id="camFile" accept="image/*" capture="environment" style="display:none">
 <div class="modal" id="rangeModal" role="dialog" aria-label="Chọn Display Range"><div class="sheet rgsheet">
 <div class="rghead">ⓘ Display Range: <span id="rgLabel"></span><button id="rgX" class="iconBtn" type="button">✕</button></div>
-<div class="rgbody"><div class="rgpresets" id="rgPresets"><button data-d="7" type="button">Last 7 Days</button><button data-d="14" type="button">Last 14 Days</button><button data-d="30" class="on" type="button">Last 30 Days</button><button data-d="60" type="button">Last 60 Days</button><div class="rgover">Phạm vi hiển thị tối đa 60 ngày. Mặc định 30 ngày gần nhất.</div></div><div class="rgcals"><div class="rgcal" id="rgCalL"></div><div class="rgcal" id="rgCalR"></div></div></div>
+<div class="rgbody"><div class="rgpresets" id="rgPresets"><button data-d="7" type="button">Last 7 Days</button><button data-d="14" type="button">Last 14 Days</button><button data-d="30" class="on" type="button">Last 30 Days</button><button data-d="60" type="button">Last 60 Days</button><button data-d="90" type="button">Last 90 Days</button><button data-d="180" type="button">Last 180 Days</button><button data-d="365" type="button">Last 365 Days</button><div class="rgover">Phạm vi hiển thị tối đa 365 ngày. Mặc định 30 ngày gần nhất.</div></div><div class="rgcals"><div class="rgcal" id="rgCalL"></div><div class="rgcal" id="rgCalR"></div></div></div>
 <div class="rgfoot"><span class="msg" id="rgMsg"></span><button id="rgReset" type="button">Reset</button><button id="rgOk" class="primary" type="button">Confirm</button></div>
 </div></div>
 <div class="createrow"><button id="btnCreate" class="primary">＋ Create</button></div>
@@ -781,20 +781,75 @@ return String(it.code).toLowerCase().indexOf(q)>=0
 ||String(it.kind||'').toLowerCase().indexOf(q)>=0;
 });
 }
+function clearRangeFilter(){
+state.range=null;
+renderRangebar();renderGrid();
+msg('msgMain','\u0110\u00e3 t\u1eaft l\u1ecdc ng\u00e0y \u2014 hi\u1ec3n th\u1ecb t\u1ea5t c\u1ea3 '+state.items.length+' \u0111\u01a1n trong cache.',true);
+}
+function expandRange365(){
+var t=todayYMD_();
+state.range={f:addDaysYMD_(t,-364),t:t};
+renderRangebar();renderGrid();
+msg('msgMain','\u0110\u00e3 m\u1edf r\u1ed9ng Display Range (l\u1ecdc danh s\u00e1ch): '+fmtRange_(state.range.f,state.range.t),true);
+}
+function resetKindStatus(){
+state.statusFilter='';state.kinds={Box:true,Item:true};
+renderGrid();renderSummary();
+}
+function rangeLabel_(){
+if(state.range&&state.range.f&&state.range.t)return fmtRange_(state.range.f,state.range.t);
+return 'T\u1ea5t c\u1ea3';
+}
 function renderGrid(){
-var g=document.getElementById('grid');g.innerHTML='';
-visibleItems().forEach(function(it){
-var d=document.createElement('div');d.className='card';
-var src=thumb(it);
-var hot=(+it.days>3&&it.status==='chua_xu_ly')?' hot':'';
-d.innerHTML=(src?'<img loading="lazy" alt="" src="'+esc(src)+'">':'<div class="noimg">📦<small>Không có ảnh</small></div>')
-+'<span class="ovst '+stClass(it.status)+'">'+esc(it.statusLabel||it.status)+'</span>'
-+'<div class="cap"><span class="code">'+esc(it.code)+'</span><span class="days'+hot+'">'+esc(it.days)+' Ngày</span></div>';
-var im=d.querySelector('img');
-if(im){im.onerror=function(){photoFallback(im,src,function(){var n=document.createElement('div');n.className='noimg';n.innerHTML='📦<small>Không tải được ảnh</small>';n.onclick=function(){openDetail(it.code);};im.replaceWith(n);});};im.onclick=function(){openDetail(it.code);};}
-else{var nz=d.querySelector('.noimg');if(nz)nz.onclick=function(){openDetail(it.code);};}
-d.querySelector('.cap').onclick=function(){msg('msgMain','Bấm vào ẢNH mới mở chi tiết — dòng mã/ngày chỉ để xem nhanh.');};
-g.appendChild(d);
+var g=document.getElementById('grid');
+if(!g)return;
+var vis;
+try{vis=visibleItems();}
+catch(e){g.innerHTML='<div class="rel-empty">Kh\u00f4ng v\u1ebd \u0111\u01b0\u1ee3c l\u01b0\u1edbi: '+esc(e&&e.message||e)+'</div>';return;}
+g.innerHTML='';
+if(!vis.length){
+if(!state.items.length){g.innerHTML='<div class="rel-empty">Ch\u01b0a c\u00f3 \u0111\u01a1n.</div>';return;}
+var q=(state.filter||'').trim();
+if(q){g.innerHTML='<div class="rel-empty">Kh\u00f4ng t\u00ecm th\u1ea5y &quot;'+esc(q)+'&quot; trong '+state.items.length+' \u0111\u01a1n.</div>';return;}
+var k=state.statusFilter||'';
+var hidden=0;
+try{
+for(var i=0;i<state.items.length;i++){
+var it0=state.items[i];
+if(k==='open'&&it0.status!=='chua_xu_ly')continue;
+if(k==='resolve'&&it0.status!=='da_tim_bill')continue;
+if(k==='liq'&&it0.status!=='thanh_ly')continue;
+if(!state.kinds[it0.kind])continue;
+if(!inRangeDay_(it0.createdAt))hidden++;
+}
+}catch(e2){}
+if(hidden>0){
+g.innerHTML='<div class="rel-empty">Kh\u00f4ng c\u00f3 \u0111\u01a1n trong Display Range '+esc(rangeLabel_())+'.<br>C\u00f3 '+hidden+' \u0111\u01a1n ngo\u00e0i ph\u1ea1m vi (t\u00ecm ki\u1ebfm ch\u1eef v\u1eabn th\u1ea5y v\u00ec kh\u00f4ng gi\u1edbi h\u1ea1n ng\u00e0y).<br><br><button id="gridShowAll" type="button">Xem t\u1ea5t c\u1ea3 ('+state.items.length+')</button> <button id="gridExpand365" type="button">M\u1edf r\u1ed9ng 365 ng\u00e0y</button></div>';
+var b1=document.getElementById('gridShowAll');
+if(b1)b1.onclick=clearRangeFilter;
+var b2=document.getElementById('gridExpand365');
+if(b2)b2.onclick=expandRange365;
+}else{
+g.innerHTML='<div class="rel-empty">Kh\u00f4ng c\u00f3 \u0111\u01a1n kh\u1edbp b\u1ed9 l\u1ecdc tr\u1ea1ng th\u00e1i/lo\u1ea1i.<br><br><button id="gridResetFS" type="button">\u0110\u1eb7t l\u1ea1i l\u1ecdc</button></div>';
+var b3=document.getElementById('gridResetFS');
+if(b3)b3.onclick=resetKindStatus;
+}
+return;
+}
+vis.forEach(function(it){
+try{
+  var d=document.createElement('div');d.className='card';
+  var src=thumb(it);
+  var hot=(+it.days>3&&it.status==='chua_xu_ly')?' hot':'';
+  d.innerHTML=(src?'<img loading="lazy" alt="" src="'+esc(src)+'">':'<div class="noimg">📦<small>Không có ảnh</small></div>')
+  +'<span class="ovst '+stClass(it.status)+'">'+esc(it.statusLabel||it.status)+'</span>'
+  +'<div class="cap"><span class="code">'+esc(it.code)+'</span><span class="days'+hot+'">'+esc(it.days)+' Ngày</span></div>';
+  var im=d.querySelector('img');
+  if(im){im.onerror=function(){photoFallback(im,src,function(){var n=document.createElement('div');n.className='noimg';n.innerHTML='📦<small>Không tải được ảnh</small>';n.onclick=function(){openDetail(it.code);};im.replaceWith(n);});};im.onclick=function(){openDetail(it.code);};}
+  else{var nz=d.querySelector('.noimg');if(nz)nz.onclick=function(){openDetail(it.code);};}
+  d.querySelector('.cap').onclick=function(){msg('msgMain','Bấm vào ẢNH mới mở chi tiết — dòng mã/ngày chỉ để xem nhanh.');};
+  g.appendChild(d);
+}catch(e){}
 });
 }
 
@@ -1436,7 +1491,7 @@ async function delUser(email){
 msg('msgAccess','Đang xóa…',true);
 try{var r=await gs('deleteUser',[email]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi xóa');msg('msgAccess','Đã xóa '+email+'.',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi xóa');}
 }
-var RANGE_MAXD=60;
+var RANGE_MAXD=365;
 var RG_MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 var RG_WD=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 var rgSel=null,rgHoverT=0,rgDragging=false,rgAnchorT=0,rgDragEnd=0,rgVisited=false,rgViewY=0,rgViewM=0;
@@ -1515,11 +1570,19 @@ rgPaintBand();
 function renderRangebar(){
 if(state.range&&state.range.f&&state.range.t){
 document.getElementById('rgRangeLabel').textContent=fmtRange_(state.range.f,state.range.t);
+}else{
+document.getElementById('rgRangeLabel').textContent='T\u1ea5t c\u1ea3 (kh\u00f4ng l\u1ecdc ng\u00e0y)';
 }}
 function rgOpen(){
+if(state.range&&state.range.f&&state.range.t){
 rgSel={a:{y:state.range.f.y,m:state.range.f.m,d:state.range.f.d},b:{y:state.range.t.y,m:state.range.t.m,d:state.range.t.d}};
-rgHoverT=0;rgDragging=false;rgDragEnd=0;rgVisited=false;
 rgViewY=state.range.t.y;rgViewM=state.range.t.m-1-1;
+}else{
+var t0=todayYMD_();
+rgSel={a:addDaysYMD_(t0,-29),b:t0};
+rgViewY=t0.y;rgViewM=t0.m-1-1;
+}
+rgHoverT=0;rgDragging=false;rgDragEnd=0;rgVisited=false;
 document.getElementById('rangeModal').classList.add('open');
 rgPaint();
 }
