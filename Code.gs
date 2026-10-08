@@ -125,6 +125,14 @@ function driveIdFromUrl_(v) {
   return m ? m[1] : '';
 }
 
+// SSOT tach Drive file ID: ID tran giu nguyen, link drive boc ID ra, rac tra ''.
+// Dung chung cho allowlist (photoIds_) + reshare (fixPhotoSharing) de khong lech.
+function fileIdOf_(v) {
+  var t = String(v || '').trim();
+  if (/^[a-zA-Z0-9_-]{10,}$/.test(t)) return t;
+  return driveIdFromUrl_(t);
+}
+
 function thumbUrl_(v) {
   v = String(v || '').trim();
   if (!v) return '';
@@ -142,7 +150,7 @@ function photoIds_() {
   if (phLast >= 2) {
     var colC = phSh.getRange(2, 3, phLast - 1, 1).getValues();
     for (var i = 0; i < colC.length; i++) {
-      var pid = String(colC[i][0] || '').trim() || driveIdFromUrl_(colC[i][0]);
+      var pid = fileIdOf_(colC[i][0]);
       if (pid) ids[pid] = true;
     }
   }
@@ -153,8 +161,7 @@ function photoIds_() {
     for (var j = 0; j < icols.length; j++) {
       var cols = [icols[j][0], icols[j][1]];
       for (var k = 0; k < cols.length; k++) {
-        var t = String(cols[k] || '').trim();
-        var cid = (/^[a-zA-Z0-9_-]{10,}$/.test(t) ? t : driveIdFromUrl_(t));
+        var cid = fileIdOf_(cols[k]);
         if (cid) ids[cid] = true;
       }
     }
@@ -850,7 +857,7 @@ function fixPhotoSharing() {
     if (phLast >= 2) {
       var colC = phSh.getRange(2, 3, phLast - 1, 1).getValues();
       for (var i = 0; i < colC.length; i++) {
-        var id = String(colC[i][0] || '').trim() || driveIdFromUrl_(colC[i][0]);
+        var id = fileIdOf_(colC[i][0]);
         if (id) ids[id] = true;
       }
     }
@@ -861,24 +868,33 @@ function fixPhotoSharing() {
       for (var j = 0; j < icols.length; j++) {
         var a = String(icols[j][0] || '').trim();
         var b = String(icols[j][1] || '').trim();
-        var ia = (/^[a-zA-Z0-9_-]{10,}$/.test(a) ? a : driveIdFromUrl_(a));
-        var ib = (/^[a-zA-Z0-9_-]{10,}$/.test(b) ? b : driveIdFromUrl_(b));
+        var ia = fileIdOf_(a);
+        var ib = fileIdOf_(b);
         if (ia) ids[ia] = true;
         if (ib) ids[ib] = true;
       }
     }
-    var shared = 0, domainOnly = false, failed = [];
+    var shared = 0, domainOnly = false, failed = [], unreadable = 0, blocked = 0;
     for (var fid in ids) {
+      var f = null;
       try {
-        var lv = tryShareFile_(DriveApp.getFileById(fid));
+        f = DriveApp.getFileById(fid);
+      } catch (e0) {
+        unreadable++;
+        failed.push(fid);
+        continue;
+      }
+      try {
+        var lv = tryShareFile_(f);
         if (lv === 'domain') domainOnly = true;
-        if (lv === 'none') { failed.push(fid); continue; }
+        if (lv === 'none') { blocked++; failed.push(fid); continue; }
         shared++;
-      } catch (e) {
+      } catch (e1) {
+        blocked++;
         failed.push(fid);
       }
     }
-    return ok({ total: Object.keys(ids).length, shared: shared, failed: failed, domainOnly: domainOnly });
+    return ok({ total: Object.keys(ids).length, shared: shared, failed: failed, domainOnly: domainOnly, unreadable: unreadable, blocked: blocked });
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
