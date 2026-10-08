@@ -207,6 +207,14 @@ async function main() {
     })`);
     const RS0 = rs0.err ? null : JSON.parse(rs0.value);
     check('Resolve gọn 42px + In QR cùng hàng, không lấp lịch sử', !!(RS0 && RS0.h === 42 && RS0.sameRow), rs0.value);
+    const mob = await evalIn(ws, `JSON.stringify({
+      vw: window.innerWidth,
+      sticky: getComputedStyle(document.getElementById('resolveCard')).position,
+      histMax: getComputedStyle(document.getElementById('detailHist')).maxHeight,
+      expMax: Math.round(window.innerHeight * 0.7) + 'px'
+    })`);
+    const MOB = mob.err ? null : JSON.parse(mob.value);
+    check('Mobile: resolveCard sticky đáy + timeline 70dvh', !!(MOB && MOB.vw < 900 && MOB.sticky === 'sticky' && MOB.histMax === MOB.expMax), mob.value);
     const phDone = await waitUntil(ws, "(function(){var l=document.querySelectorAll('#detailBody img[data-ph]');if(l.length!==3)return false;if(document.getElementById('detailBody').innerText.indexOf('thiếu mã ảnh')>=0)return false;return Array.prototype.every.call(l,function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;});})()", 15000);
     check('Tem/direct lỗi tự fallback server hiện đủ 3 ảnh, không kẹt lỗi ?', !!phDone, String(phDone));
     const du = await evalIn(ws, `JSON.stringify((window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getDetailUrls';}).length)`);

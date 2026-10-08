@@ -39,6 +39,17 @@ test('compact: strip can theo so luong (1 giua, 2 deu, 3 nhu cu)', () => {
   assert.ok(html.includes('<div class="phstrip n\'+Math.min(photos.length,3)+\'">'));
 });
 
+test('compact mobile: resolve sticky day + anh nho + timeline 70dvh', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes('#resolveCard{position:sticky;bottom:0'));
+  assert.ok(html.includes('#resolveCard #btnConfirmResolve{height:42px;padding:0 13px;font-size:13px}'));
+  assert.ok(html.includes('#detailHist{max-height:70dvh}'));
+  assert.ok(html.includes('#detailBody .phstrip.n1 .thumb{max-width:140px}'));
+  assert.ok(html.includes('.ph img{height:160px}'));
+  assert.ok(html.includes('.phstrip.n1 .thumb{max-width:260px;width:100%}'));
+  assert.ok(html.includes('.ph img{width:100%;height:210px;'));
+});
+
 test('compact: fallback chiu duoc .thumb + caption lightbox', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes("im.closest('.ph')||im.closest('.thumb')"));
