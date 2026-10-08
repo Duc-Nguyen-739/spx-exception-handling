@@ -221,7 +221,7 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 #histCard{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 #histCard h4{flex:none}
 #detailHist{overflow-y:auto;max-height:420px;scroll-behavior:smooth}
-@media(max-width:899px){#detailBody .kv{padding:6px 0;font-size:11.5px}#detailBody .phstrip.n1 .thumb{max-width:220px}#detailBody .phstrip.n1 .thumb img{height:110px;aspect-ratio:auto}#detailBody .phstrip.n2{grid-template-columns:repeat(2,minmax(0,150px));justify-content:center}#detailBody .phstrip.n2 .thumb img{height:110px;aspect-ratio:auto}
+@media(max-width:899px){#viewLiq .lscanbox{flex:1;width:auto}#viewLiq #camLiq{flex:none;white-space:nowrap}#viewLiq .lnextrow .primary{flex:1}#detailBody .kv{padding:6px 0;font-size:11.5px}#detailBody .phstrip.n1 .thumb{max-width:220px}#detailBody .phstrip.n1 .thumb img{height:110px;aspect-ratio:auto}#detailBody .phstrip.n2{grid-template-columns:repeat(2,minmax(0,150px));justify-content:center}#detailBody .phstrip.n2 .thumb img{height:110px;aspect-ratio:auto}
 #detailHist{flex:1;min-height:0;max-height:none}
 #resolveCard{margin:10px -16px -20px;padding:10px 16px 16px;border-top:1px solid var(--line)}
 #resolveCard .btnrow{margin-top:0}
@@ -229,8 +229,11 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 #resolveCard{flex:none;padding-bottom:8px;background:var(--card)}
 #resolveCard .btnrow{display:flex;gap:8px;margin-top:6px}
 #resolveCard .btnrow button{height:42px;padding:0 13px;font-size:13px}
-#resolveCard .billrow{align-items:center}
-#resolveCard #btnConfirmResolve{height:42px;flex:none;padding:0 18px;font-size:13px}
+#resolveCard .billrow{align-items:center;gap:6px}
+#resolveCard .billrow button{padding:8px 10px;font-size:12px}
+#resolveCard .billrow input{padding:8px 10px}
+#resolveCard #btnConfirmResolve{height:38px;flex:none;padding:0 14px;font-size:12.5px}
+#resolveCard #btnCancelResolve{padding:6px;font-size:11px}
 #resolveCard #btnPrintDetail{flex:none;width:auto}
 #msgDetail{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #editModal .ph img{height:84px}
@@ -519,9 +522,11 @@ header{flex-wrap:wrap}
 <main id="viewLiq" style="display:none">
 <div class="backrow"><button id="btnBackLiq" class="lnk backhome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Màn hình chính</button></div>
 <div class="lscanrow">
-<label><i>*</i> Quét mã thanh lý</label>
 <span class="lscanbox"><span class="pic">⌕</span><input id="scanLiq" class="mono" placeholder="Quét hoặc nhập mã…"></span>
-<button id="camLiq">📷 Quét</button>
+<button id="camLiq">📷 Quét camera</button>
+</div>
+<div class="lnextrow">
+<button id="btnNext" class="primary" disabled>Next →</button>
 </div>
 <div class="msg" id="msgLiq"></div>
 <div class="lempty" id="liqEmpty"><span class="big">🗂️</span>Quét mã để thêm vào lô thanh lý</div>
@@ -532,9 +537,6 @@ header{flex-wrap:wrap}
 <tbody id="liqRows"></tbody>
 <tfoot><tr><td colspan="4" id="liqTotal">Total 0</td></tr></tfoot>
 </table>
-</div>
-<div class="lnextrow">
-<button id="btnNext" class="primary" disabled>Next →</button>
 </div>
 <div id="liqCodeWrap" style="display:none">
 <div class="field"><label>MÃ THANH LÝ (từ phiếu bàn giao) *</label>
@@ -575,11 +577,6 @@ header{flex-wrap:wrap}
 <input id="newEmail" placeholder="email shopee" inputmode="email" style="flex:2">
 <button id="btnAddUser" class="primary">Thêm</button>
 </div>
-<div class="row" style="margin-top:8px">
-<button id="btnFixShare" style="flex:1">Sửa share ảnh cũ</button>
-<button id="btnDiagId" style="flex:1" title="Đọc danh tính server (không đổi gì)">Chẩn đoán danh tính</button>
-<button id="btnAuditPh" style="flex:1" title="Liệt kê ảnh ngoài folder (chỉ đọc)">Kiểm file ngoài folder</button>
-</div>
 </div>
 <div id="usersTable" style="margin-top:8px"></div>
 </main>
@@ -602,9 +599,7 @@ header{flex-wrap:wrap}
 <div class="btnrow"><button id="btnGoResolve" class="primary">Resolve</button><button id="btnPrintDetail" class="printOnly">🖨 In QR</button></div>
 </div>
 <div id="rsStep2" style="display:none">
-<div class="field"><label>Mã bill</label>
 <div class="billrow"><button id="btnScanBill" type="button">📷 Quét</button><input id="resolveBill" class="mono" placeholder="Nhập hoặc quét mã bill…"><button id="btnConfirmResolve" class="primary">Confirm</button></div>
-</div>
 <button id="btnCancelResolve" class="lnk">Hủy</button>
 </div>
 <div class="msg" id="msgDetail"></div>
@@ -2102,9 +2097,6 @@ try{syncSticky_();}catch(e){}
 window.addEventListener('resize',function(){try{syncSticky_();}catch(e){}});
 try{if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){try{syncSticky_();}catch(e){}});}catch(e){}
 try{if(typeof setTimeout!=='undefined')setTimeout(function(){try{syncSticky_();}catch(e){}},600);}catch(e){}
-document.getElementById('btnFixShare').onclick=fixSharing;
-document.getElementById('btnDiagId').onclick=diagId;
-document.getElementById('btnAuditPh').onclick=auditPhotos;
 document.getElementById('btnAddUser').onclick=function(){var em=document.getElementById('newEmail').value.trim();if(!em){msg('msgAccess','Nhập email cần thêm.');return;}addAdmin(em);document.getElementById('newEmail').value='';};
 async function addAdmin(email){
 msg('msgAccess','Đang thêm…',true);
@@ -2137,7 +2129,7 @@ function showLiq(on){document.getElementById('viewLiq').style.display=on?'block'
 async function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';document.getElementById('viewPrint').style.display='none';setActive('navAccess');try{await loadMe();}catch(e){}
 var e=state.me||{};
 var dl=document.getElementById('msgDeploy');
-if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?')+' · Deploy: '+(e.deployer||'(trống)');
+if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?');
 if((state.me&&state.me.role)!=='ADMIN'){msg('msgAccess','Chỉ ADMIN mới xem được trang này.');return;}
 loadUsers();}
 });

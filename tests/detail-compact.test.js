@@ -45,7 +45,7 @@ test('compact mobile: mau A — bang co dinh, info du, timeline cuon trong', () 
   assert.ok(!html.includes('#histCard{display:block'));
   assert.ok(html.includes('#detailHist{flex:1;min-height:0;max-height:none}'));
   assert.ok(!html.includes('#resolveCard{position:sticky'));
-  assert.ok(html.includes('#resolveCard #btnConfirmResolve{height:42px;flex:none;padding:0 18px;font-size:13px}'));
+  assert.ok(html.includes('#resolveCard #btnConfirmResolve{height:38px;flex:none;padding:0 14px;font-size:12.5px}'));
   assert.ok(html.includes('#detailBody .phstrip.n1 .thumb{max-width:220px}'));
   assert.ok(html.includes('#detailBody .phstrip.n1 .thumb img{height:110px;aspect-ratio:auto}'));
   assert.ok(html.includes('#detailBody .phstrip.n2 .thumb img{height:110px;aspect-ratio:auto}'));
@@ -64,8 +64,20 @@ test('compact: form bill 1 hang [quet][bill][confirm 42px] + mo form tu cuon day
   const k = html.indexOf('id="btnCancelResolve"');
   assert.ok(j < i && i < k, 'Confirm phai nam trong form bill');
   assert.ok(!html.includes('<div class="btnrow"><button id="btnConfirmResolve"'), 'xoa wrapper btnrow thua');
-  assert.ok(html.includes('#resolveCard #btnConfirmResolve{height:42px;flex:none;'));
+  assert.ok(html.includes('#resolveCard #btnConfirmResolve{height:38px;flex:none;'));
   assert.ok(html.includes("sh.scrollTop=sh.scrollHeight"));
+});
+
+test('tidy: form bill bo label + gon; Role bo Deploy + 3 nut; Liq gon', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(!html.includes('<label>Mã bill</label>'), 'bo label Ma bill');
+  assert.ok(html.includes('#resolveCard .billrow button{padding:8px 10px;font-size:12px}'));
+  assert.ok(!html.includes("· Deploy: '"), 'bo duoi Deploy Role tab');
+  assert.ok(!html.includes('id="btnFixShare"') && !html.includes('id="btnDiagId"') && !html.includes('id="btnAuditPh"'), 'bo 3 nut chan doan');
+  assert.ok(!html.includes('Quét mã thanh lý'), 'bo label Liq');
+  assert.ok(html.includes('<button id="camLiq">📷 Quét camera</button>'));
+  assert.ok(html.indexOf('id="btnNext"') < html.indexOf('id="msgLiq"'), 'Next ngay duoi thanh scan');
+  assert.ok(html.includes('#viewLiq .lnextrow .primary{flex:1}'));
 });
 
 test('revtag: so ban canh nut Sang/Toi, CI dong dau, local hien local', () => {

@@ -81,9 +81,8 @@ test('photo-share: nut chan doan danh tinh chi doc, khong doi gi', () => {
   assert.ok(b.includes('getSharingAccess()'), 'doc trang thai share hien tai thay vi doan');
   assert.ok(b.includes('getOwner()'), 'doc chu file de doi chieu deployer');
   assert.ok(!b.includes('setSharing'), 'tuyet doi khong doi share trong ham chan doan');
-  assert.ok(HTML.includes('id="btnDiagId"'), 'co nut bam tren tab Role');
-  assert.ok(HTML.includes("gs('diagIdentity',[])"), 'nut goi dung API');
-  assert.ok(HTML.includes("getElementById('btnDiagId').onclick=diagId"), 'nut duoc gan handler');
+  assert.ok(!HTML.includes('id="btnDiagId"'), 'da go nut khoi tab Role (ham server giu nguyen)');
+  assert.ok(!HTML.includes("getElementById('btnDiagId').onclick=diagId"), 'da go binding');
 });
 
 test('photo-share: deploy trong thi bao chua ro chu, khong nhan vo la cua nguoi khac', () => {
@@ -93,10 +92,9 @@ test('photo-share: deploy trong thi bao chua ro chu, khong nhan vo la cua nguoi 
   assert.ok(HTML.includes('chưa rõ chủ (deploy trống): '), 'UI hien dung truong hop');
 });
 
-test('photo-share: tab Role hien email deploy de doi chieu chu file', () => {
+test('photo-share: tab Role gon, khong hien deployer (API me() giu nguyen)', () => {
   assert.ok(GS.includes('deployer: deployerEmail_()'), 'me() tra deployer (effective user)');
-  assert.ok(HTML.includes('Deploy: '), 'Role tab hien deployer canh email dang nhap');
-  assert.ok(HTML.includes("(e.deployer||'(trống)')"), 'deployer trong van hien de phan biet 2 truong hop');
+  assert.ok(!HTML.includes('Deploy: '), 'da go duoi Deploy khoi tab Role');
 });
 
 test('photo-share: reshare dem chu file + gom mau loi, khong lo ID moi', () => {
@@ -125,6 +123,7 @@ test('photo-share: reshare cursor batch, khong timeout o 40-60k file', () => {
   assert.ok(b.includes('deleteProperty'), 'xong thi don cursor');
   assert.ok(b.includes('done: done, processed: acc.i'), 'tra tien do cho client lap');
   assert.ok(HTML.includes("gs('fixPhotoSharing',[guard>0])"), 'client tu chay tiep den done');
+  assert.ok(!HTML.includes('id="btnFixShare"'), 'da go nut khoi tab Role (ham server giu nguyen)');
 });
 
 test('photo-share: audit file ngoai folder chi doc, co cursor', () => {
@@ -136,7 +135,7 @@ test('photo-share: audit file ngoai folder chi doc, co cursor', () => {
   assert.ok(b.includes('done: done, next: next'), 'tra cursor cho client lap');
   assert.ok(!b.includes('setSharing'), 'tuyet doi khong doi share');
   assert.ok(!b.includes('setValues') && !b.includes('appendRow'), 'khong ghi sheet');
-  assert.ok(HTML.includes('id="btnAuditPh"'), 'co nut tren tab Role');
+  assert.ok(!HTML.includes('id="btnAuditPh"'), 'da go nut khoi tab Role (ham server giu nguyen)');
   assert.ok(HTML.includes("gs('auditPhotosOutsideFolder',[next])"), 'client lap theo cursor');
   assert.ok(HTML.includes('miss+=(r.data.outsideCount||0)'), 'cong don file ngoai folder qua cac batch');
 });

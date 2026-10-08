@@ -244,7 +244,7 @@ async function main() {
       h: Math.round(document.getElementById('btnConfirmResolve').getBoundingClientRect().height)
     })`);
     const RW = rw.err ? null : JSON.parse(rw.value);
-    check('Form bill gọn 1 hàng, Confirm 42px', !!(RW && RW.sameRow && RW.h === 42), rw.value);
+    check('Form bill gọn 1 hàng, Confirm 38px', !!(RW && RW.sameRow && RW.h === 38), rw.value);
     await evalIn(ws, `document.getElementById('btnConfirmResolve').click()`);
     await sleep(300);
     const needBill = await evalIn(ws, `document.getElementById('msgDetail').textContent`);
@@ -465,6 +465,16 @@ async function main() {
     check('Detail header dinh khi cuon', dh.value === 'sticky', String(dh.value));
     const fs = await evalIn(ws, `parseFloat(getComputedStyle(document.getElementById('resolveBill')).fontSize)`);
     check('O bill du 16px (iOS khong tu zoom)', fs.value >= 16, String(fs.value));
+    const td = await evalIn(ws, `JSON.stringify({
+      noBillLabel: !document.querySelector('#rsStep2 label'),
+      noLiqLabel: document.getElementById('viewLiq').innerText.indexOf('Quét mã thanh lý') < 0,
+      camTxt: document.getElementById('camLiq').textContent,
+      nextFirst: (document.getElementById('btnNext').compareDocumentPosition(document.getElementById('msgLiq')) & 4) !== 0,
+      noDiag: !document.getElementById('btnFixShare') && !document.getElementById('btnDiagId') && !document.getElementById('btnAuditPh'),
+      noDeploy: document.getElementById('viewAccess').innerText.indexOf('Deploy:') < 0
+    })`);
+    const TD = td.err ? null : JSON.parse(td.value);
+    check('Gon form bill + Role + Thanh Ly theo mau duyet', !!(TD && TD.noBillLabel && TD.noLiqLabel && /Quét camera/.test(TD.camTxt) && TD.nextFirst && TD.noDiag && TD.noDeploy), td.value);
     await evalIn(ws, `document.getElementById('navLiq').click()`);
     await evalIn(ws, `var s=document.getElementById('scanLiq');s.value='Box.06-10-2026.5';s.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter'}))`);
     const lqOk = await waitUntil(ws, "document.querySelectorAll('#liqRows tr').length === 1"
