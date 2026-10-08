@@ -11,7 +11,6 @@ Workflows giống repo `spx-diem-danh`:
 1. Vào repo Settings → Secrets and variables → Actions → New repository secret:
    - `GAS_SCRIPT_ID` = ID Apps Script project (đã set sẵn khi tạo repo).
    - `CLASPRC_JSON` = nội dung `~/.clasprc.json` (copy từ máy đã `clasp login`, hoặc từ repo cũ).
-   - `GAS_DEPLOYMENT_ID` (khuyến nghị) = deployment ID trong URL `/exec` chính thức (phần nằm giữa `/s/` và `/exec`). Có secret này thì CI chỉ redeploy đúng deployment đó, không đẻ thêm deployment mới gây loạn; chưa set thì CI chọn deployment version cao nhất như cũ.
 2. Push lên `main` → kiểm tra tab Actions (Deploy + Test chạy).
 3. Mở Apps Script project → Deploy → kiểm tra `/exec` đã lên version mới.
 
