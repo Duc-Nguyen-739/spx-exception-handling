@@ -201,8 +201,8 @@ async function main() {
     })`);
     const P = ph.err ? null : JSON.parse(ph.value);
     check('Chi tiết Box hiện đủ 3 ảnh', !!(P && P.n === 3), P && ('n=' + P.n));
-    const phDone = await waitUntil(ws, "Array.prototype.every.call(document.querySelectorAll('#detailBody img[data-ph]'), function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;})", 12000);
-    check('Ảnh lỗi Direct tự fallback server, không kẹt placeholder ?', !!phDone, String(phDone));
+    const phDone = await waitUntil(ws, "(function(){var l=document.querySelectorAll('#detailBody img[data-ph]');if(l.length!==3)return false;if(document.getElementById('detailBody').innerText.indexOf('Ảnh không hợp lệ')>=0)return false;return Array.prototype.every.call(l,function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;});})()", 15000);
+    check('Tem/direct lỗi tự fallback server hiện đủ 3 ảnh, không kẹt lỗi ?', !!phDone, String(phDone));
     const du = await evalIn(ws, `JSON.stringify((window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getDetailUrls';}).length)`);
     check('Mở chi tiết mint URL tem qua getDetailUrls', !!(du && !du.err && JSON.parse(du.value) > 0), du.value);
     await evalIn(ws, `document.getElementById('btnGoResolve').click()`);

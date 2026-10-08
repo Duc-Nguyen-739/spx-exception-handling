@@ -1,0 +1,185 @@
+const { test } = require('node:test');
+const assert = require('node:assert');
+const fs = require('node:fs');
+const vm = require('node:vm');
+
+// Behavioral test cho chuoi anh chi tiet, chay CODE THAT tu index.html
+// (extractDriveId/cellDriveId_/useServerImg_/photoFallback/applyDetailUrls)
+// voi DOM gia + server gia. Bao phu hoi quy dung bug report:
+// tem CELLIMAGE hong -> tach id goc -> getThumb -> (rac -> getPhoto) -> hien anh.
+
+function fnSrc(html, name) {
+  const start = html.indexOf('function ' + name + '(');
+  assert.ok(start >= 0, 'missing ' + name);
+  let i = html.indexOf('{', start);
+  let depth = 0, mode = 0; // 0 code, 1 '...', 2 "...", 3 /.../
+  for (let j = i; j < html.length; j++) {
+    const c = html[j];
+    if (mode === 1) { if (c === '\\') j++; else if (c === "'") mode = 0; }
+    else if (mode === 2) { if (c === '\\') j++; else if (c === '"') mode = 0; }
+    else if (mode === 3) { if (c === '\\') j++; else if (c === '/') mode = 0; }
+    else {
+      if (c === "'") mode = 1;
+      else if (c === '"') mode = 2;
+      else if (c === '/') mode = 3; // cac ham nay khong co phep chia so hoc
+      else if (c === '{') depth++;
+      else if (c === '}') { depth--; if (depth === 0) return html.slice(start, j + 1); }
+    }
+  }
+  throw new Error('unbalanced ' + name);
+}
+
+const HTML = fs.readFileSync('index.html', 'utf8');
+const WANT = ['extractDriveId', 'errText_', 'cellDriveId_', 'useServerImg_',
+  'serverThumb', 'serverPhoto', 'photoFallback', 'applyDetailUrls'];
+const LIB = WANT.map((n) => fnSrc(HTML, n)).join('\n');
+
+function fakeImg(src, cell, origUrl, dataUrl) {
+  const wrapper = { getAttribute: (k) => (k === 'data-url' ? (dataUrl || null) : null) };
+  return {
+    src, dataset: cell ? { src: 'cell', orig: origUrl || '' } : {},
+    closest: () => wrapper, _wrapper: wrapper,
+  };
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const PNG = { ok: { ok: true, data: { mime: 'image/png', b64: 'AAA' } } };
+const JPG = { ok: { ok: true, data: { mime: 'image/jpeg', b64: 'BBB' } } };
+const GARBAGE = { ok: { ok: true, data: { mime: 'text/html', b64: 'PGh0bWw+' } } };
+const ID_A = 'MOCKouter01AB3456789012';
+const THUMB_A = 'https://drive.google.com/thumbnail?id=' + ID_A + '&sz=w400';
+const TEM_A = 'https://mock-content.local/Box.06-10-2026.1/ngoai_quan';
+
+test('photo-chain: trich du code that, khong trich thieu', () => {
+  assert.ok(LIB.includes('useServerImg_(im,id,u,showNo,done)'));
+  assert.ok(LIB.includes("dataset.src==='cell')id=cellDriveId_(im)"));
+  assert.ok(LIB.includes('/^data:image\\//'));
+  assert.ok(LIB.includes('else{done();}'));
+});
+
+test('photo-chain: ma tran day du qua tung case doc lap', async () => {
+  async function one(src, cell, origUrl, dataUrl, responses) {
+    const calls = [];
+    const sandbox = {
+      photoCache: {}, photoLoading: {},
+      putPhotoCache: () => {},
+      state: { detail: { item: { code: 'X' } } },
+      document: { querySelectorAll: () => [] },
+      setTimeout, Promise,
+      gs: (fn, args) => {
+        calls.push([fn, args && args[0]]);
+        const r = (responses[fn] || {})[args && args[0]];
+        return new Promise((res, rej) => {
+          setTimeout(() => {
+            if (!r) rej(new Error('unexpected call'));
+            else if (r.err) rej(new Error(r.err));
+            else res(r.ok);
+          }, 5);
+        });
+      },
+    };
+    vm.createContext(sandbox);
+    const im = fakeImg(src, cell, origUrl, dataUrl);
+    sandbox.im = im;
+    let shown = 'UNSET';
+    sandbox.showNo = (m) => { shown = m; };
+    vm.runInContext(LIB, sandbox);
+    vm.runInContext('photoFallback(im, undefined, showNo);', sandbox);
+    await sleep(80);
+    return { calls, src: sandbox.im.src, shown };
+  }
+
+  // 1. tem hong, co data-url goc -> getThumb 1 lan -> hien anh, khong bao loi
+  let r = await one(TEM_A, true, '', THUMB_A, { getThumb: { [ID_A]: PNG } });
+  assert.deepStrictEqual(r.calls, [['getThumb', ID_A]]);
+  assert.ok(r.src.indexOf('data:image/png') === 0, 'hien anh tu server');
+  assert.strictEqual(r.shown, 'UNSET');
+
+  // 2. getThumb tra rac text/html -> rot xuong getPhoto -> hien anh
+  r = await one(TEM_A, true, '', THUMB_A, { getThumb: { [ID_A]: GARBAGE }, getPhoto: { [ID_A]: JPG } });
+  assert.deepStrictEqual(r.calls, [['getThumb', ID_A], ['getPhoto', ID_A]]);
+  assert.ok(r.src.indexOf('data:image/jpeg') === 0);
+
+  // 3. ca 2 tang server loi -> hien loi that cua server, khong bao "khong hop le"
+  r = await one(TEM_A, true, '', THUMB_A, {
+    getThumb: { [ID_A]: { err: 'Không tải được ảnh.' } },
+    getPhoto: { [ID_A]: { err: 'Không xem được ảnh.' } },
+  });
+  assert.deepStrictEqual(r.calls, [['getThumb', ID_A], ['getPhoto', ID_A]]);
+  assert.ok(String(r.shown).indexOf('Không xem được ảnh.') >= 0);
+
+  // 4. url la khong phai tem -> giu nguyen "Anh khong hop le", khong goi server
+  r = await one('https://example.com/x.png', false, '', null, {});
+  assert.deepStrictEqual(r.calls, []);
+  assert.strictEqual(r.shown, 'Ảnh không hợp lệ.');
+
+  // 5. tem nhung mat ca data-url lan orig -> bao loi co nhan (tem), khong goi server
+  r = await one(TEM_A, true, '', '', {});
+  assert.deepStrictEqual(r.calls, []);
+  assert.strictEqual(r.shown, 'Ảnh không hợp lệ. (tem)');
+});
+
+test('photo-chain: khong loop vo han khi anh server tra ve lai hong', async () => {
+  const calls = [];
+  const sandbox = {
+    photoCache: {}, photoLoading: {},
+    putPhotoCache: () => {},
+    state: { detail: { item: { code: 'X' } } },
+    document: { querySelectorAll: () => [] },
+    setTimeout, Promise,
+    gs: (fn, args) => {
+      calls.push([fn, args && args[0]]);
+      return new Promise((res) => {
+        setTimeout(() => res({ ok: true, data: { mime: 'image/png', b64: 'AAA' } }), 5);
+      });
+    },
+  };
+  vm.createContext(sandbox);
+  const im = fakeImg(TEM_A, true, '', THUMB_A);
+  sandbox.im = im;
+  let shown = 'UNSET';
+  sandbox.showNo = (m) => { shown = m; };
+  vm.runInContext(LIB, sandbox);
+  vm.runInContext('photoFallback(im, undefined, showNo);', sandbox);
+  await sleep(80);
+  assert.strictEqual(sandbox.im.dataset.sv, '1');
+  vm.runInContext('photoFallback(im, undefined, showNo);', sandbox);
+  await sleep(80);
+  assert.strictEqual(sandbox.im.dataset.sv, '2');
+  vm.runInContext('photoFallback(im, undefined, showNo);', sandbox);
+  await sleep(30);
+  assert.deepStrictEqual(calls, [['getThumb', ID_A], ['getPhoto', ID_A]]);
+  assert.ok(shown !== 'UNSET', 'lan 3 dung lai va bao chu');
+});
+
+test('photo-chain: applyDetailUrls giu url goc + swap tem co guard', async () => {
+  const sandbox = {
+    photoCache: {}, photoLoading: {},
+    putPhotoCache: () => {},
+    state: { detail: { item: { code: 'Box.06-10-2026.1' } } },
+    setTimeout, Promise,
+    gs: () => Promise.reject(new Error('no call')),
+  };
+  const imgs = [0, 1, 2].map((i) => {
+    const o = fakeImg(THUMB_A + i, false, '', null);
+    o.getAttribute = (k) => (k === 'src' ? o.src : null);
+    return o;
+  });
+  sandbox.document = { querySelectorAll: () => imgs };
+  vm.createContext(sandbox);
+  vm.runInContext(LIB, sandbox);
+  vm.runInContext(`applyDetailUrls('Box.06-10-2026.1', [
+    { slot: 'ngoai_quan', url: 'https://mock-content.local/t0' },
+    { slot: 'san_pham', url: 'https://mock-content.local/t1' },
+    { slot: 'bo_sung', url: 'https://mock-content.local/t2' }
+  ]);`, sandbox);
+  imgs.forEach((im, i) => {
+    assert.strictEqual(im.src, 'https://mock-content.local/t' + i);
+    assert.strictEqual(im.dataset.src, 'cell');
+    assert.strictEqual(im.dataset.orig, THUMB_A + i);
+  });
+  // lech so luong thi khong swap (guard cu van giu)
+  const keep = imgs.map((im) => im.src);
+  vm.runInContext(`applyDetailUrls('Box.06-10-2026.1', [{ slot: 'x', url: 'https://mock-content.local/z' }]);`, sandbox);
+  imgs.forEach((im, i) => assert.strictEqual(im.src, keep[i]));
+});
