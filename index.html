@@ -1930,7 +1930,6 @@ document.getElementById('rgOk').onclick=function(){
 if(!rgSel||!rgSel.a||!rgSel.b||rangeDiff_(rgSel.a,rgSel.b)>RANGE_MAXD)return;
 state.range={f:{y:rgSel.a.y,m:rgSel.a.m,d:rgSel.a.d},t:{y:rgSel.b.y,m:rgSel.b.m,d:rgSel.b.d}};
 renderRangebar();renderGrid();rgClose();
-msg('msgMain','Đã áp dụng Display Range (lọc danh sách): '+fmtRange_(state.range.f,state.range.t),true);
 };
 document.addEventListener('keydown',function(e){if(e.key==='Escape')rgClose();});
 }
