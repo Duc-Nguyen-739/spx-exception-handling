@@ -220,13 +220,20 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 #histCard h4{flex:none}
 #detailHist{overflow-y:auto;max-height:300px;scroll-behavior:smooth}
 @media(max-width:899px){#detailBody .kv{padding:6px 0}#detailBody .phstrip.n1 .thumb{max-width:160px}#detailHist{max-height:46dvh}}
-#resolveCard{flex:none;padding-bottom:8px}
-#resolveCard .btnrow{margin-top:6px}
-#resolveCard .btnrow button{padding:8px 13px;font-size:12.5px}
-#editModal .ph img{height:96px}
+#resolveCard{flex:none;padding-bottom:8px;background:var(--card)}
+#resolveCard .btnrow{display:flex;gap:8px;margin-top:6px}
+#resolveCard .btnrow button{height:42px;padding:0 13px;font-size:13px}
+#resolveCard #btnPrintDetail{flex:none;width:auto}
+#msgDetail{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#editModal .ph img{height:84px}
 #editModal .camSlot{padding:12px 8px;font-size:12px}
 #editModal .camSlot .big{font-size:22px}
 #editModal .field{margin:7px 0}
+#editPhotos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#editPhotos>div{margin-bottom:0!important}
+#editPhotos .ph .delBox{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.6);background:rgba(23,43,72,.72);color:#fff;font-size:12px;font-weight:800;line-height:1;padding:0}
+#editPhotos .ph .badge{max-width:calc(100% - 34px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#editModal .row{position:sticky;bottom:-18px;background:var(--card);padding:8px 0 2px;border-top:1px solid var(--line);margin-top:8px}
 .hist b{color:var(--navy)}
 .seg{display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;margin:10px 0}
 .seg button{flex:1;border:none;background:transparent;color:var(--mut);border-radius:9px;padding:9px;font-size:12px}
@@ -330,7 +337,7 @@ header .hact{grid-column:3}
 #createResult{border:1px solid var(--line);border-radius:13px;background:#f8fafc;padding:10px;margin-top:8px}
 #createQR img,#createQR canvas,#createQR table{width:120px!important;height:120px!important}
 #createQRCode{text-align:center;font-size:12px}
-@media(min-width:900px){#editModal .sheet{max-width:760px}#editPhotos{display:grid;grid-template-columns:1fr 1fr;gap:10px}#editPhotos>div{margin-bottom:0!important}}
+@media(min-width:900px){#editModal .sheet{max-width:760px}#editPhotos{gap:10px}}
 /* Box gon khong cuon: anh grid 3 cot + nut Xoa overlay + Confirm dinh day. */
 #createModal #boxSlots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 #createModal #boxSlots>div{margin-bottom:0!important}
@@ -576,10 +583,7 @@ header{flex-wrap:wrap}
 
 <div class="pcard" id="resolveCard">
 <div id="rsStep1">
-<div class="btnrow"><button id="btnGoResolve" class="primary">Resolve</button></div>
-<div class="btnrow printOnly">
-<button id="btnPrintDetail">🖨 In mã QR</button>
-</div>
+<div class="btnrow"><button id="btnGoResolve" class="primary">Resolve</button><button id="btnPrintDetail" class="printOnly">🖨 In QR</button></div>
 </div>
 <div id="rsStep2" style="display:none">
 <div class="field"><label>Mã bill</label>
@@ -1163,21 +1167,20 @@ var slots=valid.length?valid:slotsFromItem_(det.item);
 var keep=slots.filter(function(x){return editDel.indexOf(String(x.slot))<0;});
 var w=document.getElementById('editPhotos');w.innerHTML='';
 keep.forEach(function(x){
-var box=document.createElement('div');box.style.marginBottom='10px';
-if(x.url)box.innerHTML='<div class="ph"><img loading="lazy" src="'+esc(cachedSrc(x.url))+'"><span class="badge">'+esc(slotVn(x.slot))+'</span></div>';
-else box.innerHTML='<div class="ph"><div class="fb"><span class="big">\uD83D\uDCF7</span><span>Đang tải ảnh…</span></div><span class="badge">'+esc(slotVn(x.slot))+'</span></div>';
+var box=document.createElement('div');
+if(x.url)box.innerHTML='<div class="ph"><img loading="lazy" src="'+esc(cachedSrc(x.url))+'"><span class="badge">'+esc(slotVn(x.slot))+'</span><button type="button" class="delBox" title="Xóa '+esc(slotVn(x.slot))+'">✕</button></div>';
+else box.innerHTML='<div class="ph"><div class="fb"><span class="big">\uD83D\uDCF7</span><span>Đang tải ảnh…</span></div><span class="badge">'+esc(slotVn(x.slot))+'</span><button type="button" class="delBox" title="Xóa '+esc(slotVn(x.slot))+'">✕</button></div>';
 bindEditPhotoFallback_(box,x.url);
-var del=document.createElement('button');del.style.cssText='width:100%;margin-top:6px';del.textContent='Xóa '+slotVn(x.slot);
-del.onclick=(function(s){return function(){editDel.push(s);renderEditPhotos();};})(String(x.slot));
-box.appendChild(del);w.appendChild(box);
+box.querySelector('.delBox').onclick=(function(s){return function(){editDel.push(s);renderEditPhotos();};})(String(x.slot));
+w.appendChild(box);
 });
 editAdd.forEach(function(du,i){
-var box=document.createElement('div');box.style.marginBottom='10px';
-box.innerHTML='<div class="ph"><img src="'+du+'"><span class="badge">Ảnh mới '+(i+1)+'</span></div>';
-var und=document.createElement('button');und.style.cssText='width:100%;margin-top:6px';und.textContent='Xóa ảnh mới '+(i+1);
-und.onclick=(function(idx){return function(){editAdd.splice(idx,1);renderEditPhotos();};})(i);
-box.appendChild(und);w.appendChild(box);
+var box=document.createElement('div');
+box.innerHTML='<div class="ph"><img src="'+du+'"><span class="badge">Ảnh mới '+(i+1)+'</span><button type="button" class="delBox" title="Xóa ảnh mới '+(i+1)+'">✕</button></div>';
+box.querySelector('.delBox').onclick=(function(idx){return function(){editAdd.splice(idx,1);renderEditPhotos();};})(i);
+w.appendChild(box);
 });
+try{var epl=document.querySelector('#editPhotosWrap>label');if(epl)epl.textContent='ẢNH * ('+(keep.length+editAdd.length)+'/3)';}catch(e0){}
 var left=3-keep.length-editAdd.length;
 var aw=document.getElementById('editAddWrap');
 if(left>0){
