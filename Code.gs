@@ -660,15 +660,24 @@ function dataUrlToBlob_(dataUrl, name) {
   }
 }
 
+var LASTSHAREERR_ = '';
+function shareErrKind_(e) {
+  var m = String((e && e.message) || e || '')
+    .replace(/[\w.+-]+@[\w.-]+\.\w+/g, '[EMAIL]')
+    .replace(/[A-Za-z0-9_-]{25,}/g, '[ID]')
+    .replace(/\s+/g, ' ').trim();
+  return (m || 'unknown').slice(0, 120);
+}
 function tryShareFile_(f) {
+  LASTSHAREERR_ = '';
   try {
     f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     return 'link';
-  } catch (e1) { /* org chặn share ngoài */ }
+  } catch (e1) { LASTSHAREERR_ = shareErrKind_(e1); }
   try {
     f.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
     return 'domain';
-  } catch (e2) { /* deployer không thuộc domain hoặc drive khóa share */ }
+  } catch (e2) { LASTSHAREERR_ = shareErrKind_(e2); }
   return 'none';
 }
 
@@ -875,10 +884,20 @@ function fixPhotoSharing() {
       }
     }
     var shared = 0, domainOnly = false, failed = [], unreadable = 0, blocked = 0;
+    var ownedByMe = 0, ownedByOthers = 0, errMap = {};
+    var me = deployerEmail_();
+    function noteErr_(e) {
+      var p = shareErrKind_(e) || 'unknown';
+      errMap[p] = (errMap[p] || 0) + 1;
+    }
     for (var fid in ids) {
       var f = null;
       try {
         f = DriveApp.getFileById(fid);
+        var ow = '';
+        try { ow = String(f.getOwner().getEmail() || ''); } catch (eOw) {}
+        if (ow && me && ow.toLowerCase() === String(me).toLowerCase()) ownedByMe++;
+        else ownedByOthers++;
       } catch (e0) {
         unreadable++;
         failed.push(fid);
@@ -887,14 +906,19 @@ function fixPhotoSharing() {
       try {
         var lv = tryShareFile_(f);
         if (lv === 'domain') domainOnly = true;
-        if (lv === 'none') { blocked++; failed.push(fid); continue; }
+        if (lv === 'none') { blocked++; noteErr_(LASTSHAREERR_ || 'share-level none'); failed.push(fid); continue; }
         shared++;
       } catch (e1) {
         blocked++;
+        noteErr_(e1);
         failed.push(fid);
       }
     }
-    return ok({ total: Object.keys(ids).length, shared: shared, failed: failed, domainOnly: domainOnly, unreadable: unreadable, blocked: blocked });
+    var errTop = '', errTopN = 0;
+    for (var p in errMap) {
+      if (errMap[p] > errTopN) { errTopN = errMap[p]; errTop = p; }
+    }
+    return ok({ total: Object.keys(ids).length, shared: shared, failed: failed, domainOnly: domainOnly, unreadable: unreadable, blocked: blocked, ownedByMe: ownedByMe, ownedByOthers: ownedByOthers, errTop: errTop, errTopN: errTopN });
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 

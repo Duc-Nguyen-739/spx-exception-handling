@@ -1647,7 +1647,7 @@ var r=await gs('fixPhotoSharing',[]);
 if(!r.ok)throw new Error(r.error);
 var f=r.data.failed&&r.data.failed.length?(' Lỗi '+r.data.failed.length+' file.'):'';
 var via=r.data.domainOnly?' (share nội bộ — xem bằng email công ty).':'';
-var why='';if(r.data.failed&&r.data.failed.length){var parts=[];if(r.data.unreadable)parts.push('không đọc được file: '+r.data.unreadable);if(r.data.blocked)parts.push('bị chặn share: '+r.data.blocked);if(parts.length)why=' ('+parts.join(', ')+')';}
+var why='';if(r.data.failed&&r.data.failed.length){var parts=[];if(r.data.unreadable)parts.push('không đọc được file: '+r.data.unreadable);if(r.data.blocked)parts.push('bị chặn share: '+r.data.blocked);if(r.data.ownedByOthers)parts.push('file của người khác: '+r.data.ownedByOthers);if(r.data.errTop)parts.push('hay gặp: '+r.data.errTop+(r.data.errTopN>1?(' ×'+r.data.errTopN):''));if(parts.length)why=' ('+parts.join(', ')+')';}
 msg('msgAccess','Đã share '+r.data.shared+'/'+r.data.total+' ảnh.'+via+f+why,true);
 renderGrid();
 }catch(e){msg('msgAccess',e.message||'Lỗi sửa share');}

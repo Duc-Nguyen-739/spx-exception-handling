@@ -55,4 +55,29 @@ test('photo-share: reshare phan loai that bai, khong nuot loi', () => {
 test('photo-share: UI hien breakdown de user bao lai dung benh', () => {
   assert.ok(HTML.includes('không đọc được file: '), 'hien so file doc khong duoc');
   assert.ok(HTML.includes('bị chặn share: '), 'hien so file bi chan share');
+  assert.ok(HTML.includes('file của người khác: '), 'hien so file khong phai cua deployer');
+  assert.ok(HTML.includes('hay gặp: '), 'hien mau loi gap nhieu nhat');
+});
+
+// KHOP Code.gs shareErrKind_: che email + ID dai, giu lai y chinh (<=120 ky tu).
+function shareErrKind(e) {
+  const m = String((e && e.message) || e || '')
+    .replace(/[\w.+-]+@[\w.-]+\.\w+/g, '[EMAIL]')
+    .replace(/[A-Za-z0-9_-]{25,}/g, '[ID]')
+    .replace(/\s+/g, ' ').trim();
+  return (m || 'unknown').slice(0, 120);
+}
+
+test('photo-share: mau loi che secret, giu y chinh', () => {
+  assert.ok(!shareErrKind(new Error('File 1AbCdefGhIjKlMnOpQrStUvWxYz1234567 not found')).match(/[A-Za-z0-9_-]{25,}/), 'ID dai bi che');
+  assert.strictEqual(shareErrKind(new Error('a@b.com x')), '[EMAIL] x');
+  assert.ok(shareErrKind(new Error('Access denied: sharing outside org is disabled')).length <= 120);
+});
+
+test('photo-share: reshare dem chu file + gom mau loi, khong lo ID moi', () => {
+  const b = GS.slice(GS.indexOf('function fixPhotoSharing('), GS.indexOf('function readPhotosAll_('));
+  assert.ok(b.includes('ownedByMe') && b.includes('ownedByOthers'), 'dem chu file theo deployer');
+  assert.ok(b.includes('deployerEmail_()'), 'reuse ham deployer san co');
+  assert.ok(b.includes('errTop'), 'tra mau loi gap nhieu nhat');
+  assert.ok(!/failed\.push\(([a-z]+)\)/.test(b.replace(/failed\.push\(fid\)/g, '')), 'failed chi push fid nhu cu, khong them truong moi');
 });
