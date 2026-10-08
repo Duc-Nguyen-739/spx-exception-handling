@@ -227,6 +227,13 @@ async function main() {
     const healOk = await waitUntil(ws, "(function(){var l=document.querySelectorAll('#detailBody img[data-ph]');return l.length===3&&Array.prototype.every.call(l,function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;});})()", 12000);
     check('Sau purge ảnh hiện lại qua server, không kẹt lỗi', !!healOk, String(healOk));
     await evalIn(ws, `document.getElementById('btnGoResolve').click()`);
+    await waitUntil(ws, "document.getElementById('rsStep2').style.display === 'block'", 3000);
+    const rw = await evalIn(ws, `JSON.stringify({
+      sameRow: document.getElementById('btnConfirmResolve').parentNode === document.getElementById('resolveBill').parentNode,
+      h: Math.round(document.getElementById('btnConfirmResolve').getBoundingClientRect().height)
+    })`);
+    const RW = rw.err ? null : JSON.parse(rw.value);
+    check('Form bill gọn 1 hàng, Confirm 42px', !!(RW && RW.sameRow && RW.h === 42), rw.value);
     await evalIn(ws, `document.getElementById('btnConfirmResolve').click()`);
     await sleep(300);
     const needBill = await evalIn(ws, `document.getElementById('msgDetail').textContent`);

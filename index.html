@@ -222,11 +222,12 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 @media(max-width:899px){#detailBody .kv{padding:6px 0}#detailBody .phstrip.n1 .thumb{max-width:140px}#detailHist{max-height:70dvh}
 #resolveCard{position:sticky;bottom:0;z-index:5;margin:10px -16px -20px;padding:10px 16px 16px;box-shadow:0 -8px 20px rgba(23,43,72,.08)}
 #resolveCard .btnrow{margin-top:0}
-#resolveCard #btnConfirmResolve{height:42px;padding:0 13px;font-size:13px}
 .ph img{height:160px}}
 #resolveCard{flex:none;padding-bottom:8px;background:var(--card)}
 #resolveCard .btnrow{display:flex;gap:8px;margin-top:6px}
 #resolveCard .btnrow button{height:42px;padding:0 13px;font-size:13px}
+#resolveCard .billrow{align-items:center}
+#resolveCard #btnConfirmResolve{height:42px;flex:none;padding:0 18px;font-size:13px}
 #resolveCard #btnPrintDetail{flex:none;width:auto}
 #msgDetail{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #editModal .ph img{height:84px}
@@ -599,9 +600,8 @@ header{flex-wrap:wrap}
 </div>
 <div id="rsStep2" style="display:none">
 <div class="field"><label>Mã bill</label>
-<div class="billrow"><button id="btnScanBill" type="button">📷 Quét</button><input id="resolveBill" class="mono" placeholder="Nhập hoặc quét mã bill…"></div>
+<div class="billrow"><button id="btnScanBill" type="button">📷 Quét</button><input id="resolveBill" class="mono" placeholder="Nhập hoặc quét mã bill…"><button id="btnConfirmResolve" class="primary">Confirm</button></div>
 </div>
-<div class="btnrow"><button id="btnConfirmResolve" class="primary">Confirm</button></div>
 <button id="btnCancelResolve" class="lnk">Hủy</button>
 </div>
 <div class="msg" id="msgDetail"></div>
@@ -2076,7 +2076,7 @@ document.getElementById('btnPrevDetail').onclick=function(){detailNav(-1);};
 document.getElementById('btnNextDetail').onclick=function(){detailNav(1);};
 function syncScanClear(){var s=document.getElementById('scanMain'),b=document.getElementById('scanClear');if(s&&b)b.classList.toggle('show',s.value.trim().length>0);}
 document.getElementById('scanMain').addEventListener('input',function(){state.filter=this.value.trim();syncScanClear();renderGrid();});
-document.getElementById('btnGoResolve').onclick=function(){if(state.detail&&state.detail.item)rsDraft={code:state.detail.item.code,bill:document.getElementById('resolveBill').value};document.getElementById('rsStep2').style.display='block';document.getElementById('btnGoResolve').style.display='none';document.getElementById('resolveBill').focus();};
+document.getElementById('btnGoResolve').onclick=function(){if(state.detail&&state.detail.item)rsDraft={code:state.detail.item.code,bill:document.getElementById('resolveBill').value};document.getElementById('rsStep2').style.display='block';document.getElementById('btnGoResolve').style.display='none';document.getElementById('resolveBill').focus();try{var sh=document.querySelector('#detailModal .sheet');sh.scrollTop=sh.scrollHeight;}catch(e){}};
 document.getElementById('btnCancelResolve').onclick=function(){rsDraft={code:null,bill:''};document.getElementById('rsStep2').style.display='none';document.getElementById('btnGoResolve').style.display='';};
 document.getElementById('btnConfirmResolve').onclick=doResolve;
 document.getElementById('btnScanBill').onclick=function(){openPhoneScan('resolveBill');};

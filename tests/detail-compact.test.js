@@ -42,12 +42,23 @@ test('compact: strip can theo so luong (1 giua, 2 deu, 3 nhu cu)', () => {
 test('compact mobile: resolve sticky day + anh nho + timeline 70dvh', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes('#resolveCard{position:sticky;bottom:0'));
-  assert.ok(html.includes('#resolveCard #btnConfirmResolve{height:42px;padding:0 13px;font-size:13px}'));
+  assert.ok(html.includes('#resolveCard #btnConfirmResolve{height:42px;flex:none;padding:0 18px;font-size:13px}'));
   assert.ok(html.includes('#detailHist{max-height:70dvh}'));
   assert.ok(html.includes('#detailBody .phstrip.n1 .thumb{max-width:140px}'));
   assert.ok(html.includes('.ph img{height:160px}'));
   assert.ok(html.includes('.phstrip.n1 .thumb{max-width:260px;width:100%}'));
   assert.ok(html.includes('.ph img{width:100%;height:210px;'));
+});
+
+test('compact: form bill 1 hang [quet][bill][confirm 42px] + mo form tu cuon day', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const i = html.indexOf('id="btnConfirmResolve"');
+  const j = html.indexOf('id="rsStep2"');
+  const k = html.indexOf('id="btnCancelResolve"');
+  assert.ok(j < i && i < k, 'Confirm phai nam trong form bill');
+  assert.ok(!html.includes('<div class="btnrow"><button id="btnConfirmResolve"'), 'xoa wrapper btnrow thua');
+  assert.ok(html.includes('#resolveCard #btnConfirmResolve{height:42px;flex:none;'));
+  assert.ok(html.includes("sh.scrollTop=sh.scrollHeight"));
 });
 
 test('compact: fallback chiu duoc .thumb + caption lightbox', () => {
