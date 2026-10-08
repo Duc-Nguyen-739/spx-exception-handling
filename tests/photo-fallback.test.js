@@ -74,3 +74,26 @@ test('photo: anh tem CELLIMAGE duoc danh dau de truy vet duong anh', () => {
   assert.ok(html.includes("?' (tem)':''"), 'loi gan nhan tem');
   assert.ok(html.includes('function done(m){'), 'showNo di qua wrapper gan nhan');
 });
+
+test('photo: tem hong thi lay id tu data-url goc roi moi goi server', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes('function cellDriveId_(im)'), 'co helper lay id tu anh goc');
+  assert.ok(html.includes('dataset.orig=cur'), 'swap tem giu lai url goc');
+  assert.ok(html.includes("dataset.src==='cell')id=cellDriveId_(im)"), 'tem moi duoc phep fallback qua id goc');
+});
+
+// KHOP index.html cellDriveId_: tem getContentUrl khong chua fileId (lh3/docs host)
+// -> lay id tu wrapper data-url (url thumbnail goc) de chay lai chuoi serverThumb/serverPhoto.
+function resolveCellId(src, isCell, origUrl) {
+  let id = extractDriveId(src);
+  if (!id && isCell) id = extractDriveId(origUrl);
+  return id;
+}
+
+test('photo: tem het han van fallback duoc qua data-url', () => {
+  const tem = 'https://lh3.googleusercontent.com/docs/ABCDEF=w320';
+  const orig = 'https://drive.google.com/thumbnail?id=1AbCdefGhIjKlMnOp&sz=w400';
+  assert.strictEqual(resolveCellId(tem, true, orig), '1AbCdefGhIjKlMnOp');
+  assert.strictEqual(resolveCellId(tem, false, orig), '');
+  assert.strictEqual(resolveCellId(tem, true, ''), '');
+});
