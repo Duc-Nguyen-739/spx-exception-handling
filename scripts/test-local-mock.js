@@ -208,24 +208,23 @@ async function main() {
     const RS0 = rs0.err ? null : JSON.parse(rs0.value);
     check('Resolve gọn 42px + In QR cùng hàng, không lấp lịch sử', !!(RS0 && RS0.h === 42 && RS0.sameRow), rs0.value);
     const mob = await evalIn(ws, `JSON.stringify((function(){
-      var vw = window.innerWidth, vh = window.innerHeight;
-      var body = getComputedStyle(document.getElementById('detailBody'));
+      var vw = window.innerWidth;
+      var sheet = document.querySelector('#detailModal .sheet');
+      var body = document.getElementById('detailBody');
       var hist = document.getElementById('histCard').getBoundingClientRect();
       var rs = document.getElementById('resolveCard').getBoundingClientRect();
       return {
         vw: vw,
-        bodyScroll: body.overflowY,
-        bodyMax: parseFloat(body.maxHeight), bodyExp: vh * 0.38,
-        histMin: getComputedStyle(document.getElementById('histCard')).minHeight,
-        histMax: getComputedStyle(document.getElementById('detailHist')).maxHeight,
+        sheetScroll: getComputedStyle(sheet).overflowY,
+        bodyScroll: body.scrollHeight <= body.clientHeight + 1,
+        histScroll: document.getElementById('detailHist').scrollHeight <= document.getElementById('detailHist').clientHeight + 1,
         rsPos: getComputedStyle(document.getElementById('resolveCard')).position,
         noCover: rs.top >= hist.bottom - 1
       };
     })())`);
     const MOB = mob.err ? null : JSON.parse(mob.value);
-    check('Mobile: timeline co san 140px, info cuon rieng, resolve khong che', !!(MOB && MOB.vw < 900
-      && MOB.bodyScroll === 'auto' && Math.abs(MOB.bodyMax - MOB.bodyExp) < 1.5
-      && MOB.histMin === '140px' && MOB.histMax === 'none' && MOB.rsPos === 'static' && MOB.noCover), mob.value);
+    check('Mobile: sheet cuon chung, info + timeline khong cuon trong, resolve khong che', !!(MOB && MOB.vw < 900
+      && MOB.sheetScroll === 'auto' && MOB.bodyScroll && MOB.histScroll && MOB.rsPos === 'static' && MOB.noCover), mob.value);
     const phDone = await waitUntil(ws, "(function(){var l=document.querySelectorAll('#detailBody img[data-ph]');if(l.length!==3)return false;if(document.getElementById('detailBody').innerText.indexOf('thiếu mã ảnh')>=0)return false;return Array.prototype.every.call(l,function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;});})()", 15000);
     check('Tem/direct lỗi tự fallback server hiện đủ 3 ảnh, không kẹt lỗi ?', !!phDone, String(phDone));
     const du = await evalIn(ws, `JSON.stringify((window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getDetailUrls';}).length)`);

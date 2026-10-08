@@ -39,11 +39,12 @@ test('compact: strip can theo so luong (1 giua, 2 deu, 3 nhu cu)', () => {
   assert.ok(html.includes('<div class="phstrip n\'+Math.min(photos.length,3)+\'">'));
 });
 
-test('compact mobile: timeline khong bao gio co ve 0 (flex + san 140px)', () => {
+test('compact mobile: sheet cuon chung, info + timeline khong cuon trong', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes('#detailModal #detailBody{max-height:38dvh;overflow-y:auto}'));
-  assert.ok(html.includes('#histCard{min-height:140px}'));
-  assert.ok(html.includes('#detailHist{max-height:none;flex:1;min-height:0}'));
+  assert.ok(html.includes('#detailModal .sheet{display:block;overflow-y:auto;overflow-x:hidden}'));
+  assert.ok(html.includes('#detailModal #detailBody{max-height:none;overflow:visible}'));
+  assert.ok(html.includes('#histCard{display:block;min-height:0;overflow:visible}'));
+  assert.ok(html.includes('#detailHist{max-height:none;overflow:visible}'));
   assert.ok(!html.includes('#resolveCard{position:sticky'));
   assert.ok(html.includes('#resolveCard #btnConfirmResolve{height:42px;flex:none;padding:0 18px;font-size:13px}'));
   assert.ok(html.includes('#detailBody .phstrip.n1 .thumb{max-width:220px}'));
