@@ -203,6 +203,8 @@ async function main() {
     check('Chi tiết Box hiện đủ 3 ảnh', !!(P && P.n === 3), P && ('n=' + P.n));
     const phDone = await waitUntil(ws, "Array.prototype.every.call(document.querySelectorAll('#detailBody img[data-ph]'), function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;})", 12000);
     check('Ảnh lỗi Direct tự fallback server, không kẹt placeholder ?', !!phDone, String(phDone));
+    const du = await evalIn(ws, `JSON.stringify((window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getDetailUrls';}).length)`);
+    check('Mở chi tiết mint URL tem qua getDetailUrls', !!(du && !du.err && JSON.parse(du.value) > 0), du.value);
     await evalIn(ws, `document.getElementById('btnGoResolve').click()`);
     await evalIn(ws, `document.getElementById('btnConfirmResolve').click()`);
     await sleep(300);

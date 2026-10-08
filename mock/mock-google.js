@@ -176,6 +176,17 @@
       if (!/^[a-zA-Z0-9_-]{10,}$/.test(String(fileId || ''))) return { ok: false, error: 'Ảnh không hợp lệ.' };
       return { ok: true, data: { mime: 'image/png', b64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' } };
     },
+    getDetailUrls: function (code) {
+      var it = find(code);
+      if (!it) return { ok: false, error: 'Không Có' };
+      var out = [];
+      if (it.imgOuter) out.push({ slot: 'ngoai_quan', url: 'https://mock-content.local/' + code + '/ngoai_quan' });
+      if (it.imgProduct) out.push({ slot: 'san_pham', url: 'https://mock-content.local/' + code + '/san_pham' });
+      (it.extras || []).forEach(function (u, i) {
+        if (u) out.push({ slot: i ? 'bo_sung_' + i : 'bo_sung', url: 'https://mock-content.local/' + code + '/bo_sung' + i });
+      });
+      return { ok: true, data: { code: code, mintedAt: 'mock', thumbs: out } };
+    },
     getThumbs: function (ids, size) {
       var items = {};
       ((ids || []).slice(0, 24)).forEach(function (id) {
