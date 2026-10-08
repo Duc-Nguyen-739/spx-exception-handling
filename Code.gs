@@ -125,7 +125,7 @@ function driveIdFromUrl_(v) {
 }
 
 // SSOT tach Drive file ID: ID tran giu nguyen, link drive boc ID ra, rac tra ''.
-// Dung chung cho allowlist (photoIds_) + reshare (fixPhotoSharing) de khong lech.
+// Dung chung cho reshare/audit de khong lech cach tach ID.
 function fileIdOf_(v) {
   var t = String(v || '').trim();
   if (/^[a-zA-Z0-9_-]{10,}$/.test(t)) return t;
@@ -142,10 +142,9 @@ function thumbUrl_(v) {
   return '';
 }
 
-// Kiem quyen anh theo CAY folder FOLDER_ID — O(1) Drive API, KHONG doc sheet.
-// photoIds_ doc full Photos + Items MOI lan kiem 1 anh (~60k o/call o 20k dong).
+// Kiem quyen anh theo CAY folder FOLDER_ID — O(1) Drive API, KHONG doc sheet
+// (quet full sheet moi lan kiem anh = ~60k o/call o 20k dong).
 // File do create_/adminEditItem tao deu qua monthFolder_() → nam duoi FOLDER_ID.
-// KHONG fallback sang photoIds_() (fallback = quet full = DoS chinh minh).
 function inPhotoFolder_(fileId) {
   if (!/^[a-zA-Z0-9_-]{10,}$/.test(String(fileId || ''))) return false;
   var ck = 'phok_' + fileId;
@@ -173,34 +172,8 @@ function inPhotoFolder_(fileId) {
       d1++;
     }
   } catch (e2) { Logger.log(e2); return false; }
-  try { CacheService.getScriptCache().put(ck, ok ? '1' : '0', 21600); } catch (e3) {}
+  try { CacheService.getScriptCache().put(ck, ok ? '1' : '0', ok ? 21600 : 600); } catch (e3) {}
   return ok;
-}
-
-function photoIds_() {
-  var ids = {};
-  var phSh = getSheet_('Photos', PHOTOS_HEADER);
-  var phLast = phSh.getLastRow();
-  if (phLast >= 2) {
-    var colC = phSh.getRange(2, 3, phLast - 1, 1).getValues();
-    for (var i = 0; i < colC.length; i++) {
-      var pid = fileIdOf_(colC[i][0]);
-      if (pid) ids[pid] = true;
-    }
-  }
-  var ish = getSheet_('Items', ITEMS_HEADER);
-  var ilast = ish.getLastRow();
-  if (ilast >= 2) {
-    var icols = ish.getRange(2, 5, ilast - 1, 2).getValues();
-    for (var j = 0; j < icols.length; j++) {
-      var cols = [icols[j][0], icols[j][1]];
-      for (var k = 0; k < cols.length; k++) {
-        var cid = fileIdOf_(cols[k]);
-        if (cid) ids[cid] = true;
-      }
-    }
-  }
-  return ids;
 }
 
 function getPhoto(fileId) {

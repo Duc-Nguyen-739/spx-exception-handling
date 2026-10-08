@@ -61,14 +61,12 @@ test('perf: tim 1 don bang cot A + doc 1 dong (getItem/resolve/edit/adminEdit/pr
   assert.ok(fullReads <= 3, 'readAllItems_ full chi con dinh nghia + liquidateBatch, hien: ' + fullReads);
 });
 
-test('perf: log edit gom batch, photoIds_ doc hep cot', () => {
+test('perf: log edit gom batch, khong con full-scan allowlist', () => {
   const gs = fs.readFileSync('Code.gs', 'utf8');
   assert.ok(gs.includes('noteRows.length, LOG_HEADER.length'));
   assert.ok(gs.includes('newLogs.length, LOG_HEADER.length'));
   assert.ok(gs.includes('newPh.length, PHOTOS_HEADER.length'));
-  const p = gs.slice(gs.indexOf('function photoIds_()'), gs.indexOf('function getPhoto('));
-  assert.ok(p.includes('getRange(2, 3,'), 'Photos chi doc cot C');
-  assert.ok(p.includes('getRange(2, 5,'), 'Items chi doc cot E:F');
+  assert.ok(!gs.includes('function photoIds_('), 'allowlist full-scan da xoa han');
 });
 
 test('perf: monthFolder_ cache theo thang + fallback', () => {

@@ -138,4 +138,5 @@ test('photo-share: audit file ngoai folder chi doc, co cursor', () => {
   assert.ok(!b.includes('setValues') && !b.includes('appendRow'), 'khong ghi sheet');
   assert.ok(HTML.includes('id="btnAuditPh"'), 'co nut tren tab Role');
   assert.ok(HTML.includes("gs('auditPhotosOutsideFolder',[next])"), 'client lap theo cursor');
+  assert.ok(HTML.includes('miss+=(r.data.outsideCount||0)'), 'cong don file ngoai folder qua cac batch');
 });

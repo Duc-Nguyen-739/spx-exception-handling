@@ -30,7 +30,7 @@ test('notem: client khong mint, khong swap tem, khong gui tem', () => {
     assert.ok(!html.includes(s), 'khong con: ' + s);
   }
   assert.ok(html.includes('function cellDriveId_(im){'), 'giu fallback id goc cho duong poison');
-  assert.ok(html.includes('function warmIfMissing(code){'), 'prime qua cache-first');
+  assert.ok(html.includes('function warmDetailImages(code){'), 'prime qua cache-first');
 });
 
 test('notem: mock khong con tem', () => {

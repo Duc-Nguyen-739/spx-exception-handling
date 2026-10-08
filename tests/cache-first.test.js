@@ -15,11 +15,12 @@ test('cache-first: prime await hydrate, hit thi khong warm', () => {
   const b = HTML.slice(p, end > 0 ? end : p + 500);
   assert.ok(!b.includes('refreshDetailUrls'), 'khong mint tem moi lan mo');
   assert.ok(b.includes('p.then(go)'), 'await hydrate truoc khi warm');
-  const w = HTML.indexOf('function warmIfMissing(code){');
-  assert.ok(w > 0, 'co gate miss');
+  assert.ok(!HTML.includes('function warmIfMissing('), 'gop logic trung vao warmDetailImages');
+  const w = HTML.indexOf('function warmDetailImages(code){');
+  assert.ok(w > 0);
   const wb = HTML.slice(w, w + 700);
-  assert.ok(wb.includes('if(!ids.length)return'), 'hit het thi 0 call server');
-  assert.ok(wb.includes('warmDetailImages(code)'), 'miss moi warm nen');
+  assert.ok(wb.includes("!photoCache['t'+id]"), 'bo qua da cache');
+  assert.ok(wb.includes('ids.slice(0,3)'), 'miss moi warm toi da 3');
 });
 
 test('cache-first: photoFallback kiem IDB truoc server', () => {
