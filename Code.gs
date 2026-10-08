@@ -143,6 +143,41 @@ function thumbUrl_(v) {
   return '';
 }
 
+// Kiem quyen anh theo CAY folder FOLDER_ID — O(1) Drive API, KHONG doc sheet.
+// photoIds_ doc full Photos + Items MOI lan kiem 1 anh (~60k o/call o 20k dong).
+// File do create_/adminEditItem tao deu qua monthFolder_() → nam duoi FOLDER_ID.
+// KHONG fallback sang photoIds_() (fallback = quet full = DoS chinh minh).
+function inPhotoFolder_(fileId) {
+  if (!/^[a-zA-Z0-9_-]{10,}$/.test(String(fileId || ''))) return false;
+  var ck = 'phok_' + fileId;
+  try {
+    var hit = CacheService.getScriptCache().get(ck);
+    if (hit === '1') return true;
+    if (hit === '0') return false;
+  } catch (e0) {}
+  var rootId = String(PropertiesService.getScriptProperties().getProperty(PROP_FOLDER) || '').trim();
+  if (!rootId) return false;
+  var f;
+  try { f = DriveApp.getFileById(fileId); } catch (e1) { return false; }
+  var ok = false;
+  try {
+    var it = f.getParents(), d1 = 0;
+    while (it.hasNext() && d1 < 3) {
+      var p = it.next();
+      if (p.getId() === rootId) { ok = true; break; }
+      var gp = p.getParents(), d2 = 0;
+      while (gp.hasNext() && d2 < 3) {
+        if (gp.next().getId() === rootId) { ok = true; break; }
+        d2++;
+      }
+      if (ok) break;
+      d1++;
+    }
+  } catch (e2) { Logger.log(e2); return false; }
+  try { CacheService.getScriptCache().put(ck, ok ? '1' : '0', 21600); } catch (e3) {}
+  return ok;
+}
+
 function photoIds_() {
   var ids = {};
   var phSh = getSheet_('Photos', PHOTOS_HEADER);
@@ -173,7 +208,7 @@ function getPhoto(fileId) {
   try {
     fileId = String(fileId || '').trim();
     if (!/^[a-zA-Z0-9_-]{10,}$/.test(fileId)) return fail('Ảnh không hợp lệ.');
-    if (!photoIds_()[fileId]) return fail('Không xem được ảnh.');
+    if (!inPhotoFolder_(fileId)) return fail('Không xem được ảnh.');
     var blob = DriveApp.getFileById(fileId).getBlob();
     var ct = String(blob.getContentType() || '');
     if (ct.indexOf('image/') !== 0) return fail('Không xem được ảnh.');
@@ -189,7 +224,7 @@ function getThumb(fileId, size) {
   try {
     fileId = String(fileId || '').trim();
     if (!/^[a-zA-Z0-9_-]{10,}$/.test(fileId)) return fail('Ảnh không hợp lệ.');
-    if (!photoIds_()[fileId]) return fail('Không xem được ảnh.');
+    if (!inPhotoFolder_(fileId)) return fail('Không xem được ảnh.');
     var sz = Math.min(Math.max(parseInt(size, 10) || 800, 200), 1200);
     var resp = UrlFetchApp.fetch('https://drive.google.com/thumbnail?id=' + fileId + '&sz=w' + sz, {
       headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
@@ -216,12 +251,11 @@ function getThumbs(ids, size) {
     list = list.slice(0, 24);
     if (!list.length) return fail('Thiếu danh sách ảnh.');
     var sz = Math.min(Math.max(parseInt(size, 10) || 400, 200), 800);
-    var allow = photoIds_();
     var token = ScriptApp.getOAuthToken();
     var out = {};
     for (var i = 0; i < list.length; i++) {
       var fid = list[i];
-      if (!allow[fid]) { out[fid] = { error: 'Không xem được ảnh.' }; continue; }
+      if (!inPhotoFolder_(fid)) { out[fid] = { error: 'Không xem được ảnh.' }; continue; }
       try {
         var resp = UrlFetchApp.fetch('https://drive.google.com/thumbnail?id=' + fid + '&sz=w' + sz, {
           headers: { Authorization: 'Bearer ' + token },

@@ -10,13 +10,14 @@ function chain(attempt, directOk, thumbOk, fullOk) {
   return fullOk ? 'shown-full' : 'showNo';
 }
 
-test('photo-perf: Code.gs co getThumb (UrlFetch + OAuth, clamp size, allowlist)', () => {
+test('photo-perf: Code.gs co getThumb (UrlFetch + OAuth, clamp size, folder check)', () => {
   const gs = fs.readFileSync('Code.gs', 'utf8');
   assert.strictEqual((gs.match(/function getThumb\(/g) || []).length, 1);
   const b = gs.slice(gs.indexOf('function getThumb('), gs.indexOf('function parseCreated_('));
   assert.ok(b.includes('UrlFetchApp.fetch'));
   assert.ok(b.includes('ScriptApp.getOAuthToken()'));
-  assert.ok(b.includes('photoIds_()[fileId]'));
+  assert.ok(b.includes('inPhotoFolder_(fileId)'), 'kiem folder O(1) thay photoIds_ full-scan');
+  assert.ok(!b.includes('photoIds_()'), 'khong quet full sheet o duong anh');
   assert.ok(b.includes('&sz=w'));
   assert.ok(b.includes('2 * 1024 * 1024'), 'chan blob thumb qua lon');
 });
@@ -58,7 +59,7 @@ test('photo-perf: Code.gs co getThumbs batch (1 call nhieu anh, cap 24, loi 1 an
   assert.strictEqual((gs.match(/function getThumbs\(/g) || []).length, 1);
   const b = gs.slice(gs.indexOf('function getThumbs('), gs.indexOf('function parseCreated_('));
   assert.ok(b.includes('slice(0, 24)'), 'cap 24 id/call giu payload duoi gioi han');
-  assert.ok(b.includes('photoIds_()'), 'allowlist 1 lan cho ca lo thay vi N lan');
+  assert.ok(b.includes('inPhotoFolder_(fid)'), 'kiem folder O(1) tung anh, khong full-scan');
   assert.ok(b.includes('ScriptApp.getOAuthToken()'));
   assert.ok(b.includes('out[fid] = { error:'), 'loi 1 anh khong fail ca lo');
   assert.ok(b.includes('return ok({ size: sz, items: out })'));
