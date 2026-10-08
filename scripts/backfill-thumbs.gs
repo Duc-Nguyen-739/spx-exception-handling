@@ -83,12 +83,37 @@ function BackfillRun() {
   Logger.log('Chay lai BackfillRun() cho dot tiep theo.');
 }
 
+function bhItemsAudit_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Items');
+  if (!sh || sh.getLastRow() < 2) return { bad: [], total: 0 };
+  var vals = sh.getRange(2, 1, sh.getLastRow() - 1, 6).getValues();
+  var bad = [];
+  for (var i = 0; i < vals.length; i++) {
+    var code = String(vals[i][0] || '').trim();
+    if (!code) continue;
+    var cells = [['E', vals[i][4]], ['F', vals[i][5]]];
+    for (var j = 0; j < cells.length; j++) {
+      var v = String(cells[j][1] || '').trim();
+      if (!v) continue;
+      var cls = /^[A-Za-z0-9_-]{10,}$/.test(v) ? 'id'
+        : (/[?&]id=([A-Za-z0-9_-]{10,})|\/d\/([A-Za-z0-9_-]{10,})/.test(v) ? 'drive-url'
+        : (/^https?:\/\//.test(v) ? 'https-la' : 'rac'));
+      if (cls === 'https-la' || cls === 'rac') bad.push(code + '/' + cells[j][0] + ' ' + cls + ':' + v.slice(0, 30));
+    }
+  }
+  return { bad: bad, total: vals.length };
+}
+
 function BackfillStatus() {
   var prop = PropertiesService.getScriptProperties();
   var cursor = parseInt(prop.getProperty(BACKFILL_PROP) || '0', 10) || 0;
   if (cursor < 0) cursor = 0;
   var m = bhMissing_(0);
   Logger.log('BACKFILL: tong thieu tem=' + m.total + ' (tinh tu dau, da qua dot toi vi tri ' + cursor + ').');
+  var au = bhItemsAudit_();
+  Logger.log('BACKFILL audit Items E/F: quet ' + au.total + ' dong, o la=' + au.bad.length
+    + (au.bad.length ? ' -> ' + au.bad.slice(0, 10).join(', ') : ' (sach)'));
 }
 
 function BackfillReset() {
