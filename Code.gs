@@ -190,6 +190,7 @@ function getThumb(fileId, size) {
     });
     if (resp.getResponseCode() !== 200) return fail('Không tải được ảnh.');
     var blob = resp.getBlob();
+    if (String(blob.getContentType() || '').indexOf('image/') !== 0) return fail('Không tải được ảnh.');
     var bytes = blob.getBytes();
     if (!bytes.length || bytes.length > 2 * 1024 * 1024) return fail('Không tải được ảnh.');
     return ok({ mime: String(blob.getContentType() || 'image/jpeg'), b64: Utilities.base64Encode(bytes) });
@@ -221,6 +222,7 @@ function getThumbs(ids, size) {
         });
         if (resp.getResponseCode() !== 200) { out[fid] = { error: 'Không tải được ảnh.' }; continue; }
         var blob = resp.getBlob();
+        if (String(blob.getContentType() || '').indexOf('image/') !== 0) { out[fid] = { error: 'Không tải được ảnh.' }; continue; }
         var bytes = blob.getBytes();
         if (!bytes.length || bytes.length > 2 * 1024 * 1024) { out[fid] = { error: 'Không tải được ảnh.' }; continue; }
         out[fid] = { mime: String(blob.getContentType() || 'image/jpeg'), b64: Utilities.base64Encode(bytes) };

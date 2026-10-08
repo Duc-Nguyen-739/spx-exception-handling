@@ -205,6 +205,13 @@ async function main() {
     check('Tem/direct lỗi tự fallback server hiện đủ 3 ảnh, không kẹt lỗi ?', !!phDone, String(phDone));
     const du = await evalIn(ws, `JSON.stringify((window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getDetailUrls';}).length)`);
     check('Mở chi tiết mint URL tem qua getDetailUrls', !!(du && !du.err && JSON.parse(du.value) > 0), du.value);
+    const seed = await evalIn(ws, `(function(){var s=[];var IDS=['MOCKouter01AB3456789012','MOCKproduct02CD3456789012','MOCKextra03EF3456789012'];try{for(var k in photoCache)delete photoCache[k];IDS.forEach(function(pid){var kk='i'+pid;var ix=idbMemOrder_.indexOf(kk);if(ix>=0)idbMemOrder_.splice(ix,1);delete idbMem_[kk];});s.push('clear-ok');}catch(e){s.push('clear-ERR:'+e.message);}try{var _d=idbDel;var n=0;idbDel=function(id){n++;window.__PURGED__=n;try{return _d(id);}catch(e){}};s.push('wrap-ok');}catch(e){s.push('wrap-ERR:'+e.message);return s.join('|');}IDS.forEach(function(pid){try{idbPut(pid,new Blob(['<html>poison</html>'],{type:'text/html'}));}catch(e){s.push('put-ERR:'+e.message);}});s.push('memkeys='+Object.keys(idbMem_).join(','));try{hydrateFromIdb('Box.06-10-2026.1');s.push('hydrate-called');}catch(e){s.push('hydrate-ERR:'+e.message);}return s.join('|');})()`);
+    const puOk = await waitUntil(ws, "(window.__PURGED__||0)>=3", 8000);
+    const puSt = await evalIn(ws, `JSON.stringify({pc: Object.keys(photoCache).length, purged: (window.__PURGED__||0)})`);
+    check('IDB nhiễm rác HTML được purge thay vì hiện ảnh rác', !!puOk, (seed.err ? 'seed-ERR:' + seed.err : seed.value) + ' st=' + (puSt.value || puSt.err));
+    await evalIn(ws, `openDetail('Box.06-10-2026.1')`);
+    const healOk = await waitUntil(ws, "(function(){var l=document.querySelectorAll('#detailBody img[data-ph]');return l.length===3&&Array.prototype.every.call(l,function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;});})()", 12000);
+    check('Sau purge ảnh hiện lại qua server, không kẹt lỗi', !!healOk, String(healOk));
     await evalIn(ws, `document.getElementById('btnGoResolve').click()`);
     await evalIn(ws, `document.getElementById('btnConfirmResolve').click()`);
     await sleep(300);
