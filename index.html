@@ -554,6 +554,7 @@ header{flex-wrap:wrap}
 </div>
 <div class="row" style="margin-top:8px">
 <button id="btnFixShare" style="flex:1">Sửa share ảnh cũ</button>
+<button id="btnDiagId" style="flex:1" title="Đọc danh tính server (không đổi gì)">Chẩn đoán danh tính</button>
 </div>
 </div>
 <div id="usersTable" style="margin-top:8px"></div>
@@ -1640,6 +1641,15 @@ document.getElementById('usersTable').innerHTML='';
 msg('msgAccess',e.message||'Lỗi tải danh sách');
 }
 }
+async function diagId(){
+msg('msgAccess','Đang chẩn đoán…',true);
+try{
+var r=await gs('diagIdentity',[]);
+if(!r.ok)throw new Error(r.error);
+var d=r.data||{};
+msg('msgAccess','active='+(d.active||'?')+' · effective='+(d.effective||'?')+' · chủ file đầu: '+(d.owner||d.readErr||d.note||'?')+' · share hiện tại: '+(d.sharing||'?'),true);
+}catch(e){msg('msgAccess',e.message||'Lỗi chẩn đoán');}
+}
 async function fixSharing(){
 msg('msgAccess','Đang sửa share ảnh…',true);
 try{
@@ -1984,6 +1994,7 @@ window.addEventListener('resize',function(){try{syncSticky_();}catch(e){}});
 try{if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){try{syncSticky_();}catch(e){}});}catch(e){}
 try{if(typeof setTimeout!=='undefined')setTimeout(function(){try{syncSticky_();}catch(e){}},600);}catch(e){}
 document.getElementById('btnFixShare').onclick=fixSharing;
+document.getElementById('btnDiagId').onclick=diagId;
 document.getElementById('btnAddUser').onclick=function(){var em=document.getElementById('newEmail').value.trim();if(!em){msg('msgAccess','Nhập email cần thêm.');return;}addAdmin(em);document.getElementById('newEmail').value='';};
 async function addAdmin(email){
 msg('msgAccess','Đang thêm…',true);

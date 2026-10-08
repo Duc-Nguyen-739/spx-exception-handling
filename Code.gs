@@ -923,6 +923,44 @@ function fixPhotoSharing() {
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
+function diagIdentity() {
+  try {
+    requireAdmin_();
+    var out = {};
+    try { out.active = Session.getActiveUser().getEmail() || '(trống)'; }
+    catch (eA) { out.active = 'THROW'; }
+    try { out.effective = Session.getEffectiveUser().getEmail() || '(trống)'; }
+    catch (eE) { out.effective = 'THROW:' + shareErrKind_(eE); }
+    var fid = '';
+    var phSh = getSheet_('Photos', PHOTOS_HEADER);
+    var phLast = phSh.getLastRow();
+    if (phLast >= 2) {
+      var colC = phSh.getRange(2, 3, phLast - 1, 1).getValues();
+      for (var i = 0; i < colC.length && !fid; i++) fid = fileIdOf_(colC[i][0]);
+    }
+    if (!fid) {
+      var ish = getSheet_('Items', ITEMS_HEADER);
+      var ilast = ish.getLastRow();
+      if (ilast >= 2) {
+        var icols = ish.getRange(2, 5, ilast - 1, 2).getValues();
+        for (var j = 0; j < icols.length && !fid; j++) fid = fileIdOf_(icols[j][0]) || fileIdOf_(icols[j][1]);
+      }
+    }
+    if (!fid) {
+      out.note = 'không có file ảnh nào trong sheet';
+      return ok(out);
+    }
+    try {
+      var f = DriveApp.getFileById(fid);
+      try { out.owner = f.getOwner().getEmail() || '(trống)'; } catch (eO) { out.owner = 'THROW'; }
+      try { out.sharing = String(f.getSharingAccess()); } catch (eS) { out.sharing = 'THROW'; }
+    } catch (eF) {
+      out.readErr = shareErrKind_(eF);
+    }
+    return ok(out);
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
 function readPhotosAll_() {
   var sh = getSheet_('Photos', PHOTOS_HEADER);
   var last = sh.getLastRow();

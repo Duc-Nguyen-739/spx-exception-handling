@@ -74,6 +74,18 @@ test('photo-share: mau loi che secret, giu y chinh', () => {
   assert.ok(shareErrKind(new Error('Access denied: sharing outside org is disabled')).length <= 120);
 });
 
+test('photo-share: nut chan doan danh tinh chi doc, khong doi gi', () => {
+  assert.strictEqual((GS.match(/function diagIdentity\(/g) || []).length, 1);
+  const b = GS.slice(GS.indexOf('function diagIdentity('), GS.indexOf('function readPhotosAll_('));
+  assert.ok(b.includes('requireAdmin_'), 'ADMIN only nhu reshare');
+  assert.ok(b.includes('getSharingAccess()'), 'doc trang thai share hien tai thay vi doan');
+  assert.ok(b.includes('getOwner()'), 'doc chu file de doi chieu deployer');
+  assert.ok(!b.includes('setSharing'), 'tuyet doi khong doi share trong ham chan doan');
+  assert.ok(HTML.includes('id="btnDiagId"'), 'co nut bam tren tab Role');
+  assert.ok(HTML.includes("gs('diagIdentity',[])"), 'nut goi dung API');
+  assert.ok(HTML.includes("getElementById('btnDiagId').onclick=diagId"), 'nut duoc gan handler');
+});
+
 test('photo-share: deploy trong thi bao chua ro chu, khong nhan vo la cua nguoi khac', () => {
   const b = GS.slice(GS.indexOf('function fixPhotoSharing('), GS.indexOf('function readPhotosAll_('));
   assert.ok(b.includes('unknownOwner'), 'dem rieng khi deployer email trong');
