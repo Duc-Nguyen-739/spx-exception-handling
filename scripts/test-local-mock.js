@@ -201,7 +201,7 @@ async function main() {
     })`);
     const P = ph.err ? null : JSON.parse(ph.value);
     check('Chi tiết Box hiện đủ 3 ảnh', !!(P && P.n === 3), P && ('n=' + P.n));
-    const phDone = await waitUntil(ws, "(function(){var l=document.querySelectorAll('#detailBody img[data-ph]');if(l.length!==3)return false;if(document.getElementById('detailBody').innerText.indexOf('Ảnh không hợp lệ')>=0)return false;return Array.prototype.every.call(l,function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;});})()", 15000);
+    const phDone = await waitUntil(ws, "(function(){var l=document.querySelectorAll('#detailBody img[data-ph]');if(l.length!==3)return false;if(document.getElementById('detailBody').innerText.indexOf('thiếu mã ảnh')>=0)return false;return Array.prototype.every.call(l,function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;});})()", 15000);
     check('Tem/direct lỗi tự fallback server hiện đủ 3 ảnh, không kẹt lỗi ?', !!phDone, String(phDone));
     const du = await evalIn(ws, `JSON.stringify((window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getDetailUrls';}).length)`);
     check('Mở chi tiết mint URL tem qua getDetailUrls', !!(du && !du.err && JSON.parse(du.value) > 0), du.value);
@@ -454,6 +454,11 @@ async function main() {
     await waitUntil(ws, "document.getElementById('rangeModal').classList.contains('open')", 3000);
     await evalIn(ws, `document.querySelector('#rgPresets button[data-d="30"]').click();document.getElementById('rgOk').click()`);
     await sleep(300);
+    await evalIn(ws, `(function(){var old=document.getElementById('__probe');if(old)old.remove();var d=document.createElement('div');d.id='__probe';d.style.display='none';var im=document.createElement('img');d.appendChild(im);document.body.appendChild(d);im.onerror=function(){try{photoFallback(im,im.src,function(msg){d.setAttribute('data-msg',msg);});}catch(e){d.setAttribute('data-msg','JS:'+e.message);}};im.src='https://nonexistent.invalid/khong-co-anh.png';})()`);
+    const dgOk = await waitUntil(ws, "(function(){var d=document.getElementById('__probe');var m=d&&d.getAttribute('data-msg')||'';return m.indexOf('[link]')>=0&&m.indexOf('thiếu mã ảnh')>=0;})()", 8000);
+    const dg = await evalIn(ws, `(function(){var d=document.getElementById('__probe');return d&&d.getAttribute('data-msg')||'';})()`);
+    check('Anh loi hien chan doan [loai]+rev thay vi chu chung chung',
+      !!(dgOk && /thiếu mã ảnh/.test(dg.value || '') && /r\d{8}[a-z]/.test(dg.value || '')), dg.value);
     const errs = await evalIn(ws, `JSON.stringify(window.__PAGE_ERRORS__ || [])`);
     check('Không lỗi JS trên trang', errs.value === '[]', errs.value);
   } catch (e) {

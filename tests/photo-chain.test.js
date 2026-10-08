@@ -30,7 +30,9 @@ function fnSrc(html, name) {
 }
 
 const HTML = fs.readFileSync('index.html', 'utf8');
-const WANT = ['extractDriveId', 'errText_', 'cellDriveId_', 'useServerImg_',
+const REV = (HTML.match(/var APP_REV='([^']+)'/) || [])[1];
+assert.ok(REV && /^r\d{8}[a-z]$/.test(REV), 'co APP_REV de truy vet ban build');
+const WANT = ['extractDriveId', 'errText_', 'urlKind_', 'cellDriveId_', 'useServerImg_',
   'serverThumb', 'serverPhoto', 'photoFallback', 'applyDetailUrls'];
 const LIB = WANT.map((n) => fnSrc(HTML, n)).join('\n');
 
@@ -49,6 +51,7 @@ const GARBAGE = { ok: { ok: true, data: { mime: 'text/html', b64: 'PGh0bWw+' } }
 const ID_A = 'MOCKouter01AB3456789012';
 const THUMB_A = 'https://drive.google.com/thumbnail?id=' + ID_A + '&sz=w400';
 const TEM_A = 'https://mock-content.local/Box.06-10-2026.1/ngoai_quan';
+const TEM_REAL = 'https://lh3.googleusercontent.com/docs/ABCDEF=w320';
 
 test('photo-chain: trich du code that, khong trich thieu', () => {
   assert.ok(LIB.includes('useServerImg_(im,id,u,showNo,done)'));
@@ -61,7 +64,7 @@ test('photo-chain: ma tran day du qua tung case doc lap', async () => {
   async function one(src, cell, origUrl, dataUrl, responses) {
     const calls = [];
     const sandbox = {
-      photoCache: {}, photoLoading: {},
+      photoCache: {}, photoLoading: {}, APP_REV: REV,
       putPhotoCache: () => {},
       state: { detail: { item: { code: 'X' } } },
       document: { querySelectorAll: () => [] },
@@ -100,29 +103,53 @@ test('photo-chain: ma tran day du qua tung case doc lap', async () => {
   assert.deepStrictEqual(r.calls, [['getThumb', ID_A], ['getPhoto', ID_A]]);
   assert.ok(r.src.indexOf('data:image/jpeg') === 0);
 
-  // 3. ca 2 tang server loi -> hien loi that cua server, khong bao "khong hop le"
-  r = await one(TEM_A, true, '', THUMB_A, {
+  // 3. ca 2 tang server loi -> hien loi that + loai link + rev, khong chung chung
+  r = await one(TEM_REAL, true, '', THUMB_A, {
     getThumb: { [ID_A]: { err: 'Không tải được ảnh.' } },
     getPhoto: { [ID_A]: { err: 'Không xem được ảnh.' } },
   });
   assert.deepStrictEqual(r.calls, [['getThumb', ID_A], ['getPhoto', ID_A]]);
   assert.ok(String(r.shown).indexOf('Không xem được ảnh.') >= 0);
+  assert.ok(String(r.shown).indexOf('[tem]') >= 0, 'ro loai link tem');
+  assert.ok(/r\d{8}[a-z]/.test(String(r.shown)), 'ro rev ban build');
 
-  // 4. url la khong phai tem -> giu nguyen "Anh khong hop le", khong goi server
+  // 4. url la khong phai tem -> chan doan loai link + thieu ma anh, khong goi server
   r = await one('https://example.com/x.png', false, '', null, {});
   assert.deepStrictEqual(r.calls, []);
-  assert.strictEqual(r.shown, 'Ảnh không hợp lệ.');
+  assert.ok(String(r.shown).indexOf('[link]') >= 0);
+  assert.ok(String(r.shown).indexOf('thiếu mã ảnh') >= 0);
 
-  // 5. tem nhung mat ca data-url lan orig -> bao loi co nhan (tem), khong goi server
-  r = await one(TEM_A, true, '', '', {});
+  // 5. tem nhung mat ca data-url lan orig -> chan doan [tem] + rev, khong goi server
+  r = await one(TEM_REAL, true, '', '', {});
   assert.deepStrictEqual(r.calls, []);
-  assert.strictEqual(r.shown, 'Ảnh không hợp lệ. (tem)');
+  assert.ok(String(r.shown).indexOf('[tem]') >= 0);
+  assert.ok(String(r.shown).indexOf('thiếu mã ảnh') >= 0);
+  assert.ok(/r\d{8}[a-z]/.test(String(r.shown)));
+});
+
+test('photo-chain: phan loai link khong lo gia tri that', async () => {
+  const sandbox = { setTimeout, Promise, APP_REV: REV };
+  vm.createContext(sandbox);
+  vm.runInContext(LIB, sandbox);
+  const kinds = vm.runInContext(`JSON.stringify({
+    drive: urlKind_('${THUMB_A}'),
+    tem: urlKind_('https://lh3.googleusercontent.com/docs/ABCDEF=w320'),
+    appsheet: urlKind_('https://www.appsheet.com/template/gettablefileurl?appName=x&fileName=y.jpg'),
+    data: urlKind_('data:image/png;base64,AAA'),
+    blob: urlKind_('blob:https://x/y'),
+    link: urlKind_('https://example.com/x.png'),
+    none: urlKind_('')
+  })`, sandbox);
+  assert.deepStrictEqual(JSON.parse(kinds), {
+    drive: 'drive', tem: 'tem', appsheet: 'appsheet',
+    data: 'data', blob: 'blob', link: 'link', none: 'trống',
+  });
 });
 
 test('photo-chain: khong loop vo han khi anh server tra ve lai hong', async () => {
   const calls = [];
   const sandbox = {
-    photoCache: {}, photoLoading: {},
+    photoCache: {}, photoLoading: {}, APP_REV: REV,
     putPhotoCache: () => {},
     state: { detail: { item: { code: 'X' } } },
     document: { querySelectorAll: () => [] },
@@ -154,7 +181,7 @@ test('photo-chain: khong loop vo han khi anh server tra ve lai hong', async () =
 
 test('photo-chain: applyDetailUrls giu url goc + swap tem co guard', async () => {
   const sandbox = {
-    photoCache: {}, photoLoading: {},
+    photoCache: {}, photoLoading: {}, APP_REV: REV,
     putPhotoCache: () => {},
     state: { detail: { item: { code: 'Box.06-10-2026.1' } } },
     setTimeout, Promise,
