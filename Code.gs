@@ -332,9 +332,22 @@ function readItemCodes_() {
 
 // Tim dong sheet (2-based) cua 1 ma bang quet cot A — tra row=-1 neu khong thay.
 function findItemRow_(code) {
+  code = String(code || '').trim();
+  var sh = getSheet_('Items', ITEMS_HEADER);
+  if (!code) return { sh: sh, row: -1 };
+  var last = sh.getLastRow();
+  if (last >= 2) {
+    try {
+      // TextFinder tren cot A co gioi han dong (range unbounded gay Service error >10k dong).
+      // Re hon doc full cot A roi loop JS o 20k dong.
+      var found = sh.getRange(2, 1, last - 1, 1).createTextFinder(code)
+        .matchEntireCell(true).matchCase(true).findNext();
+      if (found) return { sh: sh, row: found.getRow() };
+    } catch (e) { Logger.log(e); }
+  }
   var rc = readItemCodes_();
   for (var i = 0; i < rc.codes.length; i++) {
-    if (rc.codes[i] === String(code)) return { sh: rc.sh, row: i + 2 };
+    if (rc.codes[i] === code) return { sh: rc.sh, row: i + 2 };
   }
   return { sh: rc.sh, row: -1 };
 }
@@ -372,6 +385,13 @@ function firstExtraMap_(codes) {
   if (grouped) {
     for (var k in grouped) {
       for (var i = 0; i < grouped[k].length; i++) pick(k, grouped[k][i].slot, grouped[k][i].fileId);
+    }
+    return map;
+  }
+  var strict = photosForCodesStrict_(want);
+  if (strict) {
+    for (var s in strict) {
+      for (var t = 0; t < strict[s].length; t++) pick(s, strict[s][t].slot, strict[s][t].fileId);
     }
     return map;
   }
@@ -446,9 +466,41 @@ function photosFor_(code) {
 }
 
 // Gom 1 lần đọc Photos theo code cho cả list lẫn getItem (batch, không loop sheet).
+// Tim anh theo code bang TextFinder tren cot A BOUNDED + doc dong nho.
+// Thay readPhotosAll_() o duong doc user (20k dong = full scan moi lan mo don cu).
+// Cap 25 code/lan: vuot thi tra null de caller fallback full (hiem — tail-3000
+// da cover head-150; strict chi chay cho don le ngoai tail).
+function photosForCodesStrict_(want) {
+  var keys = Object.keys(want || {});
+  if (!keys.length) return {};
+  if (keys.length > 25) return null;
+  var sh = getSheet_('Photos', PHOTOS_HEADER);
+  var last = sh.getLastRow();
+  if (last < 2) return {};
+  var out = {}, seen = {};
+  try {
+    for (var i = 0; i < keys.length; i++) {
+      var code = String(keys[i]);
+      var found = sh.getRange(2, 1, last - 1, 1).createTextFinder(code)
+        .matchEntireCell(true).matchCase(true).findAll();
+      for (var j = 0; j < found.length; j++) {
+        var r = sh.getRange(found[j].getRow(), 1, 1, PHOTOS_HEADER.length).getValues()[0];
+        if (String(r[0] || '').trim() !== code) continue;
+        var k = code + '|' + r[1] + '|' + r[2];
+        if (seen[k]) continue;
+        seen[k] = true;
+        (out[code] = out[code] || []).push({ slot: cellText_(r[1]), fileId: cellText_(r[2]) });
+      }
+    }
+  } catch (e) { Logger.log(e); return null; }
+  return out;
+}
+
 function photosByCode_(want) {
   var grouped = photosForCodes_(want);
   if (grouped) return grouped;
+  var strict = photosForCodesStrict_(want);
+  if (strict) return strict;
   var vals = readPhotosAll_();
   var map = {};
   for (var i = 0; i < vals.length; i++) {
@@ -945,6 +997,8 @@ function diagIdentity() {
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
+// CHI dung du phong: audit/admin + tran cap strict (>25 code). Duong doc user
+// (listFull/getItem) di tail-3000 roi photosForCodesStrict_, KHONG goi ham nay.
 function readPhotosAll_() {
   var sh = getSheet_('Photos', PHOTOS_HEADER);
   var last = sh.getLastRow();
