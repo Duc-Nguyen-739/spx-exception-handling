@@ -211,20 +211,21 @@ async function main() {
       var vw = window.innerWidth;
       var sheet = document.querySelector('#detailModal .sheet');
       var body = document.getElementById('detailBody');
+      var dh = getComputedStyle(document.getElementById('detailHist'));
       var hist = document.getElementById('histCard').getBoundingClientRect();
       var rs = document.getElementById('resolveCard').getBoundingClientRect();
       return {
         vw: vw,
-        sheetScroll: getComputedStyle(sheet).overflowY,
-        bodyScroll: body.scrollHeight <= body.clientHeight + 1,
-        histScroll: document.getElementById('detailHist').scrollHeight <= document.getElementById('detailHist').clientHeight + 1,
+        sheetFixed: getComputedStyle(sheet).overflowY === 'hidden',
+        bodyFit: body.scrollHeight <= body.clientHeight + 1,
+        histFlex: dh.flexGrow === '1' && dh.minHeight === '0px' && dh.overflowY === 'auto',
         rsPos: getComputedStyle(document.getElementById('resolveCard')).position,
         noCover: rs.top >= hist.bottom - 1
       };
     })())`);
     const MOB = mob.err ? null : JSON.parse(mob.value);
-    check('Mobile: sheet cuon chung, info + timeline khong cuon trong, resolve khong che', !!(MOB && MOB.vw < 900
-      && MOB.sheetScroll === 'auto' && MOB.bodyScroll && MOB.histScroll && MOB.rsPos === 'static' && MOB.noCover), mob.value);
+    check('Mobile mau A: bang co dinh, info du khong cuon trong, timeline co gian + cuon trong', !!(MOB && MOB.vw < 900
+      && MOB.sheetFixed && MOB.bodyFit && MOB.histFlex && MOB.rsPos === 'static' && MOB.noCover), mob.value);
     const phDone = await waitUntil(ws, "(function(){var l=document.querySelectorAll('#detailBody img[data-ph]');if(l.length!==3)return false;if(document.getElementById('detailBody').innerText.indexOf('thiếu mã ảnh')>=0)return false;return Array.prototype.every.call(l,function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;});})()", 15000);
     check('Tem/direct lỗi tự fallback server hiện đủ 3 ảnh, không kẹt lỗi ?', !!phDone, String(phDone));
     const du = await evalIn(ws, `JSON.stringify((window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getDetailUrls';}).length)`);

@@ -39,16 +39,16 @@ test('compact: strip can theo so luong (1 giua, 2 deu, 3 nhu cu)', () => {
   assert.ok(html.includes('<div class="phstrip n\'+Math.min(photos.length,3)+\'">'));
 });
 
-test('compact mobile: sheet cuon chung, info + timeline khong cuon trong', () => {
+test('compact mobile: mau A — bang co dinh, info du, timeline cuon trong', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes('#detailModal .sheet{display:block;overflow-y:auto;overflow-x:hidden}'));
-  assert.ok(html.includes('#detailModal #detailBody{max-height:none;overflow:visible}'));
-  assert.ok(html.includes('#histCard{display:block;min-height:0;overflow:visible}'));
-  assert.ok(html.includes('#detailHist{max-height:none;overflow:visible}'));
+  assert.ok(!html.includes('#detailModal .sheet{display:block'));
+  assert.ok(!html.includes('#histCard{display:block'));
+  assert.ok(html.includes('#detailHist{flex:1;min-height:0;max-height:none}'));
   assert.ok(!html.includes('#resolveCard{position:sticky'));
   assert.ok(html.includes('#resolveCard #btnConfirmResolve{height:42px;flex:none;padding:0 18px;font-size:13px}'));
   assert.ok(html.includes('#detailBody .phstrip.n1 .thumb{max-width:220px}'));
-  assert.ok(html.includes('#detailBody .phstrip.n1 .thumb img{height:120px;aspect-ratio:auto}'));
+  assert.ok(html.includes('#detailBody .phstrip.n1 .thumb img{height:110px;aspect-ratio:auto}'));
+  assert.ok(html.includes('#detailBody .phstrip.n2 .thumb img{height:110px;aspect-ratio:auto}'));
   assert.ok(html.includes('#detailBody .phstrip.n2{grid-template-columns:repeat(2,minmax(0,150px));justify-content:center}'));
   assert.ok(html.includes('#detailBody .kv{padding:6px 0;font-size:11.5px}'));
   assert.ok(html.includes('.ph img{height:160px}'));
