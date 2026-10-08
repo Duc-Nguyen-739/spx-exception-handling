@@ -884,7 +884,7 @@ function fixPhotoSharing() {
       }
     }
     var shared = 0, domainOnly = false, failed = [], unreadable = 0, blocked = 0;
-    var ownedByMe = 0, ownedByOthers = 0, errMap = {};
+    var ownedByMe = 0, ownedByOthers = 0, unknownOwner = 0, errMap = {};
     var me = deployerEmail_();
     function noteErr_(e) {
       var p = shareErrKind_(e) || 'unknown';
@@ -896,7 +896,8 @@ function fixPhotoSharing() {
         f = DriveApp.getFileById(fid);
         var ow = '';
         try { ow = String(f.getOwner().getEmail() || ''); } catch (eOw) {}
-        if (ow && me && ow.toLowerCase() === String(me).toLowerCase()) ownedByMe++;
+        if (!me) unknownOwner++;
+        else if (ow && ow.toLowerCase() === String(me).toLowerCase()) ownedByMe++;
         else ownedByOthers++;
       } catch (e0) {
         unreadable++;
@@ -918,7 +919,7 @@ function fixPhotoSharing() {
     for (var p in errMap) {
       if (errMap[p] > errTopN) { errTopN = errMap[p]; errTop = p; }
     }
-    return ok({ total: Object.keys(ids).length, shared: shared, failed: failed, domainOnly: domainOnly, unreadable: unreadable, blocked: blocked, ownedByMe: ownedByMe, ownedByOthers: ownedByOthers, errTop: errTop, errTopN: errTopN });
+    return ok({ total: Object.keys(ids).length, shared: shared, failed: failed, domainOnly: domainOnly, unreadable: unreadable, blocked: blocked, ownedByMe: ownedByMe, ownedByOthers: ownedByOthers, unknownOwner: unknownOwner, errTop: errTop, errTopN: errTopN });
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 

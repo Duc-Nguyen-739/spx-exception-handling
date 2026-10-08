@@ -79,7 +79,7 @@ test('photo: tem hong thi lay id tu data-url goc roi moi goi server', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes('function cellDriveId_(im)'), 'co helper lay id tu anh goc');
   assert.ok(html.includes('dataset.orig=cur'), 'swap tem giu lai url goc');
-  assert.ok(html.includes("dataset.src==='cell')id=cellDriveId_(im)"), 'tem moi duoc phep fallback qua id goc');
+  assert.ok(html.includes("im.dataset.src==='cell'||/^data:|^blob:/"), 'tem/blob moi duoc phep fallback qua id goc');
 });
 
 // KHOP index.html cellDriveId_: tem getContentUrl khong chua fileId (lh3/docs host)

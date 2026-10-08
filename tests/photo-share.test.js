@@ -74,6 +74,13 @@ test('photo-share: mau loi che secret, giu y chinh', () => {
   assert.ok(shareErrKind(new Error('Access denied: sharing outside org is disabled')).length <= 120);
 });
 
+test('photo-share: deploy trong thi bao chua ro chu, khong nhan vo la cua nguoi khac', () => {
+  const b = GS.slice(GS.indexOf('function fixPhotoSharing('), GS.indexOf('function readPhotosAll_('));
+  assert.ok(b.includes('unknownOwner'), 'dem rieng khi deployer email trong');
+  assert.ok(b.includes('unknownOwner: unknownOwner'), 'tra ve cho client');
+  assert.ok(HTML.includes('chưa rõ chủ (deploy trống): '), 'UI hien dung truong hop');
+});
+
 test('photo-share: tab Role hien email deploy de doi chieu chu file', () => {
   assert.ok(GS.includes('deployer: deployerEmail_()'), 'me() tra deployer (effective user)');
   assert.ok(HTML.includes('Deploy: '), 'Role tab hien deployer canh email dang nhap');

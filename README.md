@@ -36,6 +36,13 @@ Workflows giống repo `spx-diem-danh`:
 
 `npm test` · `npm run test:py` · `npm run build:local` · `npm run test:chrome` (lần đầu chạy `npm run setup:chrome` để tải Chrome for Testing chính chủ về `.chrome/`).
 
+## Sự cố ảnh (tự kiểm tra, không cần code)
+
+- Hộp ảnh lỗi ghi `· [loại] · rev`: `[drive]` = thumbnail Drive, `[tem]` = tem CELLIMAGE hết hạn, `[blob]` = blob cache hỏng (app tự trục xuất + tải lại qua server), `[appsheet]/[link]` = URL lưu trong sheet không phải Drive (phải dọn dữ liệu). Rev (`r…`) xác nhận máy đang chạy bản build nào — test `/dev` thì thêm `?v=2` vào URL để ép tải mới qua cache Safari.
+- Tab Role → Sửa share ảnh cũ: `không đọc được` = ID rác/thiếu quyền đọc; `bị chặn share` = thiếu quyền đổi share; `chưa rõ chủ (deploy trống)` = `Session.getEffectiveUser()` không trả email (thường gặp trên URL `/dev`); đối chiếu dòng `Deploy:` cạnh email đăng nhập — deploy khác chủ file thì share luôn Access denied.
+- Server đọc được file nhưng browser không thấy: Safari chặn cookie third-party trong iframe (Cài đặt → Safari → Tắt Ngăn theo dõi chéo trang web để kiểm chứng, không dùng làm cách sửa) — đường base64 qua `google.script.run` (`getPhoto`) miễn nhiễm vì chạy bằng quyền deployer.
+- Quan sát server không cần deploy: tab Executions trong Apps Script editor (lỗi + duration từng run), hoặc chạy `me()`/`fixPhotoSharing()` thẳng trong editor (chạy bằng chính bạn — share được ở đây mà webapp không được thì chắc chắn do danh tính deploy).
+
 ## Đo timing GAS từ local
 
 - Token: OAuth Playground → chọn Apps Script API v1, scope `script.processes` → Authorize → copy access token (hết hạn ~1h).

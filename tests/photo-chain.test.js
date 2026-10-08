@@ -55,8 +55,9 @@ const TEM_REAL = 'https://lh3.googleusercontent.com/docs/ABCDEF=w320';
 
 test('photo-chain: trich du code that, khong trich thieu', () => {
   assert.ok(LIB.includes('useServerImg_(im,id,u,showNo,done)'));
-  assert.ok(LIB.includes("dataset.src==='cell')id=cellDriveId_(im)"));
-  assert.ok(LIB.includes('/^data:image\\//'));
+  assert.ok(LIB.includes("im.dataset.src==='cell'||/^data:|^blob:/"), 'blob/data hong cung lay id goc');
+  assert.ok(LIB.includes("im.dataset.fx='1'"), 'truc xuat doc 1 lan truoc khi tai lai');
+  assert.ok(LIB.includes('/^data:image\\//'), 'payload server khong phai anh thi rot xuong getPhoto');
   assert.ok(LIB.includes('else{done();}'));
 });
 
@@ -177,6 +178,74 @@ test('photo-chain: khong loop vo han khi anh server tra ve lai hong', async () =
   await sleep(30);
   assert.deepStrictEqual(calls, [['getThumb', ID_A], ['getPhoto', ID_A]]);
   assert.ok(shown !== 'UNSET', 'lan 3 dung lai va bao chu');
+});
+
+test('photo-chain: blob rac tu IDB duoc truc xuat roi tai lai qua server', async () => {
+  const calls = [];
+  const evicted = [];
+  const sandbox = {
+    photoCache: { ['t' + ID_A]: 'blob:poison', [ID_A]: 'blob:poison-full' },
+    photoLoading: {},
+    APP_REV: REV,
+    putPhotoCache: () => {},
+    idbDel: (id) => { evicted.push(id); },
+    state: { detail: { item: { code: 'X' } } },
+    document: { querySelectorAll: () => [] },
+    setTimeout, Promise,
+    gs: (fn, args) => {
+      calls.push([fn, args && args[0]]);
+      return new Promise((res) => {
+        setTimeout(() => res({ ok: true, data: { mime: 'image/png', b64: 'AAA' } }), 5);
+      });
+    },
+  };
+  vm.createContext(sandbox);
+  const im = fakeImg('blob:https://localhost/poison', false, '', THUMB_A);
+  sandbox.im = im;
+  let shown = 'UNSET';
+  sandbox.showNo = (m) => { shown = m; };
+  vm.runInContext(LIB, sandbox);
+  vm.runInContext('photoFallback(im, undefined, showNo);', sandbox);
+  await sleep(80);
+  assert.deepStrictEqual(evicted, [ID_A], 'xoa ca cache lan IDB doc truoc khi tai lai');
+  assert.deepStrictEqual(calls, [['getThumb', ID_A]], 'tai lai bang id goc tu data-url');
+  assert.ok(sandbox.im.src.indexOf('data:image/png') === 0, 'hien anh moi tu server');
+  assert.strictEqual(sandbox.im.dataset.fx, '1');
+  assert.strictEqual(shown, 'UNSET');
+});
+
+test('photo-chain: truc xuat chi 1 lan, loi tiep thi dung khong loop', async () => {
+  const calls = [];
+  const sandbox = {
+    photoCache: {}, photoLoading: {},
+    APP_REV: REV,
+    putPhotoCache: () => {},
+    idbDel: () => {},
+    state: { detail: { item: { code: 'X' } } },
+    document: { querySelectorAll: () => [] },
+    setTimeout, Promise,
+    gs: (fn, args) => {
+      calls.push([fn, args && args[0]]);
+      return new Promise((res, rej) => {
+        setTimeout(() => {
+          if (fn === 'getThumb') res({ ok: true, data: { mime: 'text/html', b64: 'PGI+' } });
+          else rej(new Error('Không xem được ảnh.'));
+        }, 5);
+      });
+    },
+  };
+  vm.createContext(sandbox);
+  const im = fakeImg('blob:https://localhost/poison', false, '', THUMB_A);
+  sandbox.im = im;
+  let shown = 'UNSET';
+  sandbox.showNo = (m) => { shown = m; };
+  vm.runInContext(LIB, sandbox);
+  vm.runInContext('photoFallback(im, undefined, showNo);', sandbox);
+  await sleep(80);
+  vm.runInContext('photoFallback(im, undefined, showNo);', sandbox);
+  await sleep(30);
+  assert.deepStrictEqual(calls, [['getThumb', ID_A], ['getPhoto', ID_A]], 'khong goi them server o lan 2');
+  assert.ok(String(shown).indexOf('[blob]') >= 0, 'bao dung loai link that');
 });
 
 test('photo-chain: applyDetailUrls giu url goc + swap tem co guard', async () => {
