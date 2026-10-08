@@ -30,7 +30,9 @@ test('photo-perf: client thu dung thu tu direct -> getThumb -> getPhoto', () => 
   const ti = block.indexOf('serverThumb(id)');
   const fi = block.indexOf('serverPhoto(id)');
   assert.ok(ti > 0 && fi > ti, 'getThumb truoc getPhoto');
-  assert.ok(block.includes('dataset.rt'), 'retry direct 1 lan transient');
+  assert.ok(!block.includes('dataset.rt'), 'B4: bo retry 400ms vo ich');
+  assert.ok(!block.includes('setTimeout(function(){im.src=src;}'), 'khong thu lai cung URL vua fail');
+  assert.ok(html.includes('IMG_A_DEAD'), 'co circuit breaker theo phien');
 });
 
 test('photo-perf: mirror chuoi fallback (n lan loi -> bac tiep theo)', () => {

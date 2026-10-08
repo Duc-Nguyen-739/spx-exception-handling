@@ -91,6 +91,7 @@ function makePrefetchEnv(items, hidden) {
   Object.defineProperty(FakeImage.prototype, 'src', { set(u) { loaded.push(u); } });
   const sandbox = {
     setTimeout, clearTimeout, Image: FakeImage,
+    IMG_A_DEAD: false, IMG_A_FAILS: 0,
     document: { hidden: !!hidden },
     preWarmed: {},
     visibleItems: () => items.slice(),
