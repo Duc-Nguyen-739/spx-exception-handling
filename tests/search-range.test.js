@@ -1,5 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
+const fs = require('node:fs');
 
 // KHỚP client: index.html todayYMD_/ymdNum_/rangeDiff_/inRangeDay_/visibleItems.
 // Display Range lọc danh sách theo ngày (fail-open khi thiếu range/không parse
@@ -83,6 +84,29 @@ test('range: chuoi dao ngay/thang (locale US) doi chieu ma van dung', () => {
   assert.deepStrictEqual(parseSmart('10/06/2026 18:39:00', 'Box.01-01-2026.9'), [2026, 6, 10]);
   assert.deepStrictEqual(parseSmart('25/10/2026 08:00:00', 'Box.06-10-2026.2'), [2026, 10, 25]);
   assert.strictEqual(parseSmart('khong-phai-ngay', 'Box.06-10-2026.2'), null);
+});
+
+test('range: nhan gon DD/MM/YYYY - DD/MM/YYYY, bo gio (KHOP index.html)', () => {
+  const q = (n) => (n < 10 ? '0' : '') + n;
+  const fmt = (a, b) => q(a.d) + '/' + q(a.m) + '/' + a.y + ' - ' + q(b.d) + '/' + q(b.m) + '/' + b.y;
+  assert.strictEqual(fmt({ y: 2026, m: 9, d: 10 }, { y: 2026, m: 10, d: 9 }), '10/09/2026 - 09/10/2026');
+  assert.strictEqual(fmt({ y: 2025, m: 12, d: 30 }, { y: 2026, m: 1, d: 5 }), '30/12/2025 - 05/01/2026');
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes("function fmtRangeShort_(a,b){return fmtRange_(a,b);}"));
+  const f1 = html.slice(html.indexOf('function fmtRange_('), html.indexOf('function fmtRangeShort_('));
+  assert.ok(!f1.includes('00:00') && !f1.includes('23:59'), 'nhan range khong con gio');
+});
+
+test('range: lich tong diu + o tran thang khong to', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes(".rgcal td span.in{background:#fdf0e7;color:#a84a2a;"));
+  assert.ok(html.includes('.rgcal td span.edge{background:#f97316;'));
+  assert.ok(html.includes('.rgcal td span.today{outline:2px solid #7aa7f7;'));
+  const i = html.indexOf('function rgBandCls(t,dim){');
+  assert.ok(i > 0);
+  const block = html.slice(i, html.indexOf('var TODAY_NUM'));
+  assert.ok(block.includes("var r=dim?'dim':'';"));
+  assert.ok(block.includes('if(dim)return r;'), 'o tran thang tra ve dim truoc moi overlay');
 });
 
 test('range: co chu tim thi bypass (ke ca mo ta, khong gioi han ngay)', () => {

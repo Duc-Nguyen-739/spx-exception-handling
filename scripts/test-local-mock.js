@@ -175,6 +175,12 @@ async function main() {
     check('Grid render ≥ 1 card từ mock', !!(L && L.cards >= 1), L && String(L.cards));
     await evalIn(ws, `document.getElementById('rgEdit').click()`);
     await waitUntil(ws, "document.getElementById('rangeModal').classList.contains('open')", 3000);
+    const cal = await evalIn(ws, `JSON.stringify({
+      dimEdge: document.querySelectorAll('#rangeModal span.dim.edge').length,
+      dimIn: document.querySelectorAll('#rangeModal span.dim.in').length
+    })`);
+    const CAL = cal.err ? null : JSON.parse(cal.value);
+    check('Lich: o tran thang khong to (chi o that)', !!(CAL && CAL.dimEdge === 0 && CAL.dimIn === 0), cal.value);
     await evalIn(ws, `document.querySelector('#rgPresets button[data-d="60"]').click(); document.getElementById('rgOk').click()`);
     await sleep(300);
     const rgW = await evalIn(ws, `document.getElementById('rgRangeLabel').textContent`);
