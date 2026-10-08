@@ -17,7 +17,6 @@ var ITEMS_HEADER = ['code', 'created_at', 'description', 'kind', 'photo_path_out
 var PHOTOS_HEADER = ['code', 'slot', 'drive_file_id', 'uploaded_at'];
 var LOG_HEADER = ['at', 'code', 'from_status', 'to_status', 'by', 'note', 'reason'];
 var PRINTED_HEADER = ['code', 'printed_at', 'printed_by', 'kind'];
-var THUMBS_HEADER = ['code', 'slot', 'thumb'];
 
 // KHỚP import: scripts/import-csv.js STATUS_RULES (copy, không tự bịa thêm).
 var STATUS_RULES = [
@@ -271,41 +270,6 @@ function getThumbs(ids, size) {
     }
     return ok({ size: sz, items: out });
   } catch (e) { Logger.log(e); return fail('Không tải được ảnh.'); }
-}
-
-// URL tem CELLIMAGE mint luc mo chi tiet: 1 call nhe, tuoi theo lan mo.
-function thumbOrder_(slot) {
-  if (slot === 'ngoai_quan') return 0;
-  if (slot === 'san_pham') return 1;
-  return 2;
-}
-
-function getDetailUrls(code) {
-  try {
-    code = String(code || '').trim();
-    if (!code) return fail('Thiếu mã đơn.');
-    if (findItemRow_(code).row < 0) return fail('Không Có');
-    var sh = getSheet_('Thumbs', THUMBS_HEADER);
-    var last = sh.getLastRow();
-    if (last < 2) return ok({ code: code, mintedAt: nowStr_(), thumbs: [] });
-    var colA = sh.getRange(2, 1, last - 1, 1).getValues();
-    var rows = [];
-    for (var i = 0; i < colA.length && rows.length < 6; i++) {
-      if (String(colA[i][0] || '').trim() === code) rows.push(i + 2);
-    }
-    var found = [];
-    for (var j = 0; j < rows.length; j++) {
-      var rv = sh.getRange(rows[j], 1, 1, THUMBS_HEADER.length).getValues()[0];
-      var cv = rv[2];
-      if (!cv || typeof cv.getContentUrl !== 'function') continue;
-      found.push({ slot: String(rv[1] || ''), url: cv.getContentUrl() });
-    }
-    found.sort(function (a, b) {
-      var d = thumbOrder_(a.slot) - thumbOrder_(b.slot);
-      return d !== 0 ? d : (a.slot < b.slot ? -1 : 1);
-    });
-    return ok({ code: code, mintedAt: nowStr_(), thumbs: found });
-  } catch (e) { Logger.log(e); return fail('Không đọc được ảnh.'); }
 }
 
 function parseCreated_(s) {
@@ -799,20 +763,6 @@ function create_(kind, p) {
     var ph = getSheet_('Photos', PHOTOS_HEADER);
     var phRows = jobs.map(function (j) { return [code, j[0], ids[j[0]], "'" + at]; });
     ph.getRange(ph.getLastRow() + 1, 1, phRows.length, PHOTOS_HEADER.length).setValues(phRows);
-    var thumbs = (p.thumbs && typeof p.thumbs === 'object') ? p.thumbs : {};
-    var thRows = [];
-    for (var t = 0; t < jobs.length; t++) {
-      var td = String(thumbs[jobs[t][0]] || '').trim();
-      if (!td) continue;
-      try {
-        dataUrlToBlob_(td, code + '.' + jobs[t][0] + '.t.jpg');
-        thRows.push([code, jobs[t][0], SpreadsheetApp.newCellImage().setSourceUrl(td).build()]);
-      } catch (e3) {}
-    }
-    if (thRows.length) {
-      var th = getSheet_('Thumbs', THUMBS_HEADER);
-      th.getRange(th.getLastRow() + 1, 1, thRows.length, THUMBS_HEADER.length).setValues(thRows);
-    }
 
     getSheet_('ActivityLog', LOG_HEADER).appendRow(["'" + at, code, '', 'chua_xu_ly', by, 'Tạo mới', '']);
     var created = { code: code, created_at: at, description: desc, kind: kind, photo_path_outer: outerId, photo_path_product: productId, status: 'chua_xu_ly', status_note: '', mvdn: '', trip: '', reporter: by, note: String(p.note || '').trim() };
@@ -1076,16 +1026,6 @@ function adminEditItem(p) {
           });
           ph.getRange(2, 1, last - 1, PHOTOS_HEADER.length).clearContent();
           if (left.length) ph.getRange(2, 1, left.length, PHOTOS_HEADER.length).setValues(left);
-          var thd = getSheet_('Thumbs', THUMBS_HEADER);
-          var thLast = thd.getLastRow();
-          if (thLast > 1) {
-            var thVals = thd.getRange(2, 1, thLast - 1, THUMBS_HEADER.length).getValues();
-            var thLeft = thVals.filter(function (v) {
-              return !(String(v[0]) === String(code) && delSlots.indexOf(String(v[1])) >= 0);
-            });
-            thd.getRange(2, 1, thLast - 1, THUMBS_HEADER.length).clearContent();
-            if (thLeft.length) thd.getRange(2, 1, thLeft.length, THUMBS_HEADER.length).setValues(thLeft);
-          }
         }
       }
       var at = nowStr_(), by = currentEmail_();
@@ -1106,20 +1046,6 @@ function adminEditItem(p) {
         }
         var ph2 = getSheet_('Photos', PHOTOS_HEADER);
         ph2.getRange(ph2.getLastRow() + 1, 1, newPh.length, PHOTOS_HEADER.length).setValues(newPh);
-        var addThumbs = p.addThumbs || [];
-        var thNew = [];
-        for (var u = 0; u < placed.length && u < addThumbs.length; u++) {
-          var ad = String(addThumbs[u] || '').trim();
-          if (!ad) continue;
-          try {
-            dataUrlToBlob_(ad, code + '.' + placed[u][0] + '.t.jpg');
-            thNew.push([code, placed[u][0], SpreadsheetApp.newCellImage().setSourceUrl(ad).build()]);
-          } catch (e4) {}
-        }
-        if (thNew.length) {
-          var th2 = getSheet_('Thumbs', THUMBS_HEADER);
-          th2.getRange(th2.getLastRow() + 1, 1, thNew.length, THUMBS_HEADER.length).setValues(thNew);
-        }
       }
       f.sh.getRange(row, 5, 1, 2).setValues([[outerId, productId]]);
       var finalSt = cur;

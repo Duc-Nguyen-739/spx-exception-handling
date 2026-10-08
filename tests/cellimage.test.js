@@ -2,79 +2,47 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 
-// Contract CELLIMAGE mint-on-open (KHOP Code.gs getDetailUrls + index.html
-// refreshDetailUrls/applyDetailUrls/makeThumb_): tem w320 trong sheet Thumbs
-// rieng, mint URL luc mo, graceful khi thieu tem.
+// Contract B3: he CELLIMAGE mint-on-open DA XOA.
+// Ly do: URL tem la URL ky co han → khong cache vo han → bat buoc mint lai
+// moi lan mo (~1s). Tang 2 (direct Drive, da share domain) song → tem thua.
+// Cam hoi sinh: getDetailUrls / THUMBS_HEADER / newCellImage / mint-swap.
 
-// KHOP Code.gs thumbOrder_: outer -> product -> extras.
-function thumbOrder(slot) {
-  if (slot === 'ngoai_quan') return 0;
-  if (slot === 'san_pham') return 1;
-  return 2;
-}
-function sortThumbs(found) {
-  return found.slice().sort((a, b) => {
-    const d = thumbOrder(a.slot) - thumbOrder(b.slot);
-    return d !== 0 ? d : (a.slot < b.slot ? -1 : 1);
-  });
-}
-
-test('cellimage: server co sheet Thumbs tach rieng + API mint', () => {
+test('notem: server khong con mint tem', () => {
   const gs = fs.readFileSync('Code.gs', 'utf8');
-  assert.ok(gs.includes("var THUMBS_HEADER = ['code', 'slot', 'thumb'];"));
-  assert.ok(gs.includes("getSheet_('Thumbs', THUMBS_HEADER)"));
-  assert.strictEqual((gs.match(/function getDetailUrls\(/g) || []).length, 1);
-  assert.strictEqual((gs.match(/function thumbOrder_\(/g) || []).length, 1);
+  assert.ok(!gs.includes('function getDetailUrls('), 'xoa API mint');
+  assert.ok(!gs.includes('function thumbOrder_('), 'xoa helper sap tem');
+  assert.ok(!gs.includes('THUMBS_HEADER'), 'xoa sheet tem');
+  assert.ok(!gs.includes('newCellImage'), 'khong in tem nua');
+  assert.ok(!gs.includes("getSheet_('Thumbs'"), 'khong doc/ghi sheet tem');
 });
 
-test('cellimage: getDetailUrls doc nhe + mint + graceful', () => {
+test('notem: create_/adminEditItem khong nhan/ghi tem', () => {
   const gs = fs.readFileSync('Code.gs', 'utf8');
-  const b = gs.slice(gs.indexOf('function getDetailUrls('), gs.indexOf('function parseCreated_('));
-  assert.ok(b.includes("findItemRow_(code).row < 0"), 'don khong ton tai thi bao loi');
-  assert.ok(b.includes('getRange(2, 1, last - 1, 1)'), 'chi doc 1 cot A de tim dong');
-  assert.ok(b.includes('rows.length < 6'), 'chan toi da 6 dong nho');
-  assert.ok(b.includes('getContentUrl'), 'mint URL tuoi, khong fetch byte');
-  assert.ok(b.includes('thumbs: []'), 'don chua co tem thi tra rong de client fallback cu');
+  assert.ok(!gs.includes('p.thumbs'), 'create bo tham so thumbs');
+  assert.ok(!gs.includes('p.addThumbs'), 'edit bo tham so addThumbs');
 });
 
-test('cellimage: create_/adminEditItem ghi + xoa tem dong bo', () => {
-  const gs = fs.readFileSync('Code.gs', 'utf8');
-  assert.ok(gs.includes('p.thumbs'), 'create_ nhan tem w320 tu client');
-  assert.ok(gs.includes('newCellImage().setSourceUrl('), 'in tem CELLIMAGE');
-  assert.ok(gs.includes('p.addThumbs'), 'edit nhan tem anh moi thang hang');
-  const i = gs.indexOf('function adminEditItem(');
-  const win = gs.slice(i, i + 9000);
-  assert.ok(win.includes("getSheet_('Thumbs', THUMBS_HEADER)"), 'xoa slot thi xoa luon dong tem');
-});
-
-test('cellimage: client prime khong mint, swap co guard', () => {
+test('notem: client khong mint, khong swap tem, khong gui tem', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  const p = html.indexOf('function primeImages_(code){');
-  const end = html.indexOf('function refreshDetailUrls', p);
-  const pb = html.slice(p, end > 0 ? end : p + 400);
-  assert.ok(!pb.includes('refreshDetailUrls(code)'),
-    'B2: mo don khong mint tem (B3 xoa han ham mint)');
-  const a = html.indexOf('function applyDetailUrls(code,slots){');
-  assert.ok(html.slice(a, a + 500).includes('imgs.length!==(slots||[]).length'),
-    'lech so luong thi khong swap');
-  assert.ok(html.includes("toDataURL('image/jpeg',0.65)"), 'tem client w320 nhe');
-  assert.ok(html.includes('thumbs:thumbs'), 'create gui kem tem');
-  assert.ok(html.includes('addThumbs:addThumbs'), 'edit gui kem tem');
+  for (const s of ['refreshDetailUrls', 'applyDetailUrls', 'getDetailUrls',
+    'makeThumb_', 'slotName_', "dataset.src='cell'", "' (tem)'", 'thumbs:thumbs',
+    'addThumbs:addThumbs']) {
+    assert.ok(!html.includes(s), 'khong con: ' + s);
+  }
+  assert.ok(html.includes('function cellDriveId_(im){'), 'giu fallback id goc cho duong poison');
+  assert.ok(html.includes('function warmIfMissing(code){'), 'prime qua cache-first');
 });
 
-test('cellimage: thu tu server khop thu tu render client', () => {
-  const out = sortThumbs([
-    { slot: 'bo_sung', url: 'e' }, { slot: 'san_pham', url: 'p' }, { slot: 'ngoai_quan', url: 'o' },
-  ]).map((x) => x.slot);
-  assert.deepStrictEqual(out, ['ngoai_quan', 'san_pham', 'bo_sung']);
+test('notem: mock khong con tem', () => {
+  const m = fs.readFileSync('mock/mock-google.js', 'utf8');
+  assert.ok(!m.includes('getDetailUrls'), 'mock bo API tem');
+});
+
+test('notem: thu tu render chi tiet giu nguyen (outer -> product -> extras)', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   const d = html.indexOf('function detailPhotos_(it){');
+  assert.ok(d > 0);
   const db = html.slice(d, d + 400);
-  assert.ok(db.indexOf('imgOuter') < db.indexOf('imgProduct'), 'client render outer truoc product');
-  assert.ok(db.indexOf('imgProduct') < db.indexOf('extras'), 'client render product truoc extras');
-});
-
-test('cellimage: mock co getDetailUrls', () => {
-  const m = fs.readFileSync('mock/mock-google.js', 'utf8');
-  assert.ok(m.includes('getDetailUrls: function (code)'));
+  assert.ok(db.indexOf('imgOuter') < db.indexOf('imgProduct'), 'outer truoc product');
+  assert.ok(db.indexOf('imgProduct') < db.indexOf('extras'), 'product truoc extras');
 });

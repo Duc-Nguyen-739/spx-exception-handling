@@ -4,9 +4,10 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 // Behavioral test cho chuoi anh chi tiet, chay CODE THAT tu index.html
-// (extractDriveId/cellDriveId_/useServerImg_/photoFallback/applyDetailUrls)
+// (extractDriveId/cellDriveId_/useServerImg_/photoFallback/fallbackToServer_)
 // voi DOM gia + server gia. Bao phu hoi quy dung bug report:
-// tem CELLIMAGE hong -> tach id goc -> getThumb -> (rac -> getPhoto) -> hien anh.
+// direct hong -> getThumb -> (rac -> getPhoto) -> hien anh;
+// blob rac -> truc xuat IDB -> tai lai qua server.
 
 function fnSrc(html, name) {
   const start = html.indexOf('function ' + name + '(');
@@ -33,13 +34,13 @@ const HTML = fs.readFileSync('index.html', 'utf8');
 const REV = (HTML.match(/var APP_REV='([^']+)'/) || [])[1];
 assert.ok(REV && /^r\d{8}[a-z]$/.test(REV), 'co APP_REV de truy vet ban build');
 const WANT = ['extractDriveId', 'errText_', 'urlKind_', 'cellDriveId_', 'useServerImg_',
-  'serverThumb', 'serverPhoto', 'idbKeyOf', 'photoFallback', 'fallbackToServer_', 'applyDetailUrls'];
+  'serverThumb', 'serverPhoto', 'idbKeyOf', 'photoFallback', 'fallbackToServer_'];
 const LIB = WANT.map((n) => fnSrc(HTML, n)).join('\n');
 
 function fakeImg(src, cell, origUrl, dataUrl) {
   const wrapper = { getAttribute: (k) => (k === 'data-url' ? (dataUrl || null) : null) };
   return {
-    src, dataset: cell ? { src: 'cell', orig: origUrl || '' } : {},
+    src, dataset: cell ? { src: 'cell', orig: origUrl || '', rt: '1' } : { rt: '1' },
     closest: () => wrapper, _wrapper: wrapper,
   };
 }
@@ -55,7 +56,7 @@ const TEM_REAL = 'https://lh3.googleusercontent.com/docs/ABCDEF=w320';
 
 test('photo-chain: trich du code that, khong trich thieu', () => {
   assert.ok(LIB.includes('useServerImg_(im,id,u,showNo,done)'));
-  assert.ok(LIB.includes("im.dataset.src==='cell'||/^data:|^blob:/"), 'blob/data hong cung lay id goc');
+  assert.ok(LIB.includes("/^data:|^blob:/.test(src))id=cellDriveId_(im)"), 'chi blob/data hong moi lay id goc tu data-url');
   assert.ok(LIB.includes("im.dataset.fx='1'"), 'truc xuat doc 1 lan truoc khi tai lai');
   assert.ok(LIB.includes('/^data:image\\//'), 'payload server khong phai anh thi rot xuong getPhoto');
   assert.ok(LIB.includes('else{done();}'));
@@ -96,25 +97,25 @@ test('photo-chain: ma tran day du qua tung case doc lap', async () => {
     return { calls, src: sandbox.im.src, shown };
   }
 
-  // 1. tem hong, co data-url goc -> getThumb 1 lan -> hien anh, khong bao loi
-  let r = await one(TEM_A, true, '', THUMB_A, { getThumb: { [ID_A]: PNG } });
+  // 1. direct hong -> getThumb 1 lan -> hien anh, khong bao loi
+  let r = await one(THUMB_A, false, '', THUMB_A, { getThumb: { [ID_A]: PNG } });
   assert.deepStrictEqual(r.calls, [['getThumb', ID_A]]);
   assert.ok(r.src.indexOf('data:image/png') === 0, 'hien anh tu server');
   assert.strictEqual(r.shown, 'UNSET');
 
   // 2. getThumb tra rac text/html -> rot xuong getPhoto -> hien anh
-  r = await one(TEM_A, true, '', THUMB_A, { getThumb: { [ID_A]: GARBAGE }, getPhoto: { [ID_A]: JPG } });
+  r = await one(THUMB_A, false, '', THUMB_A, { getThumb: { [ID_A]: GARBAGE }, getPhoto: { [ID_A]: JPG } });
   assert.deepStrictEqual(r.calls, [['getThumb', ID_A], ['getPhoto', ID_A]]);
   assert.ok(r.src.indexOf('data:image/jpeg') === 0);
 
   // 3. ca 2 tang server loi -> hien loi that + loai link + rev, khong chung chung
-  r = await one(TEM_REAL, true, '', THUMB_A, {
+  r = await one(THUMB_A, false, '', THUMB_A, {
     getThumb: { [ID_A]: { err: 'Không tải được ảnh.' } },
     getPhoto: { [ID_A]: { err: 'Không xem được ảnh.' } },
   });
   assert.deepStrictEqual(r.calls, [['getThumb', ID_A], ['getPhoto', ID_A]]);
   assert.ok(String(r.shown).indexOf('Không xem được ảnh.') >= 0);
-  assert.ok(String(r.shown).indexOf('[tem]') >= 0, 'ro loai link tem');
+  assert.ok(String(r.shown).indexOf('[drive]') >= 0, 'ro loai link drive');
   assert.ok(/r\d{8}[a-z]/.test(String(r.shown)), 'ro rev ban build');
 
   // 4. url la khong phai tem -> chan doan loai link + thieu ma anh, khong goi server
@@ -123,8 +124,8 @@ test('photo-chain: ma tran day du qua tung case doc lap', async () => {
   assert.ok(String(r.shown).indexOf('[link]') >= 0);
   assert.ok(String(r.shown).indexOf('thiếu mã ảnh') >= 0);
 
-  // 5. tem nhung mat ca data-url lan orig -> chan doan [tem] + rev, khong goi server
-  r = await one(TEM_REAL, true, '', '', {});
+  // 5. url googleusercontent khong tach duoc id -> chan doan [tem] + rev, khong goi server
+  r = await one(TEM_REAL, false, '', '', {});
   assert.deepStrictEqual(r.calls, []);
   assert.ok(String(r.shown).indexOf('[tem]') >= 0);
   assert.ok(String(r.shown).indexOf('thiếu mã ảnh') >= 0);
@@ -169,7 +170,7 @@ test('photo-chain: khong loop vo han khi anh server tra ve lai hong', async () =
     },
   };
   vm.createContext(sandbox);
-  const im = fakeImg(TEM_A, true, '', THUMB_A);
+  const im = fakeImg(THUMB_A, false, '', THUMB_A);
   sandbox.im = im;
   let shown = 'UNSET';
   sandbox.showNo = (m) => { shown = m; };
@@ -258,39 +259,4 @@ test('photo-chain: truc xuat chi 1 lan, loi tiep thi dung khong loop', async () 
   await sleep(30);
   assert.deepStrictEqual(calls, [['getThumb', ID_A], ['getPhoto', ID_A]], 'khong goi them server o lan 2');
   assert.ok(String(shown).indexOf('[blob]') >= 0, 'bao dung loai link that');
-});
-
-test('photo-chain: applyDetailUrls giu url goc + swap tem co guard', async () => {
-  const sandbox = {
-    photoCache: {}, photoLoading: {}, APP_REV: REV,
-    putPhotoCache: () => {},
-    idbGet: () => Promise.resolve(null),
-    idbDel: () => {},
-    URL: { createObjectURL: () => 'blob:mock' },
-    state: { detail: { item: { code: 'Box.06-10-2026.1' } } },
-    setTimeout, Promise,
-    gs: () => Promise.reject(new Error('no call')),
-  };
-  const imgs = [0, 1, 2].map((i) => {
-    const o = fakeImg(THUMB_A + i, false, '', null);
-    o.getAttribute = (k) => (k === 'src' ? o.src : null);
-    return o;
-  });
-  sandbox.document = { querySelectorAll: () => imgs };
-  vm.createContext(sandbox);
-  vm.runInContext(LIB, sandbox);
-  vm.runInContext(`applyDetailUrls('Box.06-10-2026.1', [
-    { slot: 'ngoai_quan', url: 'https://mock-content.local/t0' },
-    { slot: 'san_pham', url: 'https://mock-content.local/t1' },
-    { slot: 'bo_sung', url: 'https://mock-content.local/t2' }
-  ]);`, sandbox);
-  imgs.forEach((im, i) => {
-    assert.strictEqual(im.src, 'https://mock-content.local/t' + i);
-    assert.strictEqual(im.dataset.src, 'cell');
-    assert.strictEqual(im.dataset.orig, THUMB_A + i);
-  });
-  // lech so luong thi khong swap (guard cu van giu)
-  const keep = imgs.map((im) => im.src);
-  vm.runInContext(`applyDetailUrls('Box.06-10-2026.1', [{ slot: 'x', url: 'https://mock-content.local/z' }]);`, sandbox);
-  imgs.forEach((im, i) => assert.strictEqual(im.src, keep[i]));
 });

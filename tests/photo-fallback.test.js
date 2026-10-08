@@ -67,33 +67,26 @@ test('photo: index.html truyen loi that ra 3 cho hien anh', () => {
   assert.strictEqual(n, 3, 'grid + chi tiet + edit deu hien ly do');
 });
 
-test('photo: anh tem CELLIMAGE duoc danh dau de truy vet duong anh', () => {
+test('photo: khong con tem, chi data:/blob: moi fallback qua id goc', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes("imgs[i].dataset.src='cell'"), 'swap tem danh dau dataset');
-  assert.ok(html.includes('/^data:|^blob:/.test(cur)'), 'khong de tem de len anh da on');
-  assert.ok(html.includes("?' (tem)':''"), 'loi gan nhan tem');
-  assert.ok(html.includes('function done(m){'), 'showNo di qua wrapper gan nhan');
+  assert.ok(!html.includes("dataset.src='cell'"), 'bo swap tem');
+  assert.ok(!html.includes("' (tem)'"), 'bo nhan tem khoi loi');
+  assert.ok(html.includes('function cellDriveId_(im)'), 'giu helper id goc cho duong poison');
+  assert.ok(html.includes('/^data:|^blob:/.test(src))id=cellDriveId_(im)'), 'chi data:/blob: moi lay id goc');
 });
 
-test('photo: tem hong thi lay id tu data-url goc roi moi goi server', () => {
-  const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes('function cellDriveId_(im)'), 'co helper lay id tu anh goc');
-  assert.ok(html.includes('dataset.orig=cur'), 'swap tem giu lai url goc');
-  assert.ok(html.includes("im.dataset.src==='cell'||/^data:|^blob:/"), 'tem/blob moi duoc phep fallback qua id goc');
-});
-
-// KHOP index.html cellDriveId_: tem getContentUrl khong chua fileId (lh3/docs host)
-// -> lay id tu wrapper data-url (url thumbnail goc) de chay lai chuoi serverThumb/serverPhoto.
-function resolveCellId(src, isCell, origUrl) {
+// KHOP index.html fallbackToServer_: src blob:/data: khong tach duoc id
+// -> lay id tu wrapper data-url (url thumbnail goc) de chay lai serverThumb/serverPhoto.
+function resolveCellId(src, dataUrl) {
   let id = extractDriveId(src);
-  if (!id && isCell) id = extractDriveId(origUrl);
+  if (!id && /^data:|^blob:/.test(src)) id = extractDriveId(dataUrl);
   return id;
 }
 
-test('photo: tem het han van fallback duoc qua data-url', () => {
-  const tem = 'https://lh3.googleusercontent.com/docs/ABCDEF=w320';
+test('photo: blob/data hong thi fallback qua data-url, url la thi khong', () => {
+  const blob = 'blob:https://localhost/poison';
   const orig = 'https://drive.google.com/thumbnail?id=1AbCdefGhIjKlMnOp&sz=w400';
-  assert.strictEqual(resolveCellId(tem, true, orig), '1AbCdefGhIjKlMnOp');
-  assert.strictEqual(resolveCellId(tem, false, orig), '');
-  assert.strictEqual(resolveCellId(tem, true, ''), '');
+  assert.strictEqual(resolveCellId(blob, orig), '1AbCdefGhIjKlMnOp');
+  assert.strictEqual(resolveCellId('https://example.com/x.png', orig), '');
+  assert.strictEqual(resolveCellId(blob, ''), '');
 });
