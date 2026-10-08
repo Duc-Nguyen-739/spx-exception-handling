@@ -19,6 +19,7 @@ Workflows giống repo `spx-diem-danh`:
 - `SPREADSHEET_ID` = ID Spreadsheet DB (không hardcode — luật 1). Sheet tự tạo: `Items` (12 cột theo `docs/db-schema.md`), `Photos`, `ActivityLog`, `PrintedCodes` (giữ chỗ mã in hàng loạt: `code, printed_at, printed_by, kind`).
 - `FOLDER_ID` = ID thư mục Drive chứa ảnh (server tạo subfolder `YYYY-MM`). Lấy từ URL folder `drive.google.com/drive/folders/<ID>`, điền vào Script Properties, không hardcode/không gửi qua chat.
 - `ADMIN_EMAILS` = email ADMIN seed, cách nhau dấu phẩy (khi sheet `Users` còn trống thì các email này là ADMIN, còn lại STAFF; có ADMIN rồi thì phân quyền tiếp ở trang Quyền Truy Cập).
+- Sau khi đổi `appsscript.json` (vd thêm `oauthScopes`): mở editor bằng email deploy → Run 1 hàm bất kỳ → duyệt màn hình Review permissions (phải thấy Drive + email) → deploy/update deployment đang phục vụ. CI không thể consent thay (non-interactive) nên bước tay này bắt buộc đúng 1 lần.
 
 ## Contract
 
