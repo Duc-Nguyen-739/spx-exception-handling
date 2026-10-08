@@ -25,7 +25,7 @@ test('photo-perf: client thu dung thu tu direct -> getThumb -> getPhoto', () => 
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes("gs('getThumb',[id,800])"));
   const i = html.indexOf('function photoFallback(');
-  const block = html.slice(i, html.indexOf('}', html.indexOf('else{showNo();}')) + 1);
+  const block = html.slice(i, html.indexOf('}', html.indexOf('else{done();}')) + 1);
   const ti = block.indexOf('serverThumb(id)');
   const fi = block.indexOf('serverPhoto(id)');
   assert.ok(ti > 0 && fi > ti, 'getThumb truoc getPhoto');

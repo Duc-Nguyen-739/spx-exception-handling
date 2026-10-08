@@ -62,7 +62,15 @@ test('photo: hop loi hien ly do server that, rong thi chu mac dinh', () => {
 test('photo: index.html truyen loi that ra 3 cho hien anh', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes('function errText_(e){'));
-  assert.ok(html.includes('showNo(errText_(e2)||errText_(e1))'));
+  assert.ok(html.includes('done(errText_(e2)||errText_(e1))'));
   const n = (html.match(/esc\(msg\|\|'Không tải được ảnh'\)/g) || []).length;
   assert.strictEqual(n, 3, 'grid + chi tiet + edit deu hien ly do');
+});
+
+test('photo: anh tem CELLIMAGE duoc danh dau de truy vet duong anh', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes("imgs[i].dataset.src='cell'"), 'swap tem danh dau dataset');
+  assert.ok(html.includes('/^data:|^blob:/.test(cur)'), 'khong de tem de len anh da on');
+  assert.ok(html.includes("?' (tem)':''"), 'loi gan nhan tem');
+  assert.ok(html.includes('function done(m){'), 'showNo di qua wrapper gan nhan');
 });
