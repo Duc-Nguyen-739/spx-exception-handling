@@ -201,6 +201,12 @@ async function main() {
     })`);
     const P = ph.err ? null : JSON.parse(ph.value);
     check('Chi tiết Box hiện đủ 3 ảnh', !!(P && P.n === 3), P && ('n=' + P.n));
+    const rs0 = await evalIn(ws, `JSON.stringify({
+      h: Math.round(document.getElementById('btnGoResolve').getBoundingClientRect().height),
+      sameRow: document.getElementById('btnPrintDetail').parentNode === document.getElementById('btnGoResolve').parentNode
+    })`);
+    const RS0 = rs0.err ? null : JSON.parse(rs0.value);
+    check('Resolve gọn 42px + In QR cùng hàng, không lấp lịch sử', !!(RS0 && RS0.h === 42 && RS0.sameRow), rs0.value);
     const phDone = await waitUntil(ws, "(function(){var l=document.querySelectorAll('#detailBody img[data-ph]');if(l.length!==3)return false;if(document.getElementById('detailBody').innerText.indexOf('thiếu mã ảnh')>=0)return false;return Array.prototype.every.call(l,function(i){var s=i.getAttribute('src')||'';return s.indexOf('data:')===0||s.indexOf('blob:')===0;});})()", 15000);
     check('Tem/direct lỗi tự fallback server hiện đủ 3 ảnh, không kẹt lỗi ?', !!phDone, String(phDone));
     const du = await evalIn(ws, `JSON.stringify((window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='getDetailUrls';}).length)`);
@@ -236,6 +242,14 @@ async function main() {
     })`);
     const E = eo.err ? null : JSON.parse(eo.value);
     check('Edit điền sẵn + 3 ô Lưu kho/Resolve/Thanh Lý', !!(E && E.opts === 'Lưu kho/Resolve/Thanh Lý' && /áo thun/.test(E.desc || '')), E && (E.opts + ' / ' + E.desc));
+    const eg = await evalIn(ws, `JSON.stringify({
+      cols: getComputedStyle(document.getElementById('editPhotos')).gridTemplateColumns.split(' ').length,
+      del: document.querySelectorAll('#editPhotos .delBox').length,
+      full: document.querySelectorAll('#editPhotosWrap button:not(.delBox):not(.camSlot)').length,
+      cnt: document.querySelector('#editPhotosWrap>label').textContent
+    })`);
+    const EG = eg.err ? null : JSON.parse(eg.value);
+    check('Edit: lưới 3 cột + nút X góc, không nút Xóa tràn, có đếm (n/3)', !!(EG && EG.cols === 3 && EG.del >= 2 && EG.full === 0 && /\/3\)/.test(EG.cnt || '')), eg.value);
     await evalIn(ws, `(function(){
       var g = document.getElementById('editStatGrid').children;
       for (var i = 0; i < g.length; i++) if (g[i].textContent === 'Lưu kho') g[i].click();

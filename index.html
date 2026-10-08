@@ -1276,14 +1276,26 @@ var it0=state.detail&&state.detail.item;
 var from0=(it0&&it0.status)||'chua_xu_ly';
 var to0=editStatusSel?EDIT_ST[editStatusSel]:from0;
 if(to0==='chua_xu_ly')bill='';
+var kept=((it0&&it0.slots)||[]).filter(function(s){return editDel.indexOf(String(s.slot))<0;});
+if(kept.length+editAdd.length>3){msg('msgEdit','Tối đa 3 ảnh — hãy Xóa bớt ảnh cũ ('+(kept.length+editAdd.length)+'/3) rồi Confirm lại.');return;}
 var entries=[];
 if(editStatusSel)entries.push({at:nowClientStr(),code:code,from:from0,to:to0,by:'ADMIN đổi trạng thái',note:bill,bill:bill,reason:reason});
 if(descChanged)entries.push({at:nowClientStr(),code:code,from:to0,to:to0,by:meEmail(),note:'ADMIN Edit Mô tả: '+editOrig.desc+' => '+desc,bill:'',reason:''});
 if(noteChanged)entries.push({at:nowClientStr(),code:code,from:to0,to:to0,by:meEmail(),note:'ADMIN Edit Ghi chú: '+editOrig.note+' => '+noteV,bill:'',reason:''});
 if(photoChanged)entries.push({at:nowClientStr(),code:code,from:to0,to:to0,by:meEmail(),note:'ADMIN chỉnh sửa Ảnh',bill:'',reason:''});
 entries.forEach(function(e){pushPending(code,e);});
-var slots=((it0&&it0.slots)||[]).filter(function(s){return editDel.indexOf(String(s.slot))<0;});
-editAdd.forEach(function(du){slots.push({slot:'bo_sung_moi',url:du});});
+var slots=kept.slice(),have0={};
+slots.forEach(function(s){have0[String(s.slot)]=true;});
+var kind0=(it0&&it0.kind)==='Item'?'Item':'Box';
+var need0=kind0==='Box'?['ngoai_quan','san_pham']:['san_pham'];
+var cands0=['bo_sung','bo_sung_1','bo_sung_2','bo_sung_3'];
+editAdd.forEach(function(du){
+var ps='';
+for(var qi=0;qi<need0.length;qi++){if(!have0[need0[qi]]){ps=need0[qi];break;}}
+if(!ps){for(var ti=0;ti<cands0.length;ti++){if(!have0[cands0[ti]]){ps=cands0[ti];break;}}}
+if(!ps)ps='bo_sung_moi';
+have0[ps]=true;slots.push({slot:ps,url:du});
+});
 var imgs=slotsToImgs(slots);
 applyLocalItem(code,function(x){
 x.description=desc;x.note=noteV;x.status=to0;x.statusLabel=stLabel(to0);

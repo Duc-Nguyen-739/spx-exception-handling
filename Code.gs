@@ -1038,7 +1038,7 @@ function adminEditItem(p) {
     if (!code) return fail('Thiếu mã đơn.');
     var desc = (p.description == null) ? null : String(p.description).trim();
     var note = (p.note == null) ? null : String(p.note).trim();
-    var delSlots = (p.deleteSlots || []).map(function (s) { return String(s); });
+    var delSlots = (p.deleteSlots || []).map(function (s) { return String(s).trim(); });
     var adds = (p.addPhotos || []).filter(Boolean);
     var toStatus = p.toStatus ? String(p.toStatus) : '';
     var bill = String(p.bill || '').trim();
@@ -1057,7 +1057,7 @@ function adminEditItem(p) {
       var kind = it0.kind === 'Item' ? 'Item' : 'Box';
       var need = (kind === 'Box') ? ['ngoai_quan', 'san_pham'] : ['san_pham'];
       var curPhotos = photosFor_(code);
-      var keep = curPhotos.filter(function (x) { return delSlots.indexOf(String(x.slot)) < 0; });
+      var keep = curPhotos.filter(function (x) { return delSlots.indexOf(String(x.slot).trim()) < 0; });
       var total = keep.length + adds.length;
       if (total > 3) throw new Error('Tối đa 3 ảnh.');
       var have = {};
@@ -1100,7 +1100,7 @@ function adminEditItem(p) {
         if (last > 1) {
           var vals = ph.getRange(2, 1, last - 1, PHOTOS_HEADER.length).getValues();
           var left = vals.filter(function (v) {
-            return !(String(v[0]) === String(code) && delSlots.indexOf(String(v[1])) >= 0);
+            return !(String(v[0]) === String(code) && delSlots.indexOf(String(v[1]).trim()) >= 0);
           });
           ph.getRange(2, 1, last - 1, PHOTOS_HEADER.length).clearContent();
           if (left.length) ph.getRange(2, 1, left.length, PHOTOS_HEADER.length).setValues(left);
@@ -1113,13 +1113,21 @@ function adminEditItem(p) {
         if (String(x.slot) === 'san_pham') productId = x.fileId;
       });
       if (placed.length) {
+        var blobs = [];
+        for (var w = 0; w < placed.length; w++) {
+          try {
+            blobs.push(dataUrlToBlob_(placed[w][1], code + '.' + placed[w][0] + '.jpg'));
+          } catch (eB) {
+            throw new Error('Ảnh mới ' + (w + 1) + ': ' + eB.message);
+          }
+        }
         var folder = monthFolder_();
         var newPh = [];
-        for (var w = 0; w < placed.length; w++) {
-          var f = folder.createFile(dataUrlToBlob_(placed[w][1], code + '.' + placed[w][0] + '.jpg'));
-          newPh.push([code, placed[w][0], f.getId(), "'" + at]);
-          if (placed[w][0] === 'ngoai_quan') outerId = f.getId();
-          if (placed[w][0] === 'san_pham') productId = f.getId();
+        for (var u = 0; u < placed.length; u++) {
+          var nf = folder.createFile(blobs[u]);
+          newPh.push([code, placed[u][0], nf.getId(), "'" + at]);
+          if (placed[u][0] === 'ngoai_quan') outerId = nf.getId();
+          if (placed[u][0] === 'san_pham') productId = nf.getId();
         }
         var ph2 = getSheet_('Photos', PHOTOS_HEADER);
         ph2.getRange(ph2.getLastRow() + 1, 1, newPh.length, PHOTOS_HEADER.length).setValues(newPh);
