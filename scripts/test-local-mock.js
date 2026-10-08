@@ -178,7 +178,7 @@ async function main() {
     await evalIn(ws, `document.querySelector('#rgPresets button[data-d="60"]').click(); document.getElementById('rgOk').click()`);
     await sleep(300);
     const rgW = await evalIn(ws, `document.getElementById('rgRangeLabel').textContent`);
-    const rgExp = await evalIn(ws, `(function(){var t=todayYMD_();return fmtRange_(addDaysYMD_(t,-59),t);})()`);
+    const rgExp = await evalIn(ws, `(function(){var t=todayYMD_();return fmtRangeShort_(addDaysYMD_(t,-59),t);})()`);
     check('Range mo rong 60d sau load', rgW.value === rgExp.value, rgW.value);
 
     // Chi tiết + timeline (mock Item đã Resolve, có bill + mốc ADMIN)

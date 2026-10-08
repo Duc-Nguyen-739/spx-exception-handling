@@ -97,7 +97,7 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 .rgfoot button{border-radius:9px;padding:9px 22px;font-size:13px;font-weight:800;border:1px solid var(--line);background:#fff}
 .rgfoot button.primary{background:var(--o);border-color:var(--o);color:#fff}
 .rgfoot button:disabled{opacity:.45;cursor:not-allowed}
-@media(max-width:899px){#rangebar{flex-direction:row;align-items:center;gap:8px;padding:8px 10px}#rangebar .rg-main{overflow-x:auto}#rangebar .rg-line{flex-wrap:nowrap;gap:6px;font-size:11px}#rangebar .rg-line .lbl{white-space:nowrap;font-size:11px}#rangebar .rg-line .val{white-space:nowrap;font-size:11px}#rangebar .rg-line a{flex:none}#rangebar .rg-line .rg-ico svg{width:16px;height:16px}#rangebar .rg-cap{display:none}#rangebar .rg-actions{justify-content:flex-end}#rangebar .rg-actions .create-big{padding:9px 14px;font-size:13px}}
+@media(max-width:899px){#rangebar{flex-direction:row;align-items:center;gap:6px;padding:6px 8px}#rangebar .rg-main{overflow-x:auto}#rangebar .rg-line{flex-wrap:nowrap;gap:6px;font-size:10px}#rangebar .rg-line .lbl{white-space:nowrap;font-size:10px}#rangebar .rg-info{white-space:nowrap;font-size:10px}#rangebar #rgRangeLabel{white-space:nowrap;font-size:9.5px}#rangebar #rgEdit{font-size:10.5px;padding:2px}#rangebar .rg-line .val{white-space:nowrap;font-size:9.5px}#rangebar .rg-line a{flex:none}#rangebar .rg-line .rg-ico svg{width:14px;height:14px}#rangebar .rg-cap{display:none}#rangebar .rg-actions{justify-content:flex-end}#rangebar .rg-actions .create-big{padding:7px 10px;font-size:11px;border-radius:9px}}
 @media(max-width:640px){.rgcals{grid-template-columns:1fr}.rgbody{flex-direction:column}.rgpresets{width:100%;border-right:none;border-bottom:1px solid var(--line);display:flex;overflow:auto}.rgpresets button{white-space:nowrap}.rgover{display:none}}
 #viewPrint .psect{margin:6px 0 12px;font-size:15px;color:var(--navy);padding-left:10px;border-left:4px solid var(--o)}
 #viewPrint .pstep{font-size:12.5px;color:var(--mut);margin:12px 0 8px}
@@ -161,6 +161,7 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 .pill[data-k="liq"].on{background:var(--blue)}
 .pill.on .n{background:rgba(255,255,255,.22);color:#fff}
 .pill:active{transform:scale(.95)}
+@media(max-width:899px){.pills{flex-wrap:nowrap;gap:5px;overflow:hidden}.pill{flex:1 1 0;min-width:0;justify-content:center;padding:6px 4px;font-size:10px;gap:4px;overflow:hidden}.pill .n{font-size:9px;padding:1px 6px;flex:none}.pill:last-child{flex:0 0 auto;padding:6px 10px}}
 
 /* ===== gallery grid (kiểu AppSheet: ảnh vuông + caption) ===== */
 #grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
@@ -681,6 +682,7 @@ function addDaysYMD_(o,n){var t=new Date(o.y,o.m-1,o.d);t.setDate(t.getDate()+n)
 function ymdNum_(o){return o.y*10000+o.m*100+o.d;}
 function rangeDiff_(a,b){return Math.round((new Date(b.y,b.m-1,b.d)-new Date(a.y,a.m-1,a.d))/86400000);}
 function fmtRange_(a,b){function q(n){return (n<10?'0':'')+n;}return a.y+'/'+q(a.m)+'/'+q(a.d)+' 00:00-'+b.y+'/'+q(b.m)+'/'+q(b.d)+' 23:59';}
+function fmtRangeShort_(a,b){function q(n){return (n<10?'0':'')+n;}if(a.y===b.y)return q(a.d)+'/'+q(a.m)+' 00:00-'+q(b.d)+'/'+q(b.m)+' 23:59';return fmtRange_(a,b);}
 function inRangeDay_(createdAt,code){var r=state.range;if(!r||!r.f||!r.t)return true;var d=parseCreated(createdAt,code);if(!d)return true;var n=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();return n>=ymdNum_(r.f)&&n<=ymdNum_(r.t);}
 function daysOf(c,code){var d=parseCreated(c,code);if(!d)return 0;return Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));}
 function thumb(it){return it.imgProduct||it.imgOuter||(it.extras&&it.extras[0])||'';}
@@ -1720,7 +1722,7 @@ rgPaintBand();
 }
 function renderRangebar(){
 if(state.range&&state.range.f&&state.range.t){
-document.getElementById('rgRangeLabel').textContent=fmtRange_(state.range.f,state.range.t);
+document.getElementById('rgRangeLabel').textContent=fmtRangeShort_(state.range.f,state.range.t);
 }else{
 document.getElementById('rgRangeLabel').textContent='T\u1ea5t c\u1ea3 (kh\u00f4ng l\u1ecdc ng\u00e0y)';
 }}
