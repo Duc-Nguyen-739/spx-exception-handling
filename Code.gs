@@ -553,10 +553,16 @@ function applyPhotos_(item, photos) {
   return item;
 }
 
-// Cột ActivityLog resolve theo tên header (sheet có sẵn có thể lệch thứ tự).
+// Header ActivityLog normalize (bo dau/cach/gach) truoc khi so khop — sheet
+// co san de 'Lý do'/'From Status' van map dung, khong mat cot ly do/bill.
+// Header chuan cho ra map giong het cu (khong doi hanh vi).
+function normHead_(h) {
+  return strip_(h).replace(/[^a-z0-9]/g, '');
+}
+
 function logCols_(sh, width) {
   var head = sh.getRange(1, 1, 1, width).getValues()[0]
-    .map(function (h) { return String(h || '').trim().toLowerCase(); });
+    .map(function (h) { return normHead_(h); });
   function col(names) {
     for (var k = 0; k < names.length; k++) {
       var i = head.indexOf(names[k]);
@@ -566,9 +572,9 @@ function logCols_(sh, width) {
   }
   return {
     code: col(['code']), at: col(['at']),
-    from: col(['from_status', 'from']), to: col(['to_status', 'to']),
+    from: col(['fromstatus', 'from']), to: col(['tostatus', 'to']),
     by: col(['by']), note: col(['note']),
-    reason: col(['reason', 'ly_do', 'lydo'])
+    reason: col(['reason', 'lydo'])
   };
 }
 

@@ -236,6 +236,28 @@ test('timeline gộp: khác at tách mốc; STAFF head Edit + ẩn bill trống'
   assert.ok(!h.includes('ADMIN'));
 });
 
+test('timeline ma trận Mã/Lý do: cả 2 → hiện cả 2; 1 → hiện 1; 0 → ẩn cả', async () => {
+  const { sandbox, listeners } = makeEnv(ITEM, []);
+  await listeners.DOMContentLoaded();
+  const st = (bill, reason) => ({ at: '08/10/2026 20:01:44', code: ITEM.code, from: 'chua_xu_ly', to: 'thanh_ly', by: 'ADMIN đổi trạng thái', note: bill, bill, reason });
+  const both = sandbox.tlHTML(st('SPXVN1', 'Thao tác sai'));
+  assert.match(both, /SPXVN1/);
+  assert.match(both, /Lý do:/);
+  const billOnly = sandbox.tlHTML(st('SPXVN1', ''));
+  assert.match(billOnly, /SPXVN1/);
+  assert.ok(!billOnly.includes('Lý do:'));
+  const reasonOnly = sandbox.tlHTML(st('', 'Hàng vỡ'));
+  assert.match(reasonOnly, /Hàng vỡ/);
+  assert.ok(!reasonOnly.includes('tl-bill'));
+  const grp = sandbox.groupHTML_(sandbox.groupHist_([
+    { at: '08/10/2026 20:10:07', code: ITEM.code, from: 'thanh_ly', to: 'thanh_ly', by: 'a@x.com', note: 'ADMIN Edit Mô tả: A => B', bill: '', reason: '' },
+    { at: '08/10/2026 20:10:07', code: ITEM.code, from: 'thanh_ly', to: 'thanh_ly', by: 'a@x.com', note: 'ADMIN chỉnh sửa Ảnh', bill: '', reason: '' },
+  ])[0]);
+  assert.match(grp, /Thanh Lý/);
+  assert.ok(!grp.includes('tl-bill'));
+  assert.ok(!grp.includes('Lý do:'));
+});
+
 test('timeline: STAFF hiện email + Edit cũ => mới; ADMIN hiện ADMIN Edit; lý do trống thì ẩn', async () => {
   const { sandbox, listeners } = makeEnv(ITEM, []);
   await listeners.DOMContentLoaded();

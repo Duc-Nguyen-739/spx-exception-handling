@@ -61,8 +61,8 @@ test('detail-ttl: server doc log/photos qua helper chung, khong copy logic', () 
   assert.ok(lf.includes('logEntry_(log.rows[j], log.cols, hc)'));
   assert.ok(lf.includes('photosByCode_(want)'));
   assert.ok(lf.includes('applyPhotos_(t,'));
-  // header mapping chi ton tai o logCols_
-  assert.strictEqual((gs.match(/from_status', 'from'/g) || []).length, 1);
+  // header mapping chi ton tai o logCols_ (candidate da normalize, khong dau/gach)
+  assert.strictEqual((gs.match(/fromstatus', 'from'/g) || []).length, 1);
   assert.strictEqual((gs.match(/function logCols_\(/g) || []).length, 1);
   // doc Photos truc tiep chi trong helper (photoIds_/fixPhotoSharing doc ca file la hop le)
   assert.ok(gs.includes('function applyPhotos_(item, photos)'));

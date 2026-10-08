@@ -6,6 +6,7 @@ KHỚP server: Code.gs (GEN_CODE_FMT, STATUS_LABEL, canResolve/canLiquidate)
 KHỚP import: scripts/import-csv.js (STATUS_RULES, canonicalKind).
 """
 import re
+import unicodedata
 from datetime import datetime, timezone, timedelta
 
 TZ = timezone(timedelta(hours=7))  # Asia/Ho_Chi_Minh, không dùng GMT+7 lẻ (luật 11)
@@ -286,10 +287,17 @@ def can_edit_status(role, to_status, bill="", reason=""):
     return (True, "")
 
 
+def _norm_head(h):
+    # KHỚP Code.gs normHead_: bỏ dấu/cách/gạch trước khi so khớp header.
+    s = str(h or "").replace("đ", "d").replace("Đ", "D")
+    s = "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
 def map_history_row(header, row, want_code):
     # KHỚP Code.gs historyFor_: map cột theo tên header (chống lệch thứ tự
     # cột ở sheet có sẵn), so khớp code sau trim.
-    names = [str(h or "").strip().lower() for h in (header or [])]
+    names = [_norm_head(h) for h in (header or [])]
 
     def col(*cands):
         for n in cands:
@@ -313,11 +321,11 @@ def map_history_row(header, row, want_code):
     return {
         "at": row[i_at] if 0 <= i_at < len(row) else "",
         "code": str(want_code or "").strip(),
-        "from": cell("from_status", "from"),
-        "to": cell("to_status", "to"),
+        "from": cell("fromstatus", "from"),
+        "to": cell("tostatus", "to"),
         "by": cell("by"),
         "note": cell("note"),
-        "reason": cell("reason", "ly_do", "lydo"),
+        "reason": cell("reason", "lydo"),
     }
 
 

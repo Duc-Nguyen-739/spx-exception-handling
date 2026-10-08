@@ -217,6 +217,19 @@ class TestListFullBatch(unittest.TestCase):
         self.assertEqual(history_bill(e["from"], e["to"], e["note"]), "SPXVN9")
         self.assertEqual(e["reason"], "")
 
+    def test_history_header_variants(self):
+        for header in (
+            ["at", "code", "from_status", "to_status", "by", "note", "reason"],
+            ["AT", "Code", "From Status", "To Status", "By", "Note", "Lý do"],
+            ["at", "code", "from", "to", "by", "note", "ly-do"],
+        ):
+            r = ["08/10/2026 19:58:12", "Box.1", "chua_xu_ly", "thanh_ly",
+                 "ADMIN đổi trạng thái", "SPXVN1", "Thao tác sai"]
+            e = map_history_row(header, r, "Box.1")
+            self.assertEqual(e["to"], "thanh_ly")
+            self.assertEqual(e["note"], "SPXVN1")
+            self.assertEqual(e["reason"], "Thao tác sai")
+
     def test_history_reason_column(self):
         header = ["at", "code", "from_status", "to_status", "by", "note", "reason"]
         e = map_history_row(header, ["06/10/2026 19:21:00", "Box.06-10-2026.1",
