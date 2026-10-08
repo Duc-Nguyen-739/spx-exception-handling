@@ -260,3 +260,39 @@ test('photo-chain: truc xuat chi 1 lan, loi tiep thi dung khong loop', async () 
   assert.deepStrictEqual(calls, [['getThumb', ID_A], ['getPhoto', ID_A]], 'khong goi them server o lan 2');
   assert.ok(String(shown).indexOf('[blob]') >= 0, 'bao dung loai link that');
 });
+
+test('photo-chain: IDB hit chi 1 lan, blob hong thi rot server khong loop', async () => {
+  const calls = [];
+  const sandbox = {
+    photoCache: {}, photoLoading: {}, APP_REV: REV,
+    putPhotoCache: (k, u) => { sandbox.photoCache[k] = u; },
+    idbGet: () => Promise.resolve({ type: 'image/jpeg' }),
+    idbDel: () => {},
+    URL: { createObjectURL: () => 'blob:oneshot' },
+    state: { detail: { item: { code: 'X' } } },
+    document: { querySelectorAll: () => [] },
+    setTimeout, Promise,
+    gs: (fn, args) => {
+      calls.push([fn, args && args[0]]);
+      return new Promise((res) => {
+        setTimeout(() => res({ ok: true, data: { mime: 'image/png', b64: 'AAA' } }), 5);
+      });
+    },
+  };
+  vm.createContext(sandbox);
+  const im = fakeImg(THUMB_A, false, '', THUMB_A);
+  sandbox.im = im;
+  let shown = 'UNSET';
+  sandbox.showNo = (m) => { shown = m; };
+  vm.runInContext(LIB, sandbox);
+  vm.runInContext('photoFallback(im, undefined, showNo);', sandbox);
+  await sleep(80);
+  assert.strictEqual(sandbox.im.src, 'blob:oneshot', 'lan 1: IDB hit hien ngay 0 server');
+  assert.deepStrictEqual(calls, []);
+  assert.strictEqual(sandbox.im.dataset.iq, '1', 'danh dau da thu IDB');
+  vm.runInContext('photoFallback(im, undefined, showNo);', sandbox);
+  await sleep(80);
+  assert.deepStrictEqual(calls, [['getThumb', ID_A]], 'lan 2: bo qua IDB, di thang server');
+  assert.ok(sandbox.im.src.indexOf('data:image/png') === 0, 'hien anh server, khong loop blob');
+  assert.strictEqual(shown, 'UNSET');
+});

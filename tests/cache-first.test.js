@@ -36,3 +36,10 @@ test('cache-first: capacity 600 cho 150 don x 1-3 anh', () => {
   assert.ok(HTML.includes('var IDB_MAX=600,'), 'IDB 600 thay vi 200');
   assert.ok(HTML.includes('photoCacheOrder.length>=600'), 'memory dong bo 600');
 });
+
+test('cache-first: luoi retry bang URL goc, IDB chi thu 1 lan', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes('photoFallback(im,(orig&&orig!==src)?orig:src'), 'luoi truyen URL goc (co id), khong phai URL cached');
+  assert.ok(html.includes('if(id&&!im.dataset.iq)'), 'IDB-hit co guard chong loop');
+  assert.ok(html.includes("im.dataset.iq='1'"), 'danh dau sau 1 lan thu IDB');
+});
