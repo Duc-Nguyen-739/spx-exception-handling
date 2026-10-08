@@ -233,7 +233,7 @@ async function main() {
     const R = rs.err ? null : JSON.parse(rs.value);
     check('Resolve đủ bill → token Resolve + mốc bill', !!(rsOk && R && R.token), R && R.calls);
 
-    // Edit ADMIN: đủ 3 ô trạng thái + ô lý do, bill bắt buộc, Confirm ghi ADMIN (không email)
+    // Edit ADMIN: đủ 3 ô trạng thái + ô lý do; Mã optional, Lý do bắt buộc
     await evalIn(ws, `document.getElementById('btnEditDetail').click()`);
     await waitUntil(ws, "document.getElementById('editModal').classList.contains('open')", 5000);
     const eo = await evalIn(ws, `JSON.stringify({
@@ -252,17 +252,30 @@ async function main() {
     check('Edit: lưới 3 cột + nút X góc, không nút Xóa tràn, có đếm (n/3)', !!(EG && EG.cols === 3 && EG.del >= 2 && EG.full === 0 && /\/3\)/.test(EG.cnt || '')), eg.value);
     await evalIn(ws, `(function(){
       var g = document.getElementById('editStatGrid').children;
-      for (var i = 0; i < g.length; i++) if (g[i].textContent === 'Lưu kho') g[i].click();
+      for (var i = 0; i < g.length; i++) if (g[i].textContent === 'Thanh Lý') g[i].click();
     })()`);
-    await evalIn(ws, `document.getElementById('editReason').value='Thao tác sai'`);
-    await evalIn(ws, `document.getElementById('btnConfirmEdit').click()`);
-    const edOk = await waitUntil(ws, "document.getElementById('detailHist').innerText.includes('ADMIN đổi trạng thái')"
+    await evalIn(ws, `document.getElementById('editReason').value='';document.getElementById('btnConfirmEdit').click()`);
+    await sleep(300);
+    const noReason = await evalIn(ws, `JSON.stringify({
+      msg: document.getElementById('msgEdit').textContent,
+      open: document.getElementById('editModal').classList.contains('open'),
+      calls: (window.__MOCK_CALLS__ || []).filter(function(c){return c[0]==='adminEditItem';}).length
+    })`);
+    const NR = noReason.err ? null : JSON.parse(noReason.value);
+    check('Edit đổi trạng thái thiếu Lý do bị chặn, không gọi server', !!(NR && /Lý do/.test(NR.msg) && NR.open && NR.calls === 0), noReason.value);
+    await evalIn(ws, `(function(){
+      var g = document.getElementById('editStatGrid').children;
+      for (var i = 0; i < g.length; i++) if (g[i].textContent === 'Thanh Lý') g[i].click();
+      document.getElementById('editDesc').value='Thùng 12 áo thun hoàn EDIT';
+      document.getElementById('btnConfirmEdit').click();
+    })()`);
+    const edOk = await waitUntil(ws, "document.getElementById('detailHist').innerText.includes('ADMIN Edit Mô tả')"
       + " && document.querySelectorAll('#detailHist .tl.pending').length === 0", 8000);
     const ed = await evalIn(ws, `JSON.stringify({
       adminEntry: (function(){
         var tls = document.querySelectorAll('#detailHist .tl');
         for (var i = 0; i < tls.length; i++) {
-          if (tls[i].innerText.includes('ADMIN đổi trạng thái')) return tls[i].innerText;
+          if (tls[i].innerText.includes('ADMIN Edit Mô tả')) return tls[i].innerText;
         }
         return '';
       })(),
@@ -276,9 +289,8 @@ async function main() {
       editCalls: (window.__MOCK_CALLS__ || []).filter(function(c){return c[0]==='adminEditItem';}).length
     })`);
     const D = ed.err ? null : JSON.parse(ed.value);
-    check('Edit về Lưu kho → mốc ADMIN đổi trạng thái', !!edOk, D && ('adminEditItem x' + D.editCalls));
-    check('Mốc Edit không lộ email ADMIN', !!(D && /ADMIN đổi trạng thái/.test(D.adminEntry) && !/@/.test(D.adminEntry)), D && D.adminEntry.replace(/\n/g, ' | '));
-    check('Mốc đổi trạng thái hiện Lý do đã điền', !!/Lý do:[\s\S]*Thao tác sai/.test(D.adminEntry), D && D.adminEntry.replace(/\n/g, ' | ').slice(0, 160));
+    check('Edit chỉ sửa Mô tả → mốc ADMIN Edit Mô tả', !!edOk, D && ('adminEditItem x' + D.editCalls));
+    check('Mốc Mô tả hiện đủ cũ => mới', !!(D && /Thùng 12 áo thun hoàn, seal còn nguyên/.test(D.adminEntry) && /EDIT/.test(D.adminEntry)), D && D.adminEntry.replace(/\n/g, ' | ').slice(0, 160));
     check('Mốc Resolve nút thường vẫn hiện email', !!(D && /@/.test(D.resolveEntry)), D && D.resolveEntry.replace(/\n/g, ' | ').slice(0, 120));
 
     // STAFF: nút Edit vẫn hiện, chỉ sửa Mô tả + Ghi chú qua editItem

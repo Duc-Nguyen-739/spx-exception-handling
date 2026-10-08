@@ -53,13 +53,13 @@ class TestStatus(unittest.TestCase):
         self.assertFalse(valid_liq_code("hello"))
 
     def test_edit_status_gate(self):
-        self.assertEqual(can_edit_status("STAFF", "chua_xu_ly", ""), (False, "Cần quyền ADMIN."))
-        self.assertEqual(can_edit_status("ADMIN", "chua_xu_ly", ""), (True, ""))
-        self.assertEqual(can_edit_status("ADMIN", "da_tim_bill", "SPXVN123"), (True, ""))
-        self.assertEqual(can_edit_status("ADMIN", "thanh_ly", "SPXVN123"), (True, ""))
-        self.assertEqual(can_edit_status("ADMIN", "da_tim_bill", ""), (False, "Thiếu mã bill."))
-        self.assertEqual(can_edit_status("ADMIN", "thanh_ly", "  "), (False, "Thiếu mã bill."))
-        self.assertEqual(can_edit_status("ADMIN", "da_cho_di", "SPXVN1"), (False, "Trạng thái không hợp lệ."))
+        self.assertEqual(can_edit_status("STAFF", "chua_xu_ly", "", "x"), (False, "Cần quyền ADMIN."))
+        self.assertEqual(can_edit_status("ADMIN", "chua_xu_ly", "", "về kho"), (True, ""))
+        self.assertEqual(can_edit_status("ADMIN", "da_tim_bill", "SPXVN123", "ok"), (True, ""))
+        self.assertEqual(can_edit_status("ADMIN", "thanh_ly", "", "vỡ hàng"), (True, ""))
+        self.assertEqual(can_edit_status("ADMIN", "da_tim_bill", "SPXVN123", ""), (False, "Thiếu lý do."))
+        self.assertEqual(can_edit_status("ADMIN", "thanh_ly", "", "  "), (False, "Thiếu lý do."))
+        self.assertEqual(can_edit_status("ADMIN", "da_cho_di", "SPXVN1", "x"), (False, "Trạng thái không hợp lệ."))
 
     def test_map_history_row(self):
         h = ["at", "code", "from_status", "to_status", "by", "note"]

@@ -8,6 +8,7 @@ const vm = require('vm');
 function makeEnv(fakeItem, fakeHistory) {
   fakeItem = JSON.parse(JSON.stringify(fakeItem));
   fakeHistory = JSON.parse(JSON.stringify(fakeHistory));
+  const orig = { desc: fakeItem.description, note: fakeItem.note };
   const registry = {};
   const calls = [];
   function makeEl() {
@@ -50,6 +51,12 @@ function makeEnv(fakeItem, fakeHistory) {
     },
     editItem(p) {
       calls.push(['editItem', p]);
+      const notes = [];
+      if (p.description != null && String(p.description) !== String(orig.desc)) notes.push('Edit Mô tả: ' + orig.desc + ' => ' + p.description);
+      if (p.note != null && String(p.note) !== String(orig.note)) notes.push('Edit Ghi chú: ' + orig.note + ' => ' + p.note);
+      if (p.description != null) { fakeItem.description = String(p.description); orig.desc = String(p.description); }
+      if (p.note != null) { fakeItem.note = String(p.note); orig.note = String(p.note); }
+      notes.forEach((n) => fakeHistory.push({ at: '06/10/2026 18:22:00', code: p.code, from: fakeItem.status, to: fakeItem.status, by: 'son.nguyenngoc@spxexpress.com', note: n, bill: '', reason: '' }));
       okCb({ ok: true, data: { code: p.code } });
     },
     adminEditItem(p) {
@@ -135,9 +142,9 @@ test('resolve: thiếu bill báo lỗi, đủ bill gọi server + ghi mốc kèm
   assert.ok(calls.filter((c) => c[0] === 'getItem').length >= 2);
 });
 
-test('edit: ADMIN thấy đủ 3 ô trạng thái + ô lý do, bill bắt buộc', async () => {
+test('edit: ADMIN đổi trạng thái cần Lý do, mã optional; cùng lần lưu gộp 1 mốc', async () => {
   const item2 = { ...ITEM, status: 'da_tim_bill', statusLabel: 'Resolve' };
-  const { sandbox, registry, calls, listeners } = makeEnv(item2, HIST);
+  const { sandbox, registry, calls, listeners, run } = makeEnv(item2, HIST);
   await listeners.DOMContentLoaded();
   await sandbox.openDetail('Box.05-10-2026.1');
   sandbox.openEdit();
@@ -150,28 +157,83 @@ test('edit: ADMIN thấy đủ 3 ô trạng thái + ô lý do, bill bắt buộc
   thanhLy.onclick();
   assert.strictEqual(registry.editBillWrap.style.display, 'block');
   assert.strictEqual(registry.editReasonWrap.style.display, 'block');
-  // Chưa điền bill -> chặn
-  await registry.btnConfirmEdit.onclick();
-  assert.match(String(registry.msgEdit.textContent), /mã bill/);
-  assert.ok(!calls.some((c) => c[0] === 'adminEditItem'));
-  // Điền bill + lý do + đổi mô tả -> gọi server đúng payload
+  // Có mã nhưng chưa điền lý do -> chặn
   registry.editBill.value = 'SPXVN777';
+  await registry.btnConfirmEdit.onclick();
+  assert.match(String(registry.msgEdit.textContent), /Lý do/);
+  assert.ok(!calls.some((c) => c[0] === 'adminEditItem'));
+  // Điền lý do, XÓA mã, đổi mô tả -> vẫn cho qua, payload bill rỗng
+  registry.editBill.value = '   ';
   registry.editReason.value = 'Thao tác sai';
   registry.editDesc.value = 'Thùng 12 áo thun mới';
-  await registry.btnConfirmEdit.onclick();
+  run.adminEditItem = function (p) { calls.push(['adminEditItem', p]); /* treo để xem mốc pending */ };
+  const p = registry.btnConfirmEdit.onclick();
+  const eh = registry.detailHist.innerHTML;
+  assert.match(eh, /ADMIN Edit:/);
+  assert.match(eh, /Mô tả:/);
+  assert.match(eh, /Đổi trạng thái:/);
+  assert.match(eh, /Lý do:/);
+  assert.match(eh, /Thao tác sai/);
+  assert.match(eh, /1 lần lưu/);
+  assert.strictEqual((eh.match(/<div class="tl[\s"]/g) || []).length, 3);
+  assert.strictEqual(registry.histCnt.textContent, 3);
+  const blocks = eh.split('<div class="tl');
+  assert.ok(!/SPXVN|tl-bill/.test(blocks[blocks.length - 1]));
+  run.getOk()({ ok: true, data: { code: 'Box.05-10-2026.1' } });
+  await p;
   const last = calls.filter((c) => c[0] === 'adminEditItem').pop();
   assert.strictEqual(last[1].code, 'Box.05-10-2026.1');
   assert.strictEqual(last[1].toStatus, 'thanh_ly');
-  assert.strictEqual(last[1].bill, 'SPXVN777');
+  assert.strictEqual(last[1].bill, '');
   assert.strictEqual(last[1].reason, 'Thao tác sai');
   assert.strictEqual(last[1].description, 'Thùng 12 áo thun mới');
   assert.match(String(registry.msgEdit.textContent), /Đã lưu/);
   assert.strictEqual(registry.editModal._has('open'), false);
-  const eh = registry.detailHist.innerHTML;
-  assert.match(eh, /ADMIN đổi trạng thái/);
-  assert.match(eh, /Lý do:/);
-  assert.match(eh, /Thao tác sai/);
-  assert.match(eh, /ADMIN Edit Mô tả: Thùng 12 áo thun =&gt; Thùng 12 áo thun mới/);
+});
+
+test('timeline gộp: 3 log cùng at thành 1 mốc ADMIN Edit đúng thứ tự + bill 1 lần', async () => {
+  const { sandbox, listeners } = makeEnv(ITEM, []);
+  await listeners.DOMContentLoaded();
+  const at = '08/10/2026 19:58:12';
+  const list = [
+    { at, code: 'Box.05-10-2026.1', from: 'chua_xu_ly', to: 'thanh_ly', by: 'ADMIN đổi trạng thái', note: 'SPXVN987654321', bill: 'SPXVN987654321', reason: 'Thao tác sai' },
+    { at, code: 'Box.05-10-2026.1', from: 'thanh_ly', to: 'thanh_ly', by: 'duc.nguyenvan05', note: 'ADMIN Edit Mô tả: Testq => Test', bill: '', reason: '' },
+    { at, code: 'Box.05-10-2026.1', from: 'thanh_ly', to: 'thanh_ly', by: 'duc.nguyenvan05', note: 'ADMIN chỉnh sửa Ảnh: Ảnh sản phẩm, Bổ sung 1', bill: '', reason: '' },
+  ];
+  const groups = sandbox.groupHist_(list);
+  assert.strictEqual(groups.length, 1);
+  const h = sandbox.groupHTML_(groups[0]);
+  assert.match(h, /ADMIN Edit:/);
+  assert.match(h, /3 thao tác · 1 lần lưu/);
+  const iDesc = h.indexOf('Mô tả:'), iPhoto = h.indexOf('Chỉnh sửa ảnh:'), iSt = h.indexOf('Đổi trạng thái:');
+  assert.ok(iDesc > 0 && iPhoto > iDesc && iSt > iPhoto);
+  assert.match(h, /Ảnh sản phẩm, Bổ sung 1/);
+  assert.match(h, /Lưu kho → Thanh Lý/);
+  assert.match(h, /Lý do:.*Thao tác sai/);
+  assert.match(h, /st thanhly/);
+  assert.strictEqual(h.match(/tl-bill/g).length, 1);
+  assert.match(h, /SPXVN987654321/);
+});
+
+test('timeline gộp: khác at tách mốc; STAFF head Edit + ẩn bill trống', async () => {
+  const { sandbox, registry, listeners } = makeEnv(ITEM, []);
+  await listeners.DOMContentLoaded();
+  const a = '08/10/2026 19:58:12', b = '08/10/2026 20:01:44';
+  assert.strictEqual(sandbox.groupHist_([
+    { at: a, from: 'x', to: 'x', note: 'n1' }, { at: a, from: 'x', to: 'x', note: 'n2' }, { at: b, from: 'x', to: 'x', note: 'n3' },
+  ]).length, 2);
+  sandbox.state.detail = { item: ITEM, history: [
+    { at: a, code: ITEM.code, from: 'chua_xu_ly', to: 'chua_xu_ly', by: 'son@spxexpress.com', note: 'Edit Mô tả: A => B', bill: '', reason: '' },
+    { at: a, code: ITEM.code, from: 'chua_xu_ly', to: 'chua_xu_ly', by: 'son@spxexpress.com', note: 'Edit Ghi chú: C => D', bill: '', reason: '' },
+  ] };
+  sandbox.state.pending = {};
+  sandbox.renderTimeline();
+  assert.strictEqual(registry.histCnt.textContent, 1);
+  const h = registry.detailHist.innerHTML;
+  assert.match(h, /Edit:/);
+  assert.match(h, /son@spxexpress\.com/);
+  assert.ok(!h.includes('tl-bill'));
+  assert.ok(!h.includes('ADMIN'));
 });
 
 test('timeline: STAFF hiện email + Edit cũ => mới; ADMIN hiện ADMIN Edit; lý do trống thì ẩn', async () => {

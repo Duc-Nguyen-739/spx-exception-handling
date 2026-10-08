@@ -143,6 +143,7 @@
     adminEditItem: function (p) {
       var it = find(p.code);
       if (!it) return { ok: false, error: 'Không Có' };
+      if (p.toStatus && p.toStatus !== it.status && !String(p.reason || '').trim()) return { ok: false, error: 'Đổi trạng thái phải điền Lý do.' };
       var oldD = it.description, oldN = it.note;
       if (p.description != null) it.description = String(p.description);
       if (p.note != null) it.note = String(p.note);

@@ -30,6 +30,16 @@ var STATUS_LABEL = {
   thanh_ly: 'Thanh Lý', tieu_huy: 'Tiêu hủy'
 };
 
+// KHỚP client SLOT_VN (index.html) — log ảnh ghi kèm loại để timeline gộp hiện chi tiết.
+function slotVn_(s) {
+  var m = {
+    ngoai_quan: 'Ảnh ngoại quan', san_pham: 'Ảnh sản phẩm', bo_sung: 'Ảnh bổ sung',
+    bo_sung_1: 'Ảnh bổ sung 1', bo_sung_2: 'Ảnh bổ sung 2', bo_sung_3: 'Ảnh bổ sung 3'
+  };
+  var k = String(s || '').trim();
+  return m[k] || 'Ảnh bổ sung';
+}
+
 function doGet() {
   return HtmlService.createTemplateFromFile('index').evaluate()
     .setTitle('SPX Exception Handling')
@@ -583,6 +593,31 @@ function readLogRows_() {
   return { cols: logCols_(sh, width), rows: sh.getRange(2, 1, last - 1, width).getValues() };
 }
 
+// Log 1 ma bang TextFinder tren cot A BOUNDED + doc dong khop — nhanh hon
+// full scan ActivityLog o getItem (mo chi tiet sau Confirm). Loi thi tra
+// null de caller fallback full read; khong thay dong nao la that su het log.
+function historyForCodeStrict_(code) {
+  code = String(code || '').trim();
+  if (!code) return [];
+  var sh = getSheet_('ActivityLog', LOG_HEADER);
+  var last = sh.getLastRow();
+  if (last < 2) return [];
+  var width = Math.max(sh.getLastColumn(), LOG_HEADER.length);
+  var cols = logCols_(sh, width);
+  if (cols.code < 0) return null;
+  var out = [];
+  try {
+    var found = sh.getRange(2, 1, last - 1, 1).createTextFinder(code)
+      .matchEntireCell(true).matchCase(true).findAll();
+    for (var j = 0; j < found.length; j++) {
+      var row = sh.getRange(found[j].getRow(), 1, 1, width).getValues()[0];
+      if (String(row[cols.code] || '').trim() !== code) continue;
+      out.push(logEntry_(row, cols, code));
+    }
+  } catch (e) { Logger.log(e); return null; }
+  return out;
+}
+
 function historyFor_(code) {
   var r = readLogRows_();
   if (!r.cols || r.cols.code < 0) return [];
@@ -608,7 +643,8 @@ function getItem(code) {
     if (f.row < 0) return fail('Không Có');
     var vals = f.sh.getRange(f.row, 1, 1, ITEMS_HEADER.length).getValues();
     var it = applyPhotos_(toClient_(rowsToItems_(vals)[0]), photosFor_(code));
-    return ok({ item: it, history: historyFor_(code) });
+    var histFast = historyForCodeStrict_(code);
+    return ok({ item: it, history: histFast === null ? historyFor_(code) : histFast });
   } catch (e) { Logger.log(e); return fail('Không đọc được đơn: ' + e.message); }
 }
 
@@ -1046,23 +1082,26 @@ function adminEditItem(p) {
     if (desc !== null && !desc) return fail('Vui lòng nhập mô tả sản phẩm.');
     if (adds.length > 3) return fail('Tối đa 3 ảnh.');
     if (toStatus && ['chua_xu_ly', 'da_tim_bill', 'thanh_ly'].indexOf(toStatus) < 0) return fail('Trạng thái không hợp lệ.');
-    if ((toStatus === 'da_tim_bill' || toStatus === 'thanh_ly') && !bill) {
-      return fail('Đổi sang ' + (STATUS_LABEL[toStatus] || toStatus) + ' phải điền mã bill.');
+    if (toStatus && !reason) {
+      return fail('Đổi sang ' + (STATUS_LABEL[toStatus] || toStatus) + ' phải điền Lý do.');
     }
     return ok(withLock_(function () {
       var f = findItemRow_(code);
       if (f.row < 0) throw new Error('Không Có');
       var it0 = rowsToItems_(f.sh.getRange(f.row, 1, 1, ITEMS_HEADER.length).getValues())[0];
       var cur = it0.status || 'chua_xu_ly';
+      var photoChanged = (delSlots.length > 0 || adds.length > 0);
+      var keep = [], placed = [];
       var kind = it0.kind === 'Item' ? 'Item' : 'Box';
       var need = (kind === 'Box') ? ['ngoai_quan', 'san_pham'] : ['san_pham'];
-      var curPhotos = photosFor_(code);
-      var keep = curPhotos.filter(function (x) { return delSlots.indexOf(String(x.slot).trim()) < 0; });
-      var total = keep.length + adds.length;
-      if (total > 3) throw new Error('Tối đa 3 ảnh.');
+      if (photoChanged) {
+        var curPhotos = photosFor_(code);
+        keep = curPhotos.filter(function (x) { return delSlots.indexOf(String(x.slot).trim()) < 0; });
+        var total = keep.length + adds.length;
+        if (total > 3) throw new Error('Tối đa 3 ảnh.');
+      }
       var have = {};
-      keep.forEach(function (x) { have[String(x.slot)] = true; });
-      var placed = [];
+      keep.forEach(function (x) { have[String(x.slot).trim()] = true; });
       for (var a = 0; a < adds.length; a++) {
         var slot = '';
         for (var q = 0; q < need.length; q++) {
@@ -1078,9 +1117,11 @@ function adminEditItem(p) {
         have[slot] = true;
         placed.push([slot, adds[a]]);
       }
-      for (var v = 0; v < need.length; v++) {
-        if (!have[need[v]]) {
-          throw new Error(kind === 'Box' ? 'Box cần đủ Ảnh ngoại quan + Ảnh sản phẩm.' : 'Item cần Ảnh sản phẩm.');
+      if (photoChanged) {
+        for (var v = 0; v < need.length; v++) {
+          if (!have[need[v]]) {
+            throw new Error(kind === 'Box' ? 'Box cần đủ Ảnh ngoại quan + Ảnh sản phẩm.' : 'Item cần Ảnh sản phẩm.');
+          }
         }
       }
       var editNotes = [];
@@ -1090,10 +1131,9 @@ function adminEditItem(p) {
       if (note !== null && note !== String(it0.note || '')) {
         editNotes.push('ADMIN Edit Ghi chú: ' + String(it0.note || '') + ' => ' + note);
       }
-      var photoChanged = (delSlots.length || placed.length) ? true : false;
       var row = f.row;
-      if (desc !== null) f.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
-      if (note !== null) f.sh.getRange(row, 12, 1, 1).setValues([[note]]);
+      if (desc !== null && desc !== String(it0.description || '')) f.sh.getRange(row, 3, 1, 1).setValues([[desc]]);
+      if (note !== null && note !== String(it0.note || '')) f.sh.getRange(row, 12, 1, 1).setValues([[note]]);
       if (delSlots.length) {
         var ph = getSheet_('Photos', PHOTOS_HEADER);
         var last = ph.getLastRow();
@@ -1132,7 +1172,7 @@ function adminEditItem(p) {
         var ph2 = getSheet_('Photos', PHOTOS_HEADER);
         ph2.getRange(ph2.getLastRow() + 1, 1, newPh.length, PHOTOS_HEADER.length).setValues(newPh);
       }
-      f.sh.getRange(row, 5, 1, 2).setValues([[outerId, productId]]);
+      if (photoChanged) f.sh.getRange(row, 5, 1, 2).setValues([[outerId, productId]]);
       var finalSt = cur;
       var newLogs = [];
       if (toStatus && toStatus !== cur) {
@@ -1148,7 +1188,17 @@ function adminEditItem(p) {
         newLogs.push(["'" + at, code, finalSt, finalSt, by, editNotes[n], '']);
       }
       if (photoChanged) {
-        newLogs.push(["'" + at, code, finalSt, finalSt, by, 'ADMIN chỉnh sửa Ảnh', '']);
+        var photoNames = [];
+        for (var dn = 0; dn < delSlots.length; dn++) {
+          var dvn = slotVn_(delSlots[dn]);
+          if (photoNames.indexOf(dvn) < 0) photoNames.push(dvn);
+        }
+        for (var pn = 0; pn < placed.length; pn++) {
+          var pvn = slotVn_(placed[pn][0]);
+          if (photoNames.indexOf(pvn) < 0) photoNames.push(pvn);
+        }
+        newLogs.push(["'" + at, code, finalSt, finalSt, by,
+          'ADMIN chỉnh sửa Ảnh' + (photoNames.length ? ': ' + photoNames.join(', ') : ''), '']);
       }
       if (newLogs.length) {
         var logSh = getSheet_('ActivityLog', LOG_HEADER);

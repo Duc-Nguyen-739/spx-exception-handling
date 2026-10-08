@@ -274,15 +274,15 @@ def staff_edit_notes(old_desc, old_note, new_desc, new_note, admin=False):
 EDIT_STATUS_OK = ("chua_xu_ly", "da_tim_bill", "thanh_ly")
 
 
-def can_edit_status(role, to_status, bill=""):
+def can_edit_status(role, to_status, bill="", reason=""):
     # KHỚP Code.gs adminEditItem: chỉ ADMIN đổi trạng thái trong Edit;
-    # sang Resolve/Thanh Lý bắt buộc có mã bill.
+    # mã bill KHÔNG bắt buộc (để trống thì ẩn dòng bill), lý do BẮT BUỘC.
     if role != "ADMIN":
         return (False, "Cần quyền ADMIN.")
     if to_status not in EDIT_STATUS_OK:
         return (False, "Trạng thái không hợp lệ.")
-    if to_status in ("da_tim_bill", "thanh_ly") and not (bill or "").strip():
-        return (False, "Thiếu mã bill.")
+    if to_status and not (reason or "").strip():
+        return (False, "Thiếu lý do.")
     return (True, "")
 
 

@@ -3,10 +3,10 @@ const assert = require('node:assert');
 
 // KHỚP server: Code.gs adminEditItem / KHỚP api/logic.py can_edit_status.
 var EDIT_OK = ['chua_xu_ly', 'da_tim_bill', 'thanh_ly'];
-function canEditStatus(role, toStatus, bill) {
+function canEditStatus(role, toStatus, bill, reason) {
   if (role !== 'ADMIN') return [false, 'Cần quyền ADMIN.'];
   if (EDIT_OK.indexOf(toStatus) < 0) return [false, 'Trạng thái không hợp lệ.'];
-  if ((toStatus === 'da_tim_bill' || toStatus === 'thanh_ly') && !String(bill || '').trim()) return [false, 'Thiếu mã bill.'];
+  if (toStatus && !String(reason || '').trim()) return [false, 'Thiếu lý do.'];
   return [true, ''];
 }
 
@@ -21,13 +21,13 @@ test('access: STAFF không đổi trạng thái trong Edit', () => {
   assert.deepStrictEqual(canEditStatus('STAFF', 'da_tim_bill', 'SPXVN1'), [false, 'Cần quyền ADMIN.']);
 });
 
-test('access: ADMIN đổi trạng thái trong Edit, bill bắt buộc khi sang Resolve/Thanh Lý', () => {
-  assert.deepStrictEqual(canEditStatus('ADMIN', 'chua_xu_ly', ''), [true, '']);
-  assert.deepStrictEqual(canEditStatus('ADMIN', 'da_tim_bill', 'SPXVN123'), [true, '']);
-  assert.deepStrictEqual(canEditStatus('ADMIN', 'thanh_ly', 'SPXVN123'), [true, '']);
-  assert.deepStrictEqual(canEditStatus('ADMIN', 'da_tim_bill', ''), [false, 'Thiếu mã bill.']);
-  assert.deepStrictEqual(canEditStatus('ADMIN', 'thanh_ly', '  '), [false, 'Thiếu mã bill.']);
-  assert.deepStrictEqual(canEditStatus('ADMIN', 'da_cho_di', 'SPXVN1'), [false, 'Trạng thái không hợp lệ.']);
+test('access: ADMIN đổi trạng thái trong Edit, mã optional + lý do bắt buộc', () => {
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'chua_xu_ly', '', 'về kho'), [true, '']);
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'da_tim_bill', 'SPXVN123', 'ok'), [true, '']);
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'thanh_ly', '', 'vỡ hàng'), [true, '']);
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'da_tim_bill', 'SPXVN123', ''), [false, 'Thiếu lý do.']);
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'thanh_ly', '', '  '), [false, 'Thiếu lý do.']);
+  assert.deepStrictEqual(canEditStatus('ADMIN', 'da_cho_di', 'SPXVN1', 'x'), [false, 'Trạng thái không hợp lệ.']);
 });
 
 test('access: mọi email đều thấy nút Edit, chỉ sửa Mô tả + Ghi chú', () => {
