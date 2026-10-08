@@ -46,7 +46,10 @@ test('compact mobile: timeline khong bao gio co ve 0 (flex + san 140px)', () => 
   assert.ok(html.includes('#detailHist{max-height:none;flex:1;min-height:0}'));
   assert.ok(!html.includes('#resolveCard{position:sticky'));
   assert.ok(html.includes('#resolveCard #btnConfirmResolve{height:42px;flex:none;padding:0 18px;font-size:13px}'));
-  assert.ok(html.includes('#detailBody .phstrip.n1 .thumb{max-width:140px}'));
+  assert.ok(html.includes('#detailBody .phstrip.n1 .thumb{max-width:220px}'));
+  assert.ok(html.includes('#detailBody .phstrip.n1 .thumb img{height:120px;aspect-ratio:auto}'));
+  assert.ok(html.includes('#detailBody .phstrip.n2{grid-template-columns:repeat(2,minmax(0,150px));justify-content:center}'));
+  assert.ok(html.includes('#detailBody .kv{padding:6px 0;font-size:11.5px}'));
   assert.ok(html.includes('.ph img{height:160px}'));
   assert.ok(html.includes('#detailHist{overflow-y:auto;max-height:420px;'));
   assert.ok(html.includes('.phstrip.n1 .thumb{max-width:260px;width:100%}'));
