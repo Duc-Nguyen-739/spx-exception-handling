@@ -2016,7 +2016,7 @@ function showLiq(on){document.getElementById('viewLiq').style.display=on?'block'
 async function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';document.getElementById('viewPrint').style.display='none';setActive('navAccess');try{await loadMe();}catch(e){}
 var e=state.me||{};
 var dl=document.getElementById('msgDeploy');
-if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?');
+if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?')+' · Deploy: '+(e.deployer||'(trống)');
 if((state.me&&state.me.role)!=='ADMIN'){msg('msgAccess','Chỉ ADMIN mới xem được trang này.');return;}
 loadUsers();}
 });
