@@ -39,6 +39,19 @@ function extractCodes(text, re) {
   return m ? [...new Set(m)] : [];
 }
 
+// Cot anh chi giu Drive fileId: link drive moi bien the -> ID tran;
+// rac khong phai URL -> '' (ghi nhan de audit). URL la khong phai drive
+// thi giu nguyen cho browser tu thu (co the la link anh truc tiep).
+function normalizePhoto(v) {
+  const t = String(v == null ? '' : v).trim();
+  if (!t) return { id: '', dropped: false };
+  if (/^[A-Za-z0-9_-]{10,}$/.test(t)) return { id: t, dropped: false };
+  const m = t.match(/[?&]id=([A-Za-z0-9_-]{10,})/) || t.match(/\/d\/([A-Za-z0-9_-]{10,})/);
+  if (m) return { id: m[1], dropped: false };
+  if (/^https?:\/\//.test(t)) return { id: t, dropped: false };
+  return { id: '', dropped: true };
+}
+
 // Parser CSV tối thiểu đúng RFC4180 (quote + comma + dòng xuống trong quote).
 function parseCsv(text) {
   const rows = [];
@@ -79,12 +92,14 @@ function normalizeRow(cols) {
   const notes = [];
   if (mvdn.length > 1) notes.push('nhieu MVDN: ' + mvdn.join(','));
   if (!/^(BOX|ITEM|TTC)\./i.test(code) && code) notes.push('ma la: ' + code);
+  const phO = normalizePhoto(p(4)), phP = normalizePhoto(p(5));
+  if (phO.dropped || phP.dropped) notes.push('anh la: ' + [phO.dropped ? p(4).slice(0, 40) : '', phP.dropped ? p(5).slice(0, 40) : ''].filter(Boolean).join(' / '));
   if ((p(3) || '').toLowerCase() === 'box' && /^ITEM/i.test(code)) notes.push('loai goc la Box, chuan hoa theo prefix');
   if ((p(3) || '').toLowerCase() === 'item' && /^(BOX|TTC)/i.test(code)) notes.push('loai goc la Item, chuan hoa theo prefix');
   return {
     code, created_at: p(0), description: p(2),
     kind: canonicalKind(code, p(3)),
-    photo_path_outer: p(4), photo_path_product: p(5),
+    photo_path_outer: normalizePhoto(p(4)).id, photo_path_product: normalizePhoto(p(5)).id,
     status, status_note: rawHandle,
     mvdn: mvdn[0] || '', trip: trip.join(','), reporter: p(10), note: notes.join('; '),
   };
@@ -94,7 +109,7 @@ function run(input) {
   const rows = parseCsv(input);
   const data = rows.filter(r => strip(r[1] || '').indexOf('ma san pham') !== 0);
   const out = [OUT_HEADER.join(',')];
-  const stats = { total: 0, by_status: {}, kind_mismatch: 0, weird_code: 0, multi_mvdn: 0 };
+  const stats = { total: 0, by_status: {}, kind_mismatch: 0, weird_code: 0, multi_mvdn: 0, weird_photo: 0 };
   for (const r of data) {
     if (!r[1] || !r[1].trim()) continue;
     const n = normalizeRow(r);
@@ -102,6 +117,7 @@ function run(input) {
     stats.by_status[n.status] = (stats.by_status[n.status] || 0) + 1;
     if (/loai goc/.test(n.note)) stats.kind_mismatch++;
     if (/ma la/.test(n.note)) stats.weird_code++;
+    if (/anh la/.test(n.note)) stats.weird_photo++;
     if (/nhieu MVDN/.test(n.note)) stats.multi_mvdn++;
     out.push(OUT_HEADER.map(h => csvCell(n[h])).join(','));
   }
@@ -117,4 +133,4 @@ if (require.main === module) {
   process.stderr.write(JSON.stringify(stats, null, 2) + '\n');
 }
 
-module.exports = { parseCsv, normalizeRow, canonicalStatus, canonicalKind, run, STATUS_RULES };
+module.exports = { parseCsv, normalizeRow, canonicalStatus, canonicalKind, run, STATUS_RULES, normalizePhoto };
