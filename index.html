@@ -33,6 +33,8 @@ html[data-theme=dark] header .mark>span,html[data-theme=dark] header #hdrSummary
 .mark svg.spxlogo{height:24px;width:auto;display:block;flex:none}
 #hdrSummary{margin-left:auto;font-size:10.5px;color:var(--mut);font-weight:600;text-align:right;line-height:1.4;max-width:180px}
 #btnTheme{display:none;border-radius:9px;padding:8px 11px;font-size:11px}
+.revtag{font-size:10px;font-weight:700;color:var(--mut);white-space:nowrap}
+html[data-theme=dark] .revtag{color:#8fa3c2}
 #whoChip{display:none;align-items:center;gap:6px;flex:none;font-size:10.5px;font-weight:700;color:var(--navy);background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:4px 10px 4px 4px}
 #whoChip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
 #whoChip i{width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:800}
@@ -464,7 +466,7 @@ header{flex-wrap:wrap}
 <button id="camMain">📷 Quét</button>
 </div>
 </div>
-<div class="hact"><button id="btnTheme" type="button">☾ Tối</button>
+<div class="hact"><span id="appRev" class="revtag" title="Số bản đang chạy">…</span><button id="btnTheme" type="button">☾ Tối</button>
 <div id="whoChip" title="Tài khoản đăng nhập"><i id="whoIni">?</i><span id="whoTxt"></span></div></div>
 <button id="btnCreateTop" class="primary" style="display:none">＋ Create</button>
 <button id="btnPrintTop" style="display:none">🖨 In Mã</button>
@@ -2030,6 +2032,8 @@ try{localStorage.setItem('spx_theme',t);}catch(e){}
 }
 var savedTheme=null;try{savedTheme=localStorage.getItem('spx_theme');}catch(e){}
 applyTheme(savedTheme==='dark'?'dark':'light');
+var BUILD_REV='__BUILD_REV__';
+try{var _br=(/^__BUILD/.test(BUILD_REV)?(location.protocol==='file:'?'dev':'…'):BUILD_REV);document.getElementById('appRev').textContent=_br;}catch(e){}
 
 window.addEventListener('DOMContentLoaded',function(){
 loadGrid();loadMe();

@@ -502,6 +502,8 @@ async function main() {
 
     const hd = await evalIn(ws, `JSON.stringify({inHead: !!document.querySelector('header .scanbar #scanMain'), ph: document.getElementById('scanMain').placeholder})`);
     check('Search tren header + placeholder moi', hd.value === '{"inHead":true,"ph":"Nhập thông tin để tìm kiếm..."}', hd.value);
+    const rv = await evalIn(ws, `JSON.stringify({t: document.getElementById('appRev').textContent, first: document.querySelector('.hact').firstElementChild.id})`);
+    check('So ban canh nut Sang/Toi, local hien dev', rv.value === '{"t":"dev","first":"appRev"}', rv.value);
     await evalIn(ws, `state.range={f:{y:2020,m:1,d:1},t:{y:2020,m:2,d:1}};renderGrid();`);
     const z0 = await evalIn(ws, `document.querySelectorAll('#grid .card').length`);
     check('Range cu -> luoi 0 don', z0.value === 0, String(z0.value));

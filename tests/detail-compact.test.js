@@ -67,6 +67,15 @@ test('compact: form bill 1 hang [quet][bill][confirm 42px] + mo form tu cuon day
   assert.ok(html.includes("sh.scrollTop=sh.scrollHeight"));
 });
 
+test('revtag: so ban canh nut Sang/Toi, CI dong dau, local hien local', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes('<span id="appRev" class="revtag"'));
+  assert.ok(html.indexOf('id="appRev"') < html.indexOf('id="btnTheme"'));
+  assert.ok(html.includes('.revtag{font-size:10px;'));
+  assert.strictEqual((html.match(/__BUILD_REV__/g) || []).length, 1);
+  assert.ok(html.includes("var BUILD_REV='__BUILD_REV__';"));
+});
+
 test('compact: fallback chiu duoc .thumb + caption lightbox', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes("im.closest('.ph')||im.closest('.thumb')"));
