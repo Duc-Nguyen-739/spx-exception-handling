@@ -126,3 +126,16 @@ test('photo-share: reshare cursor batch, khong timeout o 40-60k file', () => {
   assert.ok(b.includes('done: done, processed: acc.i'), 'tra tien do cho client lap');
   assert.ok(HTML.includes("gs('fixPhotoSharing',[guard>0])"), 'client tu chay tiep den done');
 });
+
+test('photo-share: audit file ngoai folder chi doc, co cursor', () => {
+  assert.strictEqual((GS.match(/function auditPhotosOutsideFolder\(/g) || []).length, 1);
+  const b = GS.slice(GS.indexOf('function auditPhotosOutsideFolder('), GS.indexOf('function diagIdentity('));
+  assert.ok(b.includes('requireAdmin_'), 'ADMIN only');
+  assert.ok(b.includes('inPhotoFolder_'), 'reuse check folder O(1)');
+  assert.ok(b.includes('AUDIT_BATCH'), 'batch co dinh, khong timeout');
+  assert.ok(b.includes('done: done, next: next'), 'tra cursor cho client lap');
+  assert.ok(!b.includes('setSharing'), 'tuyet doi khong doi share');
+  assert.ok(!b.includes('setValues') && !b.includes('appendRow'), 'khong ghi sheet');
+  assert.ok(HTML.includes('id="btnAuditPh"'), 'co nut tren tab Role');
+  assert.ok(HTML.includes("gs('auditPhotosOutsideFolder',[next])"), 'client lap theo cursor');
+});

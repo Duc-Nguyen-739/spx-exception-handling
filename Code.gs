@@ -969,6 +969,47 @@ function fixPhotoSharing(resume) {
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
+var AUDIT_BATCH = 500;
+// Audit admin CHI DOC: liet ke fileId anh KHONG nam trong cay FOLDER_ID
+// (nhap tay/di chuyen nham) — cac file nay bi inPhotoFolder_ chan sau B1.
+// Cursor theo batch vi lan dau cache lanh, moi file ton 2-3 call Drive.
+function auditPhotosOutsideFolder(start) {
+  try {
+    requireAdmin_();
+    var ids = {};
+    var phSh = getSheet_('Photos', PHOTOS_HEADER);
+    var phLast = phSh.getLastRow();
+    if (phLast >= 2) {
+      var colC = phSh.getRange(2, 3, phLast - 1, 1).getValues();
+      for (var i = 0; i < colC.length; i++) {
+        var pid = fileIdOf_(colC[i][0]);
+        if (pid) ids[pid] = true;
+      }
+    }
+    var ish = getSheet_('Items', ITEMS_HEADER);
+    var ilast = ish.getLastRow();
+    if (ilast >= 2) {
+      var icols = ish.getRange(2, 5, ilast - 1, 2).getValues();
+      for (var j = 0; j < icols.length; j++) {
+        var ia = fileIdOf_(icols[j][0]);
+        var ib = fileIdOf_(icols[j][1]);
+        if (ia) ids[ia] = true;
+        if (ib) ids[ib] = true;
+      }
+    }
+    var order = Object.keys(ids).sort();
+    var from = Math.max(0, parseInt(start, 10) || 0);
+    var batch = order.slice(from, from + AUDIT_BATCH);
+    var outside = [];
+    for (var b = 0; b < batch.length; b++) {
+      if (!inPhotoFolder_(batch[b])) outside.push(batch[b]);
+    }
+    var next = from + batch.length;
+    var done = next >= order.length;
+    return ok({ total: order.length, checked: next, done: done, next: next, outside: outside.slice(0, 100), outsideCount: outside.length });
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
 function diagIdentity() {
   try {
     requireAdmin_();

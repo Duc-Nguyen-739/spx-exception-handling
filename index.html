@@ -555,6 +555,7 @@ header{flex-wrap:wrap}
 <div class="row" style="margin-top:8px">
 <button id="btnFixShare" style="flex:1">Sửa share ảnh cũ</button>
 <button id="btnDiagId" style="flex:1" title="Đọc danh tính server (không đổi gì)">Chẩn đoán danh tính</button>
+<button id="btnAuditPh" style="flex:1" title="Liệt kê ảnh ngoài folder (chỉ đọc)">Kiểm file ngoài folder</button>
 </div>
 </div>
 <div id="usersTable" style="margin-top:8px"></div>
@@ -1656,6 +1657,20 @@ msg('msgAccess','Đã share '+r.data.shared+'/'+r.data.total+' ảnh.'+via+f+why
 renderGrid();
 }catch(e){msg('msgAccess',e.message||'Lỗi sửa share');}
 }
+async function auditPhotos(){
+msg('msgAccess','Đang kiểm file ngoài folder…',true);
+try{
+var found=[],next=0,guard=0,done=false,total=0;
+do{
+var r=await gs('auditPhotosOutsideFolder',[next]);
+if(!r.ok)throw new Error(r.error);
+guard++;total=r.data.total;next=r.data.next;done=r.data.done;
+if(found.length<200)found=found.concat(r.data.outside||[]);
+if(!done)msg('msgAccess','Đang kiểm '+next+'/'+total+' file…',true);
+}while(!done&&guard<200);
+msg('msgAccess',found.length?('File ngoài folder ('+found.length+' mẫu): '+found.slice(0,20).join(', ')+(found.length>20?'…':'')):('Đã kiểm '+total+' file, tất cả nằm trong folder.'),true);
+}catch(e){msg('msgAccess',e.message||'Lỗi kiểm tra');}
+}
 async function delUser(email){
 msg('msgAccess','Đang xóa…',true);
 try{var r=await gs('deleteUser',[email]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi xóa');msg('msgAccess','Đã xóa '+email+'.',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi xóa');}
@@ -1989,6 +2004,7 @@ try{if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function()
 try{if(typeof setTimeout!=='undefined')setTimeout(function(){try{syncSticky_();}catch(e){}},600);}catch(e){}
 document.getElementById('btnFixShare').onclick=fixSharing;
 document.getElementById('btnDiagId').onclick=diagId;
+document.getElementById('btnAuditPh').onclick=auditPhotos;
 document.getElementById('btnAddUser').onclick=function(){var em=document.getElementById('newEmail').value.trim();if(!em){msg('msgAccess','Nhập email cần thêm.');return;}addAdmin(em);document.getElementById('newEmail').value='';};
 async function addAdmin(email){
 msg('msgAccess','Đang thêm…',true);
