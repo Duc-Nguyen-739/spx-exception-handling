@@ -49,7 +49,7 @@ test('photo-share: reshare phan loai that bai, khong nuot loi', () => {
   assert.ok(b.includes('unreadable'), 'dem file doc khong duoc (ID rac/quyen)');
   assert.ok(b.includes('blocked'), 'dem file bi chan share');
   assert.ok(b.includes('f = DriveApp.getFileById(fid)'), 'doc file tach rieng khoi doi share');
-  assert.ok(b.includes('unreadable: unreadable, blocked: blocked'), 'tra breakdown cho client');
+  assert.ok(b.includes('unreadable: acc.unreadable, blocked: acc.blocked'), 'tra breakdown cho client');
 });
 
 test('photo-share: UI hien breakdown de user bao lai dung benh', () => {
@@ -89,7 +89,7 @@ test('photo-share: nut chan doan danh tinh chi doc, khong doi gi', () => {
 test('photo-share: deploy trong thi bao chua ro chu, khong nhan vo la cua nguoi khac', () => {
   const b = GS.slice(GS.indexOf('function fixPhotoSharing('), GS.indexOf('function readPhotosAll_('));
   assert.ok(b.includes('unknownOwner'), 'dem rieng khi deployer email trong');
-  assert.ok(b.includes('unknownOwner: unknownOwner'), 'tra ve cho client');
+  assert.ok(b.includes('unknownOwner: acc.unknownOwner'), 'tra ve cho client');
   assert.ok(HTML.includes('chưa rõ chủ (deploy trống): '), 'UI hien dung truong hop');
 });
 
@@ -104,5 +104,25 @@ test('photo-share: reshare dem chu file + gom mau loi, khong lo ID moi', () => {
   assert.ok(b.includes('ownedByMe') && b.includes('ownedByOthers'), 'dem chu file theo deployer');
   assert.ok(b.includes('deployerEmail_()'), 'reuse ham deployer san co');
   assert.ok(b.includes('errTop'), 'tra mau loi gap nhieu nhat');
-  assert.ok(!/failed\.push\(([a-z]+)\)/.test(b.replace(/failed\.push\(fid\)/g, '')), 'failed chi push fid nhu cu, khong them truong moi');
+  assert.ok(b.includes('acc.failed.push(fid)'), 'failed chi push fid');
+  assert.ok(b.includes('slice(0, 50)'), 'failed cat 50 de state vua property limit');
+});
+
+test('photo-share: domain-only, khong public, khong share per-file khi upload', () => {
+  assert.ok(!GS.includes('ANYONE_WITH_LINK'), 'khong share public bat ky dau');
+  const t = GS.slice(GS.indexOf('function tryShareFile_('), GS.indexOf('function monthFolder_('));
+  assert.ok(t.includes('DOMAIN_WITH_LINK'), 'chi share domain');
+  assert.ok(!t.includes('setSharing(DriveApp.Access.ANYONE'), 'khong thu public truoc');
+  const cr = GS.slice(GS.indexOf('function create_('), GS.indexOf('function createBox('));
+  assert.ok(!cr.includes('tryShareFile_'), 'upload ke thua share folder, khong set tung file');
+});
+
+test('photo-share: reshare cursor batch, khong timeout o 40-60k file', () => {
+  assert.ok(GS.includes('var RESHARE_BATCH = 200;'), 'batch co dinh');
+  const b = GS.slice(GS.indexOf('function fixPhotoSharing('), GS.indexOf('function readPhotosAll_('));
+  assert.ok(b.includes('reshare_state'), 'cursor + state trong ScriptProperties');
+  assert.ok(b.includes('order.slice(acc.i, acc.i + RESHARE_BATCH)'), 'moi call 1 batch');
+  assert.ok(b.includes('deleteProperty'), 'xong thi don cursor');
+  assert.ok(b.includes('done: done, processed: acc.i'), 'tra tien do cho client lap');
+  assert.ok(HTML.includes("gs('fixPhotoSharing',[guard>0])"), 'client tu chay tiep den done');
 });

@@ -718,16 +718,13 @@ function shareErrKind_(e) {
     .replace(/\s+/g, ' ').trim();
   return (m || 'unknown').slice(0, 120);
 }
+// Folder FOLDER_ID da share DOMAIN 1 lan → file con ke thua. KHONG share PUBLIC.
 function tryShareFile_(f) {
   LASTSHAREERR_ = '';
   try {
-    f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return 'link';
-  } catch (e1) { LASTSHAREERR_ = shareErrKind_(e1); }
-  try {
     f.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
     return 'domain';
-  } catch (e2) { LASTSHAREERR_ = shareErrKind_(e2); }
+  } catch (e) { LASTSHAREERR_ = shareErrKind_(e); }
   return 'none';
 }
 
@@ -798,11 +795,10 @@ function create_(kind, p) {
       jobs.push(['bo_sung' + (usedExtra > 1 ? '_' + usedExtra : ''), extras[e]]);
     }
     var ids = {};
-    var shareOk = true;
+    var shareOk = true; // giu contract response; file ke thua share DOMAIN cua folder
 
     for (var s = 0; s < jobs.length; s++) {
       var f = folder.createFile(dataUrlToBlob_(jobs[s][1], code + '.' + jobs[s][0] + '.jpg'));
-      if (tryShareFile_(f) === 'none') shareOk = false;
       ids[jobs[s][0]] = f.getId();
     }
     var outerId = ids['ngoai_quan'] || '', productId = ids['san_pham'] || '';
@@ -893,7 +889,8 @@ function liquidateBatch(codes, liqCode) {
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
-function fixPhotoSharing() {
+var RESHARE_BATCH = 200;
+function fixPhotoSharing(resume) {
   try {
     requireAdmin_();
     var ids = {};
@@ -919,43 +916,56 @@ function fixPhotoSharing() {
         if (ib) ids[ib] = true;
       }
     }
-    var shared = 0, domainOnly = false, failed = [], unreadable = 0, blocked = 0;
-    var ownedByMe = 0, ownedByOthers = 0, unknownOwner = 0, errMap = {};
+    var order = Object.keys(ids).sort();
+    var props = PropertiesService.getScriptProperties();
+    var acc = null;
+    if (resume) {
+      try { acc = JSON.parse(props.getProperty('reshare_state') || 'null'); } catch (eP) { acc = null; }
+      if (!acc || acc.total !== order.length) acc = null;
+    }
+    if (!acc) acc = { i: 0, total: order.length, shared: 0, domainOnly: false, failed: [], unreadable: 0, blocked: 0, ownedByMe: 0, ownedByOthers: 0, unknownOwner: 0, errMap: {} };
     var me = deployerEmail_();
     function noteErr_(e) {
       var p = shareErrKind_(e) || 'unknown';
-      errMap[p] = (errMap[p] || 0) + 1;
+      acc.errMap[p] = (acc.errMap[p] || 0) + 1;
     }
-    for (var fid in ids) {
+    var batch = order.slice(acc.i, acc.i + RESHARE_BATCH);
+    for (var b = 0; b < batch.length; b++) {
+      var fid = batch[b];
       var f = null;
       try {
         f = DriveApp.getFileById(fid);
         var ow = '';
         try { ow = String(f.getOwner().getEmail() || ''); } catch (eOw) {}
-        if (!me) unknownOwner++;
-        else if (ow && ow.toLowerCase() === String(me).toLowerCase()) ownedByMe++;
-        else ownedByOthers++;
+        if (!me) acc.unknownOwner++;
+        else if (ow && ow.toLowerCase() === String(me).toLowerCase()) acc.ownedByMe++;
+        else acc.ownedByOthers++;
       } catch (e0) {
-        unreadable++;
-        failed.push(fid);
+        acc.unreadable++;
+        acc.failed.push(fid);
         continue;
       }
       try {
         var lv = tryShareFile_(f);
-        if (lv === 'domain') domainOnly = true;
-        if (lv === 'none') { blocked++; noteErr_(LASTSHAREERR_ || 'share-level none'); failed.push(fid); continue; }
-        shared++;
+        if (lv === 'domain') acc.domainOnly = true;
+        if (lv === 'none') { acc.blocked++; noteErr_(LASTSHAREERR_ || 'share-level none'); acc.failed.push(fid); continue; }
+        acc.shared++;
       } catch (e1) {
-        blocked++;
+        acc.blocked++;
         noteErr_(e1);
-        failed.push(fid);
+        acc.failed.push(fid);
       }
     }
+    acc.i += batch.length;
+    var done = acc.i >= order.length;
+    if (acc.failed.length > 50) acc.failed = acc.failed.slice(0, 50);
+    if (!done) props.setProperty('reshare_state', JSON.stringify(acc));
+    else props.deleteProperty('reshare_state');
     var errTop = '', errTopN = 0;
-    for (var p in errMap) {
-      if (errMap[p] > errTopN) { errTopN = errMap[p]; errTop = p; }
+    for (var p in acc.errMap) {
+      if (acc.errMap[p] > errTopN) { errTopN = acc.errMap[p]; errTop = p; }
     }
-    return ok({ total: Object.keys(ids).length, shared: shared, failed: failed, domainOnly: domainOnly, unreadable: unreadable, blocked: blocked, ownedByMe: ownedByMe, ownedByOthers: ownedByOthers, unknownOwner: unknownOwner, errTop: errTop, errTopN: errTopN });
+    return ok({ total: acc.total, shared: acc.shared, failed: acc.failed, domainOnly: acc.domainOnly, unreadable: acc.unreadable, blocked: acc.blocked, ownedByMe: acc.ownedByMe, ownedByOthers: acc.ownedByOthers, unknownOwner: acc.unknownOwner, errTop: errTop, errTopN: errTopN, done: done, processed: acc.i });
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
@@ -1093,7 +1103,6 @@ function adminEditItem(p) {
         var newPh = [];
         for (var w = 0; w < placed.length; w++) {
           var f = folder.createFile(dataUrlToBlob_(placed[w][1], code + '.' + placed[w][0] + '.jpg'));
-          tryShareFile_(f);
           newPh.push([code, placed[w][0], f.getId(), "'" + at]);
           if (placed[w][0] === 'ngoai_quan') outerId = f.getId();
           if (placed[w][0] === 'san_pham') productId = f.getId();

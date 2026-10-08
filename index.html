@@ -1642,8 +1642,13 @@ msg('msgAccess','active='+(d.active||'?')+' · effective='+(d.effective||'?')+' 
 async function fixSharing(){
 msg('msgAccess','Đang sửa share ảnh…',true);
 try{
-var r=await gs('fixPhotoSharing',[]);
+var r=null,guard=0;
+do{
+r=await gs('fixPhotoSharing',[guard>0]);
 if(!r.ok)throw new Error(r.error);
+guard++;
+if(!r.data.done)msg('msgAccess','Đang hạ share '+(r.data.processed||0)+'/'+r.data.total+' ảnh…',true);
+}while(!r.data.done&&guard<500);
 var f=r.data.failed&&r.data.failed.length?(' Lỗi '+r.data.failed.length+' file.'):'';
 var via=r.data.domainOnly?' (share nội bộ — xem bằng email công ty).':'';
 var why='';if(r.data.failed&&r.data.failed.length){var parts=[];if(r.data.unreadable)parts.push('không đọc được file: '+r.data.unreadable);if(r.data.blocked)parts.push('bị chặn share: '+r.data.blocked);if(r.data.ownedByOthers)parts.push('file của người khác: '+r.data.ownedByOthers);if(r.data.unknownOwner)parts.push('chưa rõ chủ (deploy trống): '+r.data.unknownOwner);if(r.data.errTop)parts.push('hay gặp: '+r.data.errTop+(r.data.errTopN>1?(' ×'+r.data.errTopN):''));if(parts.length)why=' ('+parts.join(', ')+')';}
