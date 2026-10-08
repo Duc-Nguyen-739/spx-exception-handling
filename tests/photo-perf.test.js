@@ -77,7 +77,7 @@ test('photo-perf: mo chi tiet am bounded + cache 2 lop (hien ngay lan 2)', () =>
   assert.ok(html.includes('function hydrateFromIdb(code){'), 'hydrate local truoc khi warm mang');
   assert.ok(html.includes('try{primeImages_(it.code);}catch(e){}'), 'paint nao cung prime anh');
   assert.ok(html.includes('function idbGet(id){') && html.includes('function idbPut(id,blob,mime){'), 'IDB blob song qua reload');
-  assert.ok(html.includes('IDB_MAX=200'), 'cap 200 muc');
+  assert.ok(html.includes('IDB_MAX=600'), 'cap 600 muc cho 150 don x 1-3 anh');
   assert.ok(html.includes('URL.revokeObjectURL(ou)'), 'evict blob thi revoke, khong leak');
   assert.ok(html.includes('function cachedSrc(url){'), 'render uu tien ban da cache');
   assert.ok(html.includes('var src=cachedSrc(thumb(it));'), 'grid dung anh cache');
@@ -98,7 +98,7 @@ function makeLRU(limit) {
   };
 }
 
-test('photo-perf: LRU 200 — vuot thi xoa cu nhat, khong crash', () => {
+test('photo-perf: LRU evict — vuot thi xoa cu nhat, khong crash', () => {
   const lru = makeLRU(200);
   for (let i = 0; i < 201; i++) lru.put('t' + i, 'data:x');
   assert.strictEqual(Object.keys(lru.cache).length, 200);

@@ -33,7 +33,7 @@ const HTML = fs.readFileSync('index.html', 'utf8');
 const REV = (HTML.match(/var APP_REV='([^']+)'/) || [])[1];
 assert.ok(REV && /^r\d{8}[a-z]$/.test(REV), 'co APP_REV de truy vet ban build');
 const WANT = ['extractDriveId', 'errText_', 'urlKind_', 'cellDriveId_', 'useServerImg_',
-  'serverThumb', 'serverPhoto', 'photoFallback', 'applyDetailUrls'];
+  'serverThumb', 'serverPhoto', 'idbKeyOf', 'photoFallback', 'fallbackToServer_', 'applyDetailUrls'];
 const LIB = WANT.map((n) => fnSrc(HTML, n)).join('\n');
 
 function fakeImg(src, cell, origUrl, dataUrl) {
@@ -67,6 +67,9 @@ test('photo-chain: ma tran day du qua tung case doc lap', async () => {
     const sandbox = {
       photoCache: {}, photoLoading: {}, APP_REV: REV,
       putPhotoCache: () => {},
+      idbGet: () => Promise.resolve(null),
+      idbDel: () => {},
+      URL: { createObjectURL: () => 'blob:mock' },
       state: { detail: { item: { code: 'X' } } },
       document: { querySelectorAll: () => [] },
       setTimeout, Promise,
@@ -152,6 +155,9 @@ test('photo-chain: khong loop vo han khi anh server tra ve lai hong', async () =
   const sandbox = {
     photoCache: {}, photoLoading: {}, APP_REV: REV,
     putPhotoCache: () => {},
+    idbGet: () => Promise.resolve(null),
+    idbDel: () => {},
+    URL: { createObjectURL: () => 'blob:mock' },
     state: { detail: { item: { code: 'X' } } },
     document: { querySelectorAll: () => [] },
     setTimeout, Promise,
@@ -188,6 +194,9 @@ test('photo-chain: blob rac tu IDB duoc truc xuat roi tai lai qua server', async
     photoLoading: {},
     APP_REV: REV,
     putPhotoCache: () => {},
+    idbGet: () => Promise.resolve(null),
+    idbDel: () => {},
+    URL: { createObjectURL: () => 'blob:mock' },
     idbDel: (id) => { evicted.push(id); },
     state: { detail: { item: { code: 'X' } } },
     document: { querySelectorAll: () => [] },
@@ -207,7 +216,7 @@ test('photo-chain: blob rac tu IDB duoc truc xuat roi tai lai qua server', async
   vm.runInContext(LIB, sandbox);
   vm.runInContext('photoFallback(im, undefined, showNo);', sandbox);
   await sleep(80);
-  assert.deepStrictEqual(evicted, [ID_A], 'xoa ca cache lan IDB doc truoc khi tai lai');
+  assert.deepStrictEqual(evicted, [ID_A + '_w400'], 'xoa ca cache lan IDB doc truoc khi tai lai');
   assert.deepStrictEqual(calls, [['getThumb', ID_A]], 'tai lai bang id goc tu data-url');
   assert.ok(sandbox.im.src.indexOf('data:image/png') === 0, 'hien anh moi tu server');
   assert.strictEqual(sandbox.im.dataset.fx, '1');
@@ -220,6 +229,9 @@ test('photo-chain: truc xuat chi 1 lan, loi tiep thi dung khong loop', async () 
     photoCache: {}, photoLoading: {},
     APP_REV: REV,
     putPhotoCache: () => {},
+    idbGet: () => Promise.resolve(null),
+    idbDel: () => {},
+    URL: { createObjectURL: () => 'blob:mock' },
     idbDel: () => {},
     state: { detail: { item: { code: 'X' } } },
     document: { querySelectorAll: () => [] },
@@ -252,6 +264,9 @@ test('photo-chain: applyDetailUrls giu url goc + swap tem co guard', async () =>
   const sandbox = {
     photoCache: {}, photoLoading: {}, APP_REV: REV,
     putPhotoCache: () => {},
+    idbGet: () => Promise.resolve(null),
+    idbDel: () => {},
+    URL: { createObjectURL: () => 'blob:mock' },
     state: { detail: { item: { code: 'Box.06-10-2026.1' } } },
     setTimeout, Promise,
     gs: () => Promise.reject(new Error('no call')),

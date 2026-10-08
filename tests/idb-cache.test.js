@@ -7,7 +7,7 @@ const fs = require('node:fs');
 // Mirror logic thuan, khong can indexedDB that.
 
 // KHOP index.html idbKeyOf.
-function idbKeyOf(k) { return (k && k.charAt(0) === 't') ? k.slice(1) : String(k || ''); }
+function idbKeyOf(k) { if (!k) return ''; return (k.charAt(0) === 't') ? k.slice(1) + '_w400' : String(k) + '_full'; }
 
 // KHOP index.html idbMemGet/idbMemPut (fallback + mirror, cap IDB_MAX=200).
 function makeMemMax(limit) {
@@ -45,7 +45,7 @@ function queueGuard(u, id, memHas, pending) {
 
 test('idb: index.html co store + hydrate + prime dung thu tu', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes("indexedDB.open('spx-img',1)"));
+  assert.ok(html.includes("indexedDB.open('spx-img',2)"), 'DB v2 migrate key tron thumb/full');
   assert.ok(html.includes("createObjectStore('th',{keyPath:'id'})"));
   assert.ok(html.includes("createIndex('at','at'"));
   assert.ok(html.includes('function idbGet(id){'));
@@ -54,16 +54,18 @@ test('idb: index.html co store + hydrate + prime dung thu tu', () => {
   assert.ok(html.includes('function hydrateFromIdb(code){'));
   assert.ok(html.includes('try{primeImages_(it.code);}catch(e){}'), 'paint nao cung prime anh');
   const h = html.indexOf('function hydrateFromIdb(code){');
-  const hb = html.slice(h, h + 800);
-  assert.ok(hb.includes("if(!id||photoCache['t'+id])return"), 'co cache memory thi khong doc IDB');
+  const hb = html.slice(h, h + 1600);
+  assert.ok(hb.includes("photoCache['t'+id]"), 'co cache memory thi bo qua');
+  assert.ok(hb.includes("idbGet(idbKeyOf('t'+id))"), 'doc IDB theo key thumb');
   assert.ok(hb.includes('URL.createObjectURL(b)'), 'blob IDB thanh object-URL gan vao img');
+  assert.ok(hb.includes('Promise.all'), 'hydrate tra Promise de prime await truoc khi warm');
   const p = html.indexOf('function putPhotoCache(k,u){');
   assert.ok(html.slice(p, p + 600).includes('idbQueue(k,u)'), 'moi anh server ve tu dong queue persist');
 });
 
 test('idb: key derive dung (tkhoa memory co prefix t)', () => {
-  assert.strictEqual(idbKeyOf('tABC'), 'ABC');
-  assert.strictEqual(idbKeyOf('ABC'), 'ABC');
+  assert.strictEqual(idbKeyOf('tABC'), 'ABC_w400', 'thumb va full khong chung key');
+  assert.strictEqual(idbKeyOf('ABC'), 'ABC_full');
   assert.strictEqual(idbKeyOf(''), '');
 });
 

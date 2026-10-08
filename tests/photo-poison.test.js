@@ -59,7 +59,7 @@ test('photo-poison: client khong cache payload khong phai anh', () => {
 });
 
 test('photo-poison: hydrate purge blob rac va tu chua lanh', async () => {
-  const lib = ['extractDriveId', 'putPhotoCache', 'hydrateFromIdb', 'swapCachedImgs', 'detailImgUrls_']
+  const lib = ['extractDriveId', 'putPhotoCache', 'idbKeyOf', 'hydrateFromIdb', 'swapCachedImgs', 'detailImgUrls_']
     .map((n) => fnSrc(HTML, n)).join('\n');
   const ID = 'MOCKouter01AB3456789012';
   const purged = [];
@@ -82,12 +82,12 @@ test('photo-poison: hydrate purge blob rac va tu chua lanh', async () => {
   vm.runInContext(lib, sandbox);
   vm.runInContext(`hydrateFromIdb('C');`, sandbox);
   await new Promise((r) => setTimeout(r, 30));
-  assert.deepStrictEqual(purged, [ID], 'blob rac bi xoa khoi IDB');
+  assert.deepStrictEqual(purged, [ID + '_w400'], 'blob rac bi xoa khoi IDB theo key thumb');
   assert.deepStrictEqual(sandbox.photoCache, {}, 'khong dung blob URL tu rac');
 });
 
 test('photo-poison: blob anh that van hydrate binh thuong', async () => {
-  const lib = ['extractDriveId', 'putPhotoCache', 'idbDel', 'hydrateFromIdb', 'swapCachedImgs', 'detailImgUrls_']
+  const lib = ['extractDriveId', 'putPhotoCache', 'idbKeyOf', 'idbDel', 'hydrateFromIdb', 'swapCachedImgs', 'detailImgUrls_']
     .map((n) => fnSrc(HTML, n)).join('\n');
   const ID = 'MOCKouter01AB3456789012';
   const purged = [];

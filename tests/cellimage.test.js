@@ -47,13 +47,13 @@ test('cellimage: create_/adminEditItem ghi + xoa tem dong bo', () => {
   assert.ok(win.includes("getSheet_('Thumbs', THUMBS_HEADER)"), 'xoa slot thi xoa luon dong tem');
 });
 
-test('cellimage: client prime mint truoc warm, swap co guard', () => {
+test('cellimage: client prime khong mint, swap co guard', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes("gs('getDetailUrls',[code])"));
   const p = html.indexOf('function primeImages_(code){');
-  const pb = html.slice(p, p + 400);
-  assert.ok(pb.indexOf('refreshDetailUrls(code)') < pb.indexOf('warmDetailImages(code)'),
-    'mint tem truoc khi warm fallback');
+  const end = html.indexOf('function refreshDetailUrls', p);
+  const pb = html.slice(p, end > 0 ? end : p + 400);
+  assert.ok(!pb.includes('refreshDetailUrls(code)'),
+    'B2: mo don khong mint tem (B3 xoa han ham mint)');
   const a = html.indexOf('function applyDetailUrls(code,slots){');
   assert.ok(html.slice(a, a + 500).includes('imgs.length!==(slots||[]).length'),
     'lech so luong thi khong swap');
