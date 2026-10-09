@@ -173,6 +173,20 @@ async function main() {
     const L = load.err ? null : JSON.parse(load.value);
     check('App load + mock google.script.run', !!(ready && L && L.hasMock), L ? JSON.stringify(L) : load.err);
     check('Grid render ≥ 1 card từ mock', !!(L && L.cards >= 1), L && String(L.cards));
+    const sf = await evalIn(ws, `JSON.stringify({
+      t: !!document.getElementById('sideFilterToggle'),
+      collapsed: !document.getElementById('sideFilterPanel').classList.contains('open'),
+      r: !!document.getElementById('sideFilterReset')
+    })`);
+    const SF = sf.err ? null : JSON.parse(sf.value);
+    await evalIn(ws, `document.getElementById('sideFilterToggle').click()`);
+    await waitUntil(ws, "document.getElementById('sideFilterPanel').classList.contains('open')", 3000);
+    await evalIn(ws, `document.querySelectorAll('#fStatus .dash-opt')[1].click()`);
+    await sleep(300);
+    await evalIn(ws, `document.getElementById('sideFilterReset').click()`);
+    await sleep(300);
+    const sfMsg = await evalIn(ws, `document.getElementById('msgMain').textContent`);
+    check('Sidebar: Bo loc thu gon mac dinh + Reset ve mac dinh', !!(SF && SF.t && SF.collapsed && SF.r && /reset bộ lọc/i.test(sfMsg.value || '')), sfMsg.value);
     await evalIn(ws, `document.getElementById('rgEdit').click()`);
     await waitUntil(ws, "document.getElementById('rangeModal').classList.contains('open')", 3000);
     const cal = await evalIn(ws, `JSON.stringify({
