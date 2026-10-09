@@ -87,7 +87,9 @@ test('intro: nut chuong the cho so ban, mo popup Gioi thieu', () => {
   assert.ok(!html.includes('appRev') && !html.includes('BUILD_REV') && !html.includes('.revtag'));
   assert.ok(html.includes('id="introModal"'));
   assert.ok(html.includes('Giới thiệu - Hướng dẫn sử dụng'));
-  assert.ok(html.includes('Nơi quản lý - xử lý những đơn hàng mất bill'));
+  assert.ok(html.includes('Exception Handling nơi quản lý - xử lý những đơn hàng mất bill'));
+  assert.ok(html.indexOf('bigbell') < html.indexOf('Giới thiệu - Hướng dẫn sử dụng'), 'chuong phai tren tieu de');
+  assert.ok(html.includes('#introModal .sheet{text-align:center}'), 'popup can giua');
 });
 
 test('compact: fallback chiu duoc .thumb + caption lightbox', () => {

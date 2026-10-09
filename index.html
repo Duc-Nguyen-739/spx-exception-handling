@@ -37,7 +37,8 @@ html[data-theme=dark] header .mark>span,html[data-theme=dark] header #hdrSummary
 .bellbtn:active{transform:scale(.92)}
 #introModal .bigbell{font-size:36px;text-align:center;line-height:1}
 #introModal h2{text-align:center}
-#introModal .isub{font-size:12px;color:var(--mut);margin:2px 0 10px;text-align:center}
+#introModal .sheet{text-align:center}
+#introModal .isub{font-size:12.5px;color:var(--ink);font-weight:600;margin:4px 0 10px}
 #introModal .isteps{display:flex;flex-direction:column;gap:8px;margin:10px 0}
 #introModal .istep{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.65}
 #introModal .istep b{color:var(--navy)}
@@ -669,9 +670,10 @@ header{flex-wrap:wrap}
 
 <div class="modal" id="leaveModal"><div class="sheet" style="max-width:360px;text-align:center"><p id="leaveText" style="font-size:13.5px;font-weight:700">Bạn muốn hủy task này chứ?</p><div class="btnrow"><button id="btnLeaveOk" class="primary">Confirm</button><button id="btnLeaveCancel">Cancel</button></div></div></div>
 <div class="modal" id="introModal"><div class="sheet">
-<div class="ehead"><h2 style="text-align:center">Giới thiệu - Hướng dẫn sử dụng</h2><div class="hact"><button id="btnCloseIntro" class="iconBtn" type="button">✕</button></div></div>
-<p class="isub">Nơi quản lý - xử lý những đơn hàng mất bill</p>
+<div class="ehead" style="justify-content:flex-end"><div class="hact"><button id="btnCloseIntro" class="iconBtn" type="button">✕</button></div></div>
 <div class="bigbell">🔔</div>
+<h2>Giới thiệu - Hướng dẫn sử dụng</h2>
+<p class="isub">Exception Handling nơi quản lý - xử lý những đơn hàng mất bill</p>
 <div class="isteps">
 <div class="istep">🔍 <b>Tìm đơn:</b> gõ mã đơn hoặc mô tả vào ô tìm kiếm trên đầu trang là thấy ngay, không cần nhớ ngày tháng.</div>
 <div class="istep">➕ <b>Tạo đơn:</b> bấm <b>+ Create</b> → chọn Box (nguyên thùng) hay Item (lẻ) → nhập mô tả + chụp đủ ảnh → Confirm là có mã mới + QR.</div>
