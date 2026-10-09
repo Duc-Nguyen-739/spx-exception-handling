@@ -49,7 +49,7 @@ html[data-theme=dark] .bnav button{color:#8fa3c2}
 html[data-theme=dark] .bnav button.on{background:rgba(255,255,255,.12);color:#ffb3a0}
 .bnav button svg{width:18px;height:18px}
 .bnav button.new{color:var(--o)}
-.side-brand,.sfilter,.railbox{display:none}
+.side-brand,.sfilter,.railbox,.rfly{display:none}
 .bnav .nlab{font-size:inherit}
 main{padding:12px 14px 90px;max-width:1100px;margin:0 auto}
 
@@ -304,8 +304,9 @@ body.rail .bnav button{justify-content:center;padding:11px 0}
 body.rail .railbox{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;width:100%;overflow-y:auto;padding-top:114px}
 body.rail .railbox button{width:48px;border-left-color:transparent;display:grid;place-items:center}
 body.rail .railbox button svg{width:22px;height:22px}
-body.rail .railbox button.on{background:rgba(255,255,255,.1);border-left-color:transparent}
+body.rail .railbox button.on{background:rgba(255,255,255,.1);border-left-color:transparent;color:#fff}
 body.rail .railbox .expand{margin-top:auto;width:40px;height:40px;border:none;background:transparent;color:#8b98ab;font-size:18px}
+.rfly{position:fixed;left:72px;top:150px;width:264px;background:#232f45;border:1px solid rgba(255,255,255,.1);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.45);padding:10px;z-index:40;display:none}.rfly.open{display:block}.rfly-h{margin:4px 8px 8px;font-size:11px;font-weight:800;letter-spacing:.1em;color:#fff}
 body.rail main{margin-left:64px}
 main{margin-left:250px;max-width:none;padding:18px 26px 40px}
 header{padding:12px 22px 12px 262px}
@@ -502,6 +503,7 @@ header{flex-wrap:wrap}
 <div class="bottom-row"><button id="navToggle" class="side-toggle" type="button" title="Thu gọn"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><g stroke="#fff" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></g><path class="chevL" d="M13.5 8.5 L10 12 L13.5 15.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path class="chevR" d="M10.5 8.5 L14 12 L10.5 15.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
 </div>
 <div class="railbox" id="railbox"></div>
+<div class="rfly" id="railFlyout"><div class="rfly-h">Bộ lọc</div><div class="stitle">Trạng thái</div><div id="flyStatus"></div><div class="stitle">Loại</div><div id="flyKind"></div><div class="rwrap"><button class="freset" id="flyReset" type="button" title="Về mặc định: Tất cả + Box + Item">↺ Reset</button></div></div>
 </nav>
 
 <main id="viewMain">
@@ -897,6 +899,11 @@ renderSideFilters();
 }
 }
 var RAILNAV=[['navMain','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>','Danh sách'],['navLiq','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>','Thanh lý'],['navAccess','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>','Role']];
+var railFlyOpen=false,railFlyT=null;
+function openRailFly(){clearTimeout(railFlyT);railFlyOpen=true;syncRailFly();}
+function schedRailFly(){clearTimeout(railFlyT);railFlyT=setTimeout(function(){railFlyOpen=false;syncRailFly();},140);}
+function toggleRailFly(){railFlyOpen=!railFlyOpen;syncRailFly();}
+function syncRailFly(){var f=document.getElementById('railFlyout');if(f)f.classList.toggle('open',railFlyOpen);var b=document.getElementById('railFilterBtn');if(b)b.classList.toggle('on',railFlyOpen);}
 var curNav='navMain';
 function renderRail(){
 var r=document.getElementById('railbox');if(!r)return;r.innerHTML='';
@@ -907,13 +914,19 @@ if(curNav===o[0])b.className='on';
 b.onclick=(function(v){return function(){document.getElementById(v).click();};})(o[0]);
 r.appendChild(b);});
 var e=document.createElement('button');e.type='button';e.className='expand';e.innerHTML=document.getElementById('navToggle').innerHTML;e.title='Mở lại';
-e.onclick=function(){document.body.classList.remove('rail');};
+e.onclick=function(){document.body.classList.remove('rail');railFlyOpen=false;syncRailFly();};
+var fb=document.createElement('button');fb.type='button';fb.id='railFilterBtn';fb.title='Bộ lọc';
+fb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6 7v5l-4 2v-7z"/></svg>';
+if(railFlyOpen)fb.className='on';
+fb.onclick=function(){toggleRailFly();};
+fb.addEventListener('mouseenter',openRailFly);
+fb.addEventListener('mouseleave',schedRailFly);
+r.appendChild(fb);
 r.appendChild(e);
 }
-function renderSideFilters(){
-var c={all:state.items.length,open:0,resolve:0,liq:0,Box:0,Item:0};
-state.items.forEach(function(it){if(it.status==='chua_xu_ly')c.open++;if(it.status==='da_tim_bill')c.resolve++;if(it.status==='thanh_ly')c.liq++;if(it.kind==='Box')c.Box++;else c.Item++;});
-var st=document.getElementById('fStatus');st.innerHTML='';
+function buildFilterInto_(st,k,c){
+if(!st||!k)return;
+st.innerHTML='';
 [['','Tất cả',c.all],['open','Lưu kho',c.open],['resolve','Resolve',c.resolve],['liq','Thanh Lý',c.liq]].forEach(function(o){
 var l=document.createElement('label');l.className='dash-opt';
 var r=document.createElement('input');r.type='radio';r.checked=(state.statusFilter===o[0]);
@@ -921,14 +934,21 @@ r.onchange=(function(v){return function(){state.statusFilter=v;renderGrid();rend
 var t=document.createElement('span');t.className='txt';t.textContent=o[1];
 var n=document.createElement('span');n.className='dash-cnt';n.textContent=o[2];
 l.appendChild(r);l.appendChild(t);l.appendChild(n);st.appendChild(l);});
-var k=document.getElementById('fKind');k.innerHTML='';
+var kk=k;
+kk.innerHTML='';
 ['Box','Item'].forEach(function(kind){
 var l=document.createElement('label');l.className='dash-opt';
 var r=document.createElement('input');r.type='checkbox';r.checked=!!state.kinds[kind];
 r.onchange=function(){state.kinds[kind]=r.checked;renderGrid();renderSummary();};
 var t=document.createElement('span');t.className='txt';t.textContent=kind;
 var n=document.createElement('span');n.className='dash-cnt';n.textContent=c[kind];
-l.appendChild(r);l.appendChild(t);l.appendChild(n);k.appendChild(l);});
+l.appendChild(r);l.appendChild(t);l.appendChild(n);kk.appendChild(l);});
+}
+function renderSideFilters(){
+var c={all:state.items.length,open:0,resolve:0,liq:0,Box:0,Item:0};
+state.items.forEach(function(it){if(it.status==='chua_xu_ly')c.open++;if(it.status==='da_tim_bill')c.resolve++;if(it.status==='thanh_ly')c.liq++;if(it.kind==='Box')c.Box++;else c.Item++;});
+buildFilterInto_(document.getElementById('fStatus'),document.getElementById('fKind'),c);
+buildFilterInto_(document.getElementById('flyStatus'),document.getElementById('flyKind'),c);
 }
 function seqOf_(code){var m=String(code||'').match(/\.(\d+)$/);return m?parseInt(m[1],10):0;}
 function visibleItems(){
@@ -2090,6 +2110,10 @@ document.getElementById('navAccess').onclick=function(){showAccess();};
 document.getElementById('navToggle').onclick=function(){document.body.classList.toggle('rail');};
 document.getElementById('sideFilterToggle').onclick=function(){var p=document.getElementById('sideFilterPanel');var open=p.classList.toggle('open');this.setAttribute('aria-expanded',open?'true':'false');};
 document.getElementById('sideFilterReset').onclick=function(){resetKindStatus();msg('msgMain','Đã reset bộ lọc về mặc định (Tất cả + Box + Item).',true);};
+document.getElementById('railFlyout').addEventListener('mouseenter',function(){clearTimeout(railFlyT);});
+document.getElementById('railFlyout').addEventListener('mouseleave',schedRailFly);
+document.getElementById('flyReset').onclick=function(){resetKindStatus();msg('msgMain','Đã reset bộ lọc về mặc định (Tất cả + Box + Item).',true);};
+if(document.addEventListener)document.addEventListener('click',function(e){if(!railFlyOpen)return;var f=document.getElementById('railFlyout'),b=document.getElementById('railFilterBtn');if(f&&f.contains(e.target))return;if(b&&b.contains(e.target))return;railFlyOpen=false;syncRailFly();});
 document.getElementById('btnBackLiq').onclick=function(){if(state.liq.length){document.getElementById('leaveText').textContent='Lô đang có '+state.liq.length+' mã. Bạn muốn hủy task này chứ?';document.getElementById('leaveModal').classList.add('open');}else{showLiq(false);}};
 document.getElementById('btnLeaveOk').onclick=function(){state.liq=[];renderLiq();document.getElementById('leaveModal').classList.remove('open');showLiq(false);};
 document.getElementById('btnLeaveCancel').onclick=function(){document.getElementById('leaveModal').classList.remove('open');};

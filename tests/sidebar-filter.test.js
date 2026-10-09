@@ -22,10 +22,25 @@ test('sidebar-filter: CSS don sac desktop, mobile giu nguyen', () => {
   assert.ok(html.includes('.bnav .fhead'), 'thieu rule dong Bo loc');
   assert.ok(html.includes('.fpanel.open'), 'thieu rule panel mo');
   assert.ok(html.includes('.bnav .freset'), 'thieu rule nut Reset');
-  assert.ok(html.includes('.side-brand,.sfilter,.railbox{display:none}'), 'mobile phai an sidebar');
+  assert.ok(html.includes('.side-brand,.sfilter,.railbox,.rfly{display:none}'), 'mobile phai an sidebar + flyout');
   assert.ok(!html.includes('border-left-color:var(--o)'), 'bo vien cam muc mo');
 });
 
+
+test('rail-flyout: nut pheu + bang phu + hover wiring', () => {
+  assert.ok(html.includes('id="railFlyout"'), 'thieu flyout');
+  assert.ok(html.includes('id="flyStatus"') && html.includes('id="flyKind"'), 'thieu host flyout');
+  assert.ok(html.includes('id="flyReset"'), 'thieu Reset flyout');
+  assert.ok(html.includes('railFilterBtn'), 'thieu nut pheu rail');
+  assert.ok(html.includes('.rfly.open'), 'thieu CSS mo flyout');
+  assert.ok(html.includes('left:72px'), 'flyout phai sat rail');
+  assert.ok(html.includes('.railbox,.rfly{display:none}'), 'mobile phai an flyout');
+  assert.ok(html.includes("addEventListener('mouseenter',openRailFly)"), 'thieu hover mo');
+  assert.ok(html.includes("addEventListener('mouseleave',schedRailFly)"), 'thieu hover dong');
+  assert.ok(html.includes('function buildFilterInto_('), 'thieu builder SSOT');
+  const i = html.indexOf("getElementById('flyReset').onclick");
+  assert.ok(html.slice(i, i + 200).includes('resetKindStatus()'), 'Reset flyout tai su dung');
+});
 test('sidebar-filter: JS day/keo + Reset tai su dung resetKindStatus', () => {
   assert.ok(html.includes("getElementById('sideFilterToggle').onclick"), 'thieu wiring nut Bo loc');
   assert.ok(html.includes("getElementById('sideFilterReset').onclick"), 'thieu wiring Reset');

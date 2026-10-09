@@ -188,6 +188,12 @@ async function main() {
     await sleep(300);
     const sfMsg = await evalIn(ws, `document.getElementById('msgMain').textContent`);
     check('Sidebar: Bo loc thu gon mac dinh + Reset ve mac dinh', !!(SF && SF.t && SF.collapsed && SF.r && SF.chev === '18px' && /reset bộ lọc/i.test(sfMsg.value || '')), 'chev=' + (SF && SF.chev) + ' ' + sfMsg.value);
+    await evalIn(ws, `document.getElementById('railFilterBtn').dispatchEvent(new Event('mouseenter'))`);
+    const flyOpen = await waitUntil(ws, "document.getElementById('railFlyout').classList.contains('open')", 3000);
+    await evalIn(ws, `document.getElementById('railFlyout').dispatchEvent(new Event('mouseleave'))`);
+    await sleep(400);
+    const flyShut = await evalIn(ws, `!document.getElementById('railFlyout').classList.contains('open')`);
+    check('Rail: hover pheu hien flyout + ra ngoai thu vao', !!(flyOpen && flyShut.value), String(flyShut.value));
     await evalIn(ws, `document.getElementById('rgEdit').click()`);
     await waitUntil(ws, "document.getElementById('rangeModal').classList.contains('open')", 3000);
     const cal = await evalIn(ws, `JSON.stringify({
