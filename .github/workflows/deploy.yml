@@ -42,12 +42,6 @@ jobs:
           ${{ secrets.CLASPRC_JSON }}
           CLASPRC_EOF
 
-      - name: Stamp build rev (so ban canh nut Sang/Toi)
-        run: |
-          REV="$(git rev-parse --short HEAD).$(date -u +%m%d%H%M)"
-          sed -i "s|__BUILD_REV__|${REV}|g" index.html
-          grep -q "BUILD_REV='${REV}'" index.html && echo "stamped $REV"
-
       - name: Push to GAS
         run: clasp push -f
 

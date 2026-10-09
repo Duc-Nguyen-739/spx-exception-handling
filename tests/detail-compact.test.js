@@ -80,13 +80,14 @@ test('tidy: form bill bo label + gon; Role bo Deploy + 3 nut; Liq gon', () => {
   assert.ok(html.includes('#viewLiq .lnextrow .primary{flex:1}'));
 });
 
-test('revtag: so ban canh nut Sang/Toi, CI dong dau, local hien local', () => {
+test('intro: nut chuong the cho so ban, mo popup Gioi thieu', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes('<span id="appRev" class="revtag"'));
-  assert.ok(html.indexOf('id="appRev"') < html.indexOf('id="btnTheme"'));
-  assert.ok(html.includes('.revtag{font-size:10px;'));
-  assert.strictEqual((html.match(/__BUILD_REV__/g) || []).length, 1);
-  assert.ok(html.includes("var BUILD_REV='__BUILD_REV__';"));
+  assert.ok(html.includes('<button id="btnIntro"'));
+  assert.ok(html.indexOf('id="btnIntro"') < html.indexOf('id="btnTheme"'));
+  assert.ok(!html.includes('appRev') && !html.includes('BUILD_REV') && !html.includes('.revtag'));
+  assert.ok(html.includes('id="introModal"'));
+  assert.ok(html.includes('Giới thiệu - Hướng dẫn sử dụng'));
+  assert.ok(html.includes('Nơi quản lý - xử lý những đơn hàng mất bill'));
 });
 
 test('compact: fallback chiu duoc .thumb + caption lightbox', () => {
