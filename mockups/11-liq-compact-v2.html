@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 11 — Tab Thanh Lý gọn v2 (PC + Mobile)</title>
+<style>
+:root{--o:#ee4d2d;--tint:#fff5f0;--navy:#172b48;--ink:#303844;--mut:#97a0ad;--line:#eef0f3;--bg:#f5f6f9;--card:#fff;--blue:#3274f7}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,Roboto,Arial;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button{cursor:pointer;font-family:inherit;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 13px;font-size:12.5px;font-weight:700;color:var(--navy)}
+button.primary{background:var(--o);border-color:var(--o);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+input{font-family:inherit;font-size:13px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 12px;width:100%}
+.mono{font-family:ui-monospace,Menlo,monospace}
+
+/* ===== khung gia lap ===== */
+.toolbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.toolbar .t{font-size:12.5px;font-weight:800;color:var(--navy)}
+.sect{margin:22px 14px 34px}
+.sect>h2{font-size:14px;color:var(--navy);margin:0 0 4px}
+.sect>p{font-size:12px;color:var(--mut);margin:0 0 12px}
+.tag{display:inline-block;font-size:10px;font-weight:800;border-radius:7px;padding:3px 9px;margin-right:8px;vertical-align:1px}
+.tag.cur{background:#e8ecf1;color:#5b6572}
+.tag.rec{background:var(--tint);color:var(--o)}
+.tag.alt{background:#eef4ff;color:var(--blue)}
+.pcframe{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg)}
+.pcside{width:200px;float:left;background:#1b2434;color:#a7b0bd;font-size:12.5px;padding:12px 8px;min-height:420px}
+.pcside .logo{color:#fff;font-weight:800;font-size:12px;margin:2px 6px 18px}
+.pcside .logo b{color:var(--o)}
+.pcside .it{padding:9px 10px;border-radius:8px}
+.pcside .it.on{background:rgba(255,255,255,.07);color:#fff;font-weight:600}
+.pcmain{margin-left:200px}
+.pchead{background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px}
+.pchead .sch{max-width:480px;margin:0 auto;border:1.5px solid #ffcfbd;border-radius:13px;padding:8px;text-align:center;color:var(--mut);font-size:12px}
+.pcbody{padding:14px 18px 24px}
+.phone{width:390px;max-width:100%;margin:0 auto;border:8px solid #1b2434;border-radius:28px;overflow:hidden;background:var(--bg)}
+.mhead{background:var(--card);border-bottom:1px solid var(--line);padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--navy)}
+.mhead .sch{flex:1;border:1.5px solid #ffcfbd;border-radius:11px;padding:7px;text-align:center;color:var(--mut);font-weight:500;font-size:11.5px}
+.mbody{padding:10px 12px 16px}
+.mnav{background:var(--card);border-top:1px solid var(--line);display:flex;padding:6px 8px 10px;font-size:10px;font-weight:700;color:var(--mut);text-align:center}
+.mnav div{flex:1;padding:6px}
+.mnav .on{color:var(--o)}
+
+/* ===== CSS GOC (copy index.html, #viewLiq -> .liq, #ctxBar -> .ctxbar) ===== */
+.liq .ctxbar{background:var(--tint);border:1px solid #ffd9cd;border-radius:11px;padding:9px 12px;margin-bottom:12px;font-size:12px;font-weight:800;color:var(--navy);cursor:pointer}
+.liq .lscanrow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:8px 10px;margin-bottom:10px;flex-wrap:wrap}
+.liq .lscanbox{position:relative;width:300px;max-width:100%;flex:none}
+.liq .lscanbox .pic{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:14px}
+.liq .lscanbox input{padding-left:32px}
+.liq .lempty{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:30px 0 26px;text-align:center;color:var(--mut);font-size:12.5px;font-weight:600}
+.liq .lempty .big{font-size:32px;display:block;margin-bottom:8px}
+.liq .ltblwrap{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;overflow-x:auto}
+.liq .ltblwrap h3{margin:0;padding:12px 16px;font-size:13.5px;color:var(--navy)}
+.liq .ltable{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
+.liq .ltable th{background:var(--bg);text-align:left;padding:9px 14px;font-size:10.5px;color:var(--mut);border-top:1px solid var(--line);border-bottom:1px solid var(--line);white-space:nowrap}
+.liq .ltable td{padding:9px 14px;border-bottom:1px solid var(--bg);vertical-align:top}
+.liq .ltable tr:last-child td{border-bottom:none}
+.liq .ltable td.code{font-family:ui-monospace,Menlo,monospace;font-weight:700;color:var(--navy);white-space:nowrap}
+.liq .ltable td.desc{max-width:280px;word-break:break-word}
+.liq .ltable tfoot td{color:var(--mut);font-size:11.5px;font-weight:700}
+.liq .lnextrow{margin-top:12px;display:flex}
+.liq .lnextrow .primary{flex:0 0 280px;max-width:100%}
+.liq .ltotal{font-size:12.5px;font-weight:800;color:var(--navy);margin-bottom:10px}
+.liq .ltotal b{color:var(--o)}
+/* mobile that (copy media query index.html) */
+.mob .lscanbox{flex:1;width:auto}
+.mob .cam{flex:none;white-space:nowrap}
+.mob .lnextrow .primary{flex:1}
+
+/* ===== PA-A: Quay lai = pill gon + card thao tac 560px ===== */
+.pa-a .ctxbar{width:fit-content;max-width:100%}
+.pa-a .liq-card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px;max-width:560px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.pa-a .lscanrow{background:none;border:none;border-radius:0;padding:0;margin:0}
+.pa-a .lnextrow{margin:0}
+.pa-a .lnextrow .primary{flex:1}
+.pa-a .lempty{max-width:560px;text-align:left;display:flex;align-items:center;gap:12px;padding:16px 18px}
+.pa-a .lempty .big{margin:0;font-size:24px}
+.pa-a .ltblwrap{max-width:560px}
+.pa-a .ltable{min-width:0}
+
+/* ===== PA-B: Quay lai = link text + tung khoi fit-content ===== */
+.pa-b .ctxbar{background:none;border:none;padding:9px 4px;color:var(--o)}
+.pa-b .lscanrow{width:fit-content;max-width:100%}
+.pa-b .lnextrow{width:fit-content;max-width:100%}
+.pa-b .lnextrow .primary{flex:none;min-width:280px}
+.pa-b .lempty{display:inline-flex;align-items:center;gap:10px;padding:16px 22px;text-align:left}
+.pa-b .lempty .big{margin:0;font-size:24px}
+.pa-b .ltblwrap{width:fit-content;max-width:100%;min-width:min(560px,100%)}
+.pa-b .ltable{min-width:0;width:auto;min-width:min(520px,100%)}
+.pa-b.mob .lnextrow{width:auto}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <span class="t">Điều khiển chung:</span>
+  <button id="btnEmpty" class="primary">Xem lúc trống</button>
+  <button id="btnRows">Xem có 3 mã mẫu</button>
+  <span class="t" style="margin-left:12px">Nhảy tới:</span>
+  <a href="#pc0">PC hiện trạng</a><a href="#pcA">PC·A</a><a href="#pcB">PC·B</a>
+  <a href="#mo0">Mobile hiện trạng</a><a href="#moA">Mobile·A</a><a href="#moB">Mobile·B</a>
+</div>
+
+<div class="sect" id="pc0">
+  <h2><span class="tag cur">PC · HIỆN TRẠNG</span>Đối chiếu — thanh Quay lại + hộp scan trải dài hết màn hình</h2>
+  <p>CSS gốc chưa sửa.</p>
+  <div class="pcframe"><div class="pcside"><div class="logo"><b>SPX</b> Exception Handling</div><div class="it">Danh sách</div><div class="it on">Thanh lý</div><div class="it">Role</div></div>
+  <div class="pcmain"><div class="pchead"><div class="sch">Nhập thông tin để tìm kiếm…</div></div>
+  <div class="pcbody"><div class="liq" data-p="1">
+    <div class="ctxbar">‹ Quay lại</div>
+    <div class="ltotal">Tổng: <b>0</b> đơn đã quét</div>
+    <div class="lscanrow"><span class="lscanbox"><span class="pic">⌕</span><input class="mono" placeholder="Quét hoặc nhập mã…"></span><button>📷 Quét camera</button></div>
+    <div class="lnextrow"><button class="primary" disabled>Next →</button></div>
+    <div class="lempty"><span class="big">🗂️</span><span>Quét mã để thêm vào lô thanh lý</span></div>
+    <div class="ltblwrap" style="display:none"><h3>Chi tiết lô thanh lý</h3><table class="ltable"><thead><tr><th>Mã Đơn</th><th>Loại</th><th>Mô tả</th><th></th></tr></thead><tbody></tbody><tfoot><tr><td colspan="4">Total 0</td></tr></tfoot></table></div>
+  </div></div></div></div>
+</div>
+
+<div class="sect" id="pcA">
+  <h2><span class="tag rec">PC · A (ĐỀ XUẤT)</span>Quay lại = pill đào gọn · scan + Next gom 1 card 560px</h2>
+  <p>Hết vệt màu dài; các khối chỉ rộng vừa nội dung.</p>
+  <div class="pcframe"><div class="pcside"><div class="logo"><b>SPX</b> Exception Handling</div><div class="it">Danh sách</div><div class="it on">Thanh lý</div><div class="it">Role</div></div>
+  <div class="pcmain"><div class="pchead"><div class="sch">Nhập thông tin để tìm kiếm…</div></div>
+  <div class="pcbody"><div class="liq pa-a" data-p="1">
+    <div class="ctxbar">‹ Quay lại</div>
+    <div class="ltotal">Tổng: <b>0</b> đơn đã quét</div>
+    <div class="liq-card">
+      <div class="lscanrow"><span class="lscanbox"><span class="pic">⌕</span><input class="mono" placeholder="Quét hoặc nhập mã…"></span><button>📷 Quét camera</button></div>
+      <div class="lnextrow"><button class="primary" disabled>Next →</button></div>
+    </div>
+    <div class="lempty"><span class="big">🗂️</span><span>Quét mã để thêm vào lô thanh lý</span></div>
+    <div class="ltblwrap" style="display:none"><h3>Chi tiết lô thanh lý</h3><table class="ltable"><thead><tr><th>Mã Đơn</th><th>Loại</th><th>Mô tả</th><th></th></tr></thead><tbody></tbody><tfoot><tr><td colspan="4">Total 0</td></tr></tfoot></table></div>
+  </div></div></div></div>
+</div>
+
+<div class="sect" id="pcB">
+  <h2><span class="tag alt">PC · B</span>Quay lại = chữ link không nền · từng khối ôm nội dung</h2>
+  <p>Không hộp chung; mỗi khối fit-content.</p>
+  <div class="pcframe"><div class="pcside"><div class="logo"><b>SPX</b> Exception Handling</div><div class="it">Danh sách</div><div class="it on">Thanh lý</div><div class="it">Role</div></div>
+  <div class="pcmain"><div class="pchead"><div class="sch">Nhập thông tin để tìm kiếm…</div></div>
+  <div class="pcbody"><div class="liq pa-b" data-p="1">
+    <div class="ctxbar">‹ Quay lại</div>
+    <div class="ltotal">Tổng: <b>0</b> đơn đã quét</div>
+    <div class="lscanrow"><span class="lscanbox"><span class="pic">⌕</span><input class="mono" placeholder="Quét hoặc nhập mã…"></span><button>📷 Quét camera</button></div>
+    <div class="lnextrow"><button class="primary" disabled>Next →</button></div>
+    <div class="lempty"><span class="big">🗂️</span><span>Quét mã để thêm vào lô thanh lý</span></div>
+    <div class="ltblwrap" style="display:none"><h3>Chi tiết lô thanh lý</h3><table class="ltable"><thead><tr><th>Mã Đơn</th><th>Loại</th><th>Mô tả</th><th></th></tr></thead><tbody></tbody><tfoot><tr><td colspan="4">Total 0</td></tr></tfoot></table></div>
+  </div></div></div></div>
+</div>
+
+<div class="sect" id="mo0">
+  <h2><span class="tag cur">MOBILE · HIỆN TRẠNG</span>Khung 390px đối chiếu</h2>
+  <p>Màn hẹp nên thanh full-width vốn vừa màn hình — xem để so với A/B.</p>
+  <div class="phone"><div class="mhead"><span>SPX</span><div class="sch">Tìm kiếm…</div><span>🔔</span></div>
+  <div class="mbody"><div class="liq mob" data-p="1">
+    <div class="ctxbar">‹ Quay lại</div>
+    <div class="ltotal">Tổng: <b>0</b> đơn đã quét</div>
+    <div class="lscanrow"><span class="lscanbox"><span class="pic">⌕</span><input class="mono" placeholder="Quét hoặc nhập mã…"></span><button class="cam">📷</button></div>
+    <div class="lnextrow"><button class="primary" disabled>Next →</button></div>
+    <div class="lempty"><span class="big">🗂️</span><span>Quét mã để thêm vào lô thanh lý</span></div>
+    <div class="ltblwrap" style="display:none"><h3>Chi tiết lô thanh lý</h3><table class="ltable"><thead><tr><th>Mã Đơn</th><th>Loại</th><th>Mô tả</th><th></th></tr></thead><tbody></tbody><tfoot><tr><td colspan="4">Total 0</td></tr></tfoot></table></div>
+  </div></div>
+  <div class="mnav"><div>Danh sách</div><div class="on">Thanh lý</div><div>+ Mới</div></div></div>
+</div>
+
+<div class="sect" id="moA">
+  <h2><span class="tag rec">MOBILE · A (ĐỀ XUẤT)</span>Pill Quay lại gọn + card thao tác</h2>
+  <p>Trên mobile card chiếm gần hết chiều rộng — nhìn gần như cũ nhưng hết vệt màu dài, các khối gọn theo khung máy.</p>
+  <div class="phone"><div class="mhead"><span>SPX</span><div class="sch">Tìm kiếm…</div><span>🔔</span></div>
+  <div class="mbody"><div class="liq mob pa-a" data-p="1">
+    <div class="ctxbar">‹ Quay lại</div>
+    <div class="ltotal">Tổng: <b>0</b> đơn đã quét</div>
+    <div class="liq-card">
+      <div class="lscanrow"><span class="lscanbox"><span class="pic">⌕</span><input class="mono" placeholder="Quét hoặc nhập mã…"></span><button class="cam">📷</button></div>
+      <div class="lnextrow"><button class="primary" disabled>Next →</button></div>
+    </div>
+    <div class="lempty"><span class="big">🗂️</span><span>Quét mã để thêm vào lô thanh lý</span></div>
+    <div class="ltblwrap" style="display:none"><h3>Chi tiết lô thanh lý</h3><table class="ltable"><thead><tr><th>Mã Đơn</th><th>Loại</th><th>Mô tả</th><th></th></tr></thead><tbody></tbody><tfoot><tr><td colspan="4">Total 0</td></tr></tfoot></table></div>
+  </div></div>
+  <div class="mnav"><div>Danh sách</div><div class="on">Thanh lý</div><div>+ Mới</div></div></div>
+</div>
+
+<div class="sect" id="moB">
+  <h2><span class="tag alt">MOBILE · B</span>Link Quay lại không nền + khối ôm nội dung</h2>
+  <p>Nút Next giữ rộng 280px, không giãn full khung máy.</p>
+  <div class="phone"><div class="mhead"><span>SPX</span><div class="sch">Tìm kiếm…</div><span>🔔</span></div>
+  <div class="mbody"><div class="liq mob pa-b" data-p="1">
+    <div class="ctxbar">‹ Quay lại</div>
+    <div class="ltotal">Tổng: <b>0</b> đơn đã quét</div>
+    <div class="lscanrow"><span class="lscanbox"><span class="pic">⌕</span><input class="mono" placeholder="Quét hoặc nhập mã…"></span><button class="cam">📷</button></div>
+    <div class="lnextrow"><button class="primary" disabled>Next →</button></div>
+    <div class="lempty"><span class="big">🗂️</span><span>Quét mã để thêm vào lô thanh lý</span></div>
+    <div class="ltblwrap" style="display:none"><h3>Chi tiết lô thanh lý</h3><table class="ltable"><thead><tr><th>Mã Đơn</th><th>Loại</th><th>Mô tả</th><th></th></tr></thead><tbody></tbody><tfoot><tr><td colspan="4">Total 0</td></tr></tfoot></table></div>
+  </div></div>
+  <div class="mnav"><div>Danh sách</div><div class="on">Thanh lý</div><div>+ Mới</div></div></div>
+</div>
+
+<script>
+var ROWS = [
+  ['Box.09-10-2026.3', 'Box', 'Thùng 12 áo thun hoàn, seal còn nguyên'],
+  ['Item.09-10-2026.7', 'Item', 'Khăn màu đỏ'],
+  ['Box.08-10-2026.9', 'Box', 'Thùng chờ thanh lý']
+];
+function setState(hasRows) {
+  var panels = document.querySelectorAll('.liq[data-p]');
+  for (var i = 0; i < panels.length; i++) {
+    var root = panels[i];
+    var n = hasRows ? ROWS.length : 0;
+    root.querySelector('.ltotal').innerHTML = 'Tổng: <b>' + n + '</b> đơn đã quét';
+    root.querySelector('.lnextrow .primary').disabled = !hasRows;
+    root.querySelector('.lempty').style.display = hasRows ? 'none' : '';
+    var wrap = root.querySelector('.ltblwrap');
+    wrap.style.display = hasRows ? '' : 'none';
+    var tb = root.querySelector('tbody');
+    tb.innerHTML = '';
+    ROWS.forEach(function (r) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td class="code">' + r[0] + '</td><td>' + r[1] + '</td><td class="desc">' + r[2] + '</td><td><button>✕</button></td>';
+      tb.appendChild(tr);
+    });
+    root.querySelector('tfoot td').textContent = 'Total ' + n;
+  }
+  document.getElementById('btnEmpty').className = hasRows ? '' : 'primary';
+  document.getElementById('btnRows').className = hasRows ? 'primary' : '';
+}
+document.getElementById('btnEmpty').onclick = function () { setState(false); };
+document.getElementById('btnRows').onclick = function () { setState(true); };
+setState(false);
+</script>
+</body>
+</html>
