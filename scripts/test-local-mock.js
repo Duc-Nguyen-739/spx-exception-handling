@@ -550,6 +550,10 @@ async function main() {
 
     const hd = await evalIn(ws, `JSON.stringify({inHead: !!document.querySelector('header .scanbar #scanMain'), ph: document.getElementById('scanMain').placeholder})`);
     check('Search tren header + placeholder moi', hd.value === '{"inHead":true,"ph":"Nhập thông tin để tìm kiếm..."}', hd.value);
+    const uni = await evalIn(ws, `JSON.stringify({inHead: !!document.querySelector('header #rangebar'), pills: !!document.querySelector('header #pillsRow'), sticky: getComputedStyle(document.querySelector('header')).position, capSilent: (function(){var m=document.getElementById('msgMain');m.textContent='';var c=document.querySelector('#grid .cap');if(c)c.click();return document.getElementById('msgMain').textContent;})()})`);
+    const U = uni.err ? null : JSON.parse(uni.value);
+    check('Range + pills gop 1 khoi dinh trong header', !!(U && U.inHead && U.pills && U.sticky === 'sticky'), uni.value);
+    check('Bam caption khong hien thong bao', !!(U && U.capSilent === ''), uni.value);
     const rv = await evalIn(ws, `JSON.stringify({bell: !!document.getElementById('btnIntro'), modal: !!document.getElementById('introModal'), first: document.querySelector('.hact').firstElementChild.id})`);
     check('Nut chuong Gioi thieu the cho so ban', rv.value === '{"bell":true,"modal":true,"first":"btnIntro"}', rv.value);
     await evalIn(ws, `document.getElementById('btnIntro').click()`);
