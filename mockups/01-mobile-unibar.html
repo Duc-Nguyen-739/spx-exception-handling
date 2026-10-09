@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Mockup: gop Tim kiem + Display Range lam 1 (mobile)</title>
+<style>
+:root{--o:#ee4d2d;--navy:#172b48;--ink:#303844;--mut:#97a0ad;--line:#eef0f3;--bg:#f5f6f9;--card:#fff;--green:#0d9a50;--blue:#3274f7}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,Roboto,Arial;background:#2b2f36;color:var(--ink)}
+.phone{max-width:480px;margin:0 auto;background:var(--bg);min-height:100dvh;position:relative;box-shadow:0 0 0 1px #000}
+/* ===== thanh demo (chon Cu/Moi) - fixed day de test cuon thuan ===== */
+.demobar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:99;background:#172b48;color:#fff;border-radius:14px;padding:8px 10px;display:flex;gap:8px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:94vw}
+.demobar .seg{display:flex;background:rgba(255,255,255,.12);border-radius:9px;padding:3px;gap:3px}
+.demobar .seg button{border:none;background:transparent;color:#c6cdd8;font-size:12px;font-weight:800;padding:7px 12px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.demobar .seg button.on{background:#fff;color:var(--navy)}
+.demobar .st{font-size:10.5px;font-weight:700;color:#9fe6b8;white-space:nowrap}
+/* ===== dung chung: brand / search / range / pills (nhin giong app that) ===== */
+.brandrow{display:flex;align-items:center;gap:8px;padding:2px 2px 8px}
+.brandrow .logo{font-weight:800;font-size:15px;color:var(--o);letter-spacing:.2px}
+.brandrow .logo small{display:block;font-size:9px;color:var(--navy);font-weight:700}
+.brandrow .sp{flex:1}
+.bell{border:none;background:transparent;font-size:17px;cursor:pointer}
+.chip{font-size:10px;font-weight:800;border:1px solid var(--line);background:#f5f6f9;border-radius:99px;padding:4px 9px;color:var(--navy);white-space:nowrap}
+.chip.dark{background:var(--navy);color:#fff;border-color:var(--navy)}
+.search-group{display:flex;gap:8px;align-items:center;background:var(--card);border:1.5px solid #ffcfbd;border-radius:13px;padding:5px 6px 5px 13px;box-shadow:0 1px 6px rgba(238,77,45,.08)}
+.search-group .mag{color:var(--o);flex:none;font-size:15px}
+.search-group input{flex:1;min-width:0;border:none;background:transparent;font-size:14px;font-weight:600;text-align:center;padding:9px 0;outline:none}
+.search-group input::placeholder{color:var(--mut);font-weight:500}
+.search-group .scanbtn{flex:none;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 13px;font-size:12.5px;font-weight:700;color:var(--navy);cursor:pointer}
+.rangecard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:8px 10px;margin-top:8px;display:flex;align-items:center;gap:8px}
+.rangecard .rg-main{flex:1;min-width:0}
+.rangecard .rg-l1{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;color:var(--navy);white-space:nowrap}
+.rangecard .rg-l2{display:flex;align-items:center;gap:6px;font-size:10px;margin-top:2px}
+.rangecard .rg-date{font-weight:600;white-space:nowrap}
+.rangecard .rg-edit{border:none;background:none;color:var(--blue);font-weight:800;text-decoration:underline;font-size:11px;cursor:pointer;padding:2px}
+.rangecard .rg-actions{display:flex;gap:6px;flex:none}
+.rangecard .rg-actions button{border-radius:10px;padding:10px 12px;font-size:12px;font-weight:800;cursor:pointer;border:1.5px solid var(--navy);background:#fff;color:var(--navy)}
+.rangecard .rg-actions button.create{background:var(--o);border-color:var(--o);color:#fff}
+.pills{display:flex;gap:5px;margin-top:8px}
+.pill{flex:1 1 0;min-width:0;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:7px 4px;font-size:10px;font-weight:800;display:inline-flex;gap:4px;align-items:center;justify-content:center;color:var(--navy);cursor:pointer;overflow:hidden;white-space:nowrap}
+.pill .n{border-radius:99px;padding:1px 6px;font-size:9px;background:var(--bg)}
+.pill.on{color:#fff;border-color:transparent;background:var(--navy)}
+.pill.hot{color:var(--o)}
+.pill.hot.on{background:var(--o);color:#fff}
+/* ===== BAN MOI: 1 khoi dinh duy nhat - khong khe ===== */
+#unibar{display:none;position:sticky;top:0;z-index:30;background:var(--card);border-bottom:1px solid var(--line);padding:10px 12px 10px}
+body[data-mode="new"] #unibar{display:block}
+body[data-mode="new"] #oldheader,body[data-mode="new"] #oldsticky{display:none}
+/* ===== BAN CU: 2 thanh roi (tai hien loi khe nhu anh user) ===== */
+#oldheader{display:none;position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);padding:10px 12px}
+#oldsticky{display:none;position:sticky;top:116px;z-index:15;background:var(--bg);padding:10px 12px 2px}
+body[data-mode="old"] #oldheader{display:block}
+body[data-mode="old"] #oldsticky{display:block}
+body[data-mode="old"] #unibar{display:none}
+.gapnote{display:none;margin:0 12px;background:#fff1f0;border:1.5px dashed #ee4d2d;color:#b3261e;font-size:11px;font-weight:700;border-radius:10px;padding:6px 10px;text-align:center}
+body[data-mode="old"] .gapnote{display:block;position:sticky;top:112px;z-index:14}
+/* ===== luoi anh (cho cuon dai de test) ===== */
+#grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 12px 130px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative}
+.card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:#e6eaf1}
+.card .solid{width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff}
+.card .cap{padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #f5f6f9}
+.card .code{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:700;color:var(--mut);word-break:break-all}
+.card .days{font-size:10px;font-weight:800;color:var(--mut);background:var(--bg);border-radius:7px;padding:4px 8px;white-space:nowrap}
+.ovst{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.94);border-radius:7px;padding:3px 8px;font-size:9px;font-weight:800;color:var(--o)}
+.ovst.g{color:var(--green)}.ovst.b{color:var(--blue)}
+.bnav{display:flex;gap:6px;background:var(--card);border-top:1px solid var(--line);padding:8px 14px calc(12px + env(safe-area-inset-bottom));position:sticky;bottom:0;z-index:19}
+.bnav button{flex:1;border:none;background:transparent;color:var(--mut);font-size:11px;font-weight:700;padding:8px 6px;border-radius:10px;cursor:pointer}
+.bnav button.on{color:var(--o);background:#fff5f0}
+#toast{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-8px);background:#172b48;color:#fff;font-size:12px;font-weight:700;border-radius:10px;padding:10px 14px;opacity:0;transition:opacity .2s,transform .2s;z-index:120;max-width:92vw;text-align:center;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hint{background:#fff;border:1px solid var(--line);border-radius:12px;margin:0 12px 4px;padding:10px 12px;font-size:11.5px;line-height:1.6;color:var(--ink)}
+.hint b{color:var(--navy)}
+</style>
+</head>
+<body data-mode="new">
+<div class="phone">
+  <!-- ============ BAN MOI: gop 2 thanh lam 1, co dinh ============ -->
+  <div id="unibar">
+    <div class="brandrow"><span class="logo">SPX<small>Exception Handling</small></span><span class="sp"></span><button class="bell" data-act="intro">🔔</button><span class="chip">C Tối</span><span class="chip dark">D duc.nguyenvan05</span></div>
+    <div class="search-group"><span class="mag">⌕</span><input class="js-q" placeholder="Nhập thông tin để tìm kiếm..."><button class="scanbtn" data-act="scan">📷 Quét</button></div>
+    <div class="rangecard">
+      <div class="rg-main">
+        <div class="rg-l1">ⓘ Display Range:</div>
+        <div class="rg-l2"><span class="rg-date">10/09/2026 - 09/10/2026</span><button class="rg-edit" data-act="range">Edit</button></div>
+      </div>
+      <div class="rg-actions"><button data-act="print">🖨 In Mã</button><button class="create" data-act="create">＋ Create</button></div>
+    </div>
+    <div class="pills"><button class="pill on">Tất cả <span class="n">14</span></button><button class="pill hot">Lưu kho <span class="n">8</span></button><button class="pill">Resolve <span class="n">3</span></button><button class="pill">Thanh Lý <span class="n">3</span></button></div>
+  </div>
+  <!-- ============ BAN CU: 2 thanh roi - tai hien khe loi ============ -->
+  <header id="oldheader">
+    <div class="brandrow"><span class="logo">SPX<small>Exception Handling</small></span><span class="sp"></span><button class="bell" data-act="intro">🔔</button><span class="chip">C Tối</span><span class="chip dark">D duc.nguyenvan05</span></div>
+    <div class="search-group"><span class="mag">⌕</span><input class="js-q" placeholder="Nhập thông tin để tìm kiếm..."><button class="scanbtn" data-act="scan">📷 Quét</button></div>
+  </header>
+  <div id="oldsticky">
+    <div class="rangecard" style="margin-top:0">
+      <div class="rg-main">
+        <div class="rg-l1">ⓘ Display Range:</div>
+        <div class="rg-l2"><span class="rg-date">10/09/2026 - 09/10/2026</span><button class="rg-edit" data-act="range">Edit</button></div>
+      </div>
+      <div class="rg-actions"><button data-act="print">🖨 In Mã</button><button class="create" data-act="create">＋ Create</button></div>
+    </div>
+    <div class="pills"><button class="pill on">Tất cả <span class="n">14</span></button><button class="pill hot">Lưu kho <span class="n">8</span></button><button class="pill">Resolve <span class="n">3</span></button><button class="pill">Thanh Lý <span class="n">3</span></button></div>
+  </div>
+  <p class="gapnote">⬆ khe hở bản cũ: cuộn chậm sẽ thấy ảnh lọt qua giữa 2 thanh ⬆</p>
+  <div style="height:8px"></div>
+  <div class="hint" id="hintNew"><b>Bản mới (mặc định):</b> Ô tìm kiếm + Display Range gộp vào <b>1 thanh cố định duy nhất</b> — cuộn mạnh tay, ảnh không bao giờ lọt khe. Thứ tự, nút bấm, pill lọc giữ nguyên 100%.</div>
+  <div class="hint" id="hintOld" style="display:none"><b>Bản cũ (để đối chiếu):</b> 2 thanh dính rời nhau — cuộn chậm ngay vùng giữa <b>Ô tìm kiếm</b> và <b>Display Range</b> sẽ thấy ảnh lọt qua khe như ảnh bạn gửi.</div>
+  <div id="grid"></div>
+  <nav class="bnav"><button class="on">Danh sách</button><button>Thanh lý</button><button>Role</button></nav>
+</div>
+<div class="demobar">
+  <div class="seg"><button id="btnNew" class="on">Mới: 1 thanh</button><button id="btnOld">Cũ: 2 thanh</button></div>
+  <span class="st" id="scrollSt">cuộn: 0px</span>
+</div>
+<div id="toast"></div>
+<script>
+var N = 28, grid = document.getElementById('grid'), toast = document.getElementById('toast'), tT = null;
+var seeds = ['spx-doc1','spx-box2','spx-item3','spx-kho4','spx-hang5','spx-seal6','spx-ao7','spx-thung8'];
+function showToast(s){ toast.textContent = s; toast.classList.add('show'); clearTimeout(tT); tT = setTimeout(function(){ toast.classList.remove('show'); }, 1800); }
+function cards(filter){
+  grid.innerHTML = '';
+  var q = String(filter || '').trim().toLowerCase(), shown = 0;
+  for (var i = 1; i <= N; i++){
+    var code = (i % 2 ? 'Item.06-10-2026.' : 'Box.06-10-2026.') + i;
+    var days = (i % 5) + 1;
+    var st = i % 7 === 0 ? 'Thanh Lý' : (i % 5 === 0 ? 'Lưu kho' : (i % 4 === 0 ? 'Resolve' : ''));
+    if (q && code.toLowerCase().indexOf(q) < 0 && String(days).indexOf(q) < 0 && st.toLowerCase().indexOf(q) < 0) continue;
+    shown++;
+    var d = document.createElement('div'); d.className = 'card';
+    if (st === 'Thanh Lý') d.innerHTML = '<div class="solid" style="background:#d92d20">Thanh Lý</div>';
+    else if (st === 'Lưu kho') d.innerHTML = '<div class="solid" style="background:#1c3a2e">Lưu kho</div>';
+    else d.innerHTML = '<img loading="lazy" src="https://picsum.photos/seed/' + seeds[i % seeds.length] + '-' + i + '/600/600" alt="">';
+    if (st) d.innerHTML += '<span class="ovst' + (st === 'Thanh Lý' ? ' b' : st === 'Lưu kho' ? ' g' : '') + '">● ' + st + '</span>';
+    d.innerHTML += '<div class="cap"><span class="code">' + code + '</span><span class="days">' + days + ' Ngày</span></div>';
+    grid.appendChild(d);
+  }
+  if (!shown) grid.innerHTML = '<div class="hint">Không tìm thấy — thử từ khóa khác.</div>';
+}
+cards('');
+document.querySelectorAll('.js-q').forEach(function(inp){
+  inp.addEventListener('input', function(){
+    document.querySelectorAll('.js-q').forEach(function(o){ if (o !== inp) o.value = inp.value; });
+    cards(inp.value);
+  });
+});
+function setMode(m){
+  document.body.dataset.mode = m;
+  document.getElementById('btnNew').classList.toggle('on', m === 'new');
+  document.getElementById('btnOld').classList.toggle('on', m === 'old');
+  document.getElementById('hintNew').style.display = m === 'new' ? '' : 'none';
+  document.getElementById('hintOld').style.display = m === 'old' ? '' : 'none';
+  document.getElementById('scrollSt').textContent = m === 'new' ? 'đã gộp: 0 khe' : 'bản cũ: có khe';
+  window.scrollTo(0, 0);
+}
+document.getElementById('btnNew').onclick = function(){ setMode('new'); };
+document.getElementById('btnOld').onclick = function(){ setMode('old'); showToast('Bản cũ: cuộn chậm ở khe giữa 2 thanh để thấy lỗi'); };
+document.querySelectorAll('[data-act]').forEach(function(b){
+  b.onclick = function(){
+    var a = b.getAttribute('data-act');
+    if (a === 'range') showToast('Demo: popup Display Range ở bản thật giữ nguyên');
+    else if (a === 'scan') showToast('Demo: nút Quét giữ nguyên vị trí');
+    else if (a === 'create') showToast('Demo: nút ＋ Create giữ nguyên');
+    else if (a === 'print') showToast('Demo: nút 🖨 In Mã giữ nguyên');
+    else showToast('Demo: popup Giới thiệu giữ nguyên');
+  };
+});
+window.addEventListener('scroll', function(){
+  if (document.body.dataset.mode === 'new') document.getElementById('scrollSt').textContent = 'đã gộp: ' + Math.round(window.scrollY) + 'px';
+  else document.getElementById('scrollSt').textContent = 'cuộn: ' + Math.round(window.scrollY) + 'px';
+}, { passive: true });
+</script>
+</body>
+</html>
