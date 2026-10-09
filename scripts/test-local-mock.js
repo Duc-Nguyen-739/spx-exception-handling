@@ -230,10 +230,11 @@ async function main() {
     check('Chi tiết Box hiện đủ 3 ảnh', !!(P && P.n === 3), P && ('n=' + P.n));
     const rs0 = await evalIn(ws, `JSON.stringify({
       h: Math.round(document.getElementById('btnGoResolve').getBoundingClientRect().height),
-      sameRow: document.getElementById('btnPrintDetail').parentNode === document.getElementById('btnGoResolve').parentNode
+      inHead: document.getElementById('btnPrintDetail').parentNode.classList.contains('dhead'),
+      noNav: !document.getElementById('btnPrevDetail') && !document.getElementById('btnNextDetail')
     })`);
     const RS0 = rs0.err ? null : JSON.parse(rs0.value);
-    check('Resolve gọn 42px + In QR cùng hàng, không lấp lịch sử', !!(RS0 && RS0.h === 42 && RS0.sameRow), rs0.value);
+    check('In Ma tren thanh tieu de (thay prev-next) + Resolve gon 42px, khong lap lich su', !!(RS0 && RS0.h === 42 && RS0.inHead && RS0.noNav), rs0.value);
     const mob = await evalIn(ws, `JSON.stringify((function(){
       var vw = window.innerWidth;
       var sheet = document.querySelector('#detailModal .sheet');

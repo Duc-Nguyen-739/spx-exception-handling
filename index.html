@@ -234,9 +234,10 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 #resolveCard .billrow{align-items:center;gap:6px}
 #resolveCard .billrow button{padding:8px 10px;font-size:12px}
 #resolveCard .billrow input{padding:8px 10px}
+#resolveCard #rsStep2{margin-top:10px}
 #resolveCard #btnConfirmResolve{height:38px;flex:none;padding:0 14px;font-size:12.5px}
 #resolveCard #btnCancelResolve{padding:6px;font-size:11px}
-#resolveCard #btnPrintDetail{flex:none;width:auto}
+#btnPrintDetail{flex:none;width:auto}
 #msgDetail{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #editModal .ph img{height:84px}
 #editModal .camSlot{padding:12px 8px;font-size:12px}
@@ -592,8 +593,7 @@ header{flex-wrap:wrap}
 <div class="dhead">
 <span class="dt" id="detailTitle">Chi tiết</span>
 <span style="flex:1"></span>
-<button id="btnPrevDetail" class="iconBtn" title="Đơn trước">‹</button>
-<button id="btnNextDetail" class="iconBtn" title="Đơn sau">›</button>
+<button id="btnPrintDetail" class="printOnly">🖨 In Mã</button>
 <button id="btnWideDetail" class="iconBtn" title="Phóng to / thu nhỏ">⤢</button>
 <button id="btnEditDetail" class="iconBtn" title="Sửa" style="display:none;font-size:13px">Edit</button>
 <button id="btnCloseDetail" class="iconBtn" title="Đóng">✕</button>
@@ -603,7 +603,7 @@ header{flex-wrap:wrap}
 
 <div class="pcard" id="resolveCard">
 <div id="rsStep1">
-<div class="btnrow"><button id="btnGoResolve" class="primary">Resolve</button><button id="btnPrintDetail" class="printOnly">🖨 In QR</button></div>
+<div class="btnrow"><button id="btnGoResolve" class="primary">Resolve</button></div>
 </div>
 <div id="rsStep2" style="display:none">
 <div class="billrow"><button id="btnScanBill" type="button">📷 Quét</button><input id="resolveBill" class="mono" placeholder="Nhập hoặc quét mã bill…"><button id="btnConfirmResolve" class="primary">Confirm</button></div>
@@ -1135,10 +1135,6 @@ var rsDraft={code:null,bill:''};
 async function paintDetail(code,loadErr){
 var it=state.detail.item;
 document.getElementById('detailTitle').textContent=it.code||'';
-var vis=visibleItems(),vi=-1;
-vis.forEach(function(x,j){if(x.code===it.code)vi=j;});
-document.getElementById('btnPrevDetail').disabled=vi<=0;
-document.getElementById('btnNextDetail').disabled=vi<0||vi>=vis.length-1;
 renderDetailBody();
 renderTimeline();
 scrollHistToBottom_();
@@ -1151,6 +1147,7 @@ document.getElementById('editModal').classList.remove('open');
 try{if(!state.me)await loadMe();}catch(e){}
 var done=it.status&&it.status!=='chua_xu_ly';
 document.getElementById('btnGoResolve').style.display=done?'none':'';
+document.getElementById('btnPrintDetail').style.display=done?'none':'';
 document.getElementById('resolveCard').style.display=done?'none':'';
 if(!done&&rsDraft.code===it.code){
 document.getElementById('rsStep2').style.display='block';
@@ -1226,13 +1223,6 @@ else if(s.slot==='san_pham')o.product=s.url||'';
 else if(s.url)o.extras.push(s.url);
 });
 return o;
-}
-function detailNav(dir){
-if(!state.detail||!state.detail.item)return;
-var vis=visibleItems(),cur=state.detail.item.code,i=-1;
-vis.forEach(function(x,j){if(x.code===cur)i=j;});
-if(i<0||!vis[i+dir])return;
-openDetail(vis[i+dir].code);
 }
 
 var editDel=[],editAdd=[],editOrig={desc:'',note:''},editStatusSel='';
@@ -2136,8 +2126,6 @@ document.getElementById('btnBoxPrint').onclick=function(){if(!state.lastCreated)
 document.getElementById('btnItemPrint').onclick=function(){if(!state.lastCreated)return;if(!isStation_()){enqueueRemotePrint_([state.lastCreated]).then(function(){msg('msgCreate','Đã gửi '+state.lastCreated+' tới trạm in — chờ laptop in.',true);}).catch(function(e){msg('msgCreate',(e&&e.message)||'Không gửi được lệnh in.');});return;}doPrint(state.lastCreated);};
 document.getElementById('btnWideDetail').onclick=function(){document.body.classList.toggle('wide');};
 document.getElementById('btnCloseDetail').onclick=function(){document.getElementById('detailModal').classList.remove('open');document.body.classList.remove('has-drawer');};
-document.getElementById('btnPrevDetail').onclick=function(){detailNav(-1);};
-document.getElementById('btnNextDetail').onclick=function(){detailNav(1);};
 function syncScanClear(){var s=document.getElementById('scanMain'),b=document.getElementById('scanClear');if(s&&b)b.classList.toggle('show',s.value.trim().length>0);}
 document.getElementById('scanMain').addEventListener('input',function(){state.filter=this.value.trim();syncScanClear();renderGrid();});
 document.getElementById('btnGoResolve').onclick=function(){if(state.detail&&state.detail.item)rsDraft={code:state.detail.item.code,bill:document.getElementById('resolveBill').value};document.getElementById('rsStep2').style.display='block';document.getElementById('btnGoResolve').style.display='none';document.getElementById('resolveBill').focus();try{var sh=document.querySelector('#detailModal .sheet');sh.scrollTop=sh.scrollHeight;}catch(e){}};
