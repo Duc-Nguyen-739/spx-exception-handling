@@ -527,11 +527,18 @@ header{flex-wrap:wrap}
 
 <main id="viewLiq" style="display:none">
 <div class="backrow"><span id="liqTotalTop">Tổng: <b>0</b> đơn đã quét</span><button id="btnBackLiq" class="lnk backhome" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Màn hình chính</button></div>
-<div class="lscanrow">
+<div id="liqCodeWrap" style="display:none">
+<div class="field"><label>MÃ THANH LÝ *</label>
+<input id="liqCode" class="mono" placeholder="SPXVN…">
+</div>
+<button id="btnLiqDone" class="primary" style="width:100%">Confirm</button>
+<button id="btnLiqBack" class="lnk" style="width:100%">‹ Quay lại sửa lô</button>
+</div>
+<div class="lscanrow" id="liqScanRow">
 <span class="lscanbox"><span class="pic">⌕</span><input id="scanLiq" class="mono" placeholder="Quét hoặc nhập mã…"></span>
 <button id="camLiq">📷 Quét camera</button>
 </div>
-<div class="lnextrow">
+<div class="lnextrow" id="liqNextRow">
 <button id="btnNext" class="primary" disabled>Next →</button>
 </div>
 <div class="msg" id="msgLiq"></div>
@@ -543,12 +550,6 @@ header{flex-wrap:wrap}
 <tbody id="liqRows"></tbody>
 <tfoot><tr><td colspan="4" id="liqTotal">Total 0</td></tr></tfoot>
 </table>
-</div>
-<div id="liqCodeWrap" style="display:none">
-<div class="field"><label>MÃ THANH LÝ (từ phiếu bàn giao) *</label>
-<input id="liqCode" class="mono" placeholder="SPXVN…">
-</div>
-<button id="btnLiqDone" class="primary" style="width:100%">Confirm</button>
 </div>
 </main>
 
@@ -1682,14 +1683,31 @@ document.getElementById('lastBulk').innerHTML='Đã in 10 mã: <b>'+esc(codes[0]
 doPrintMany(codes);
 }catch(e){h.textContent=(e&&e.message)||'Lỗi sinh mã';h.className='phint err';}
 }
+function liqStep2(){return document.getElementById('liqCodeWrap').style.display==='block';}
+function liqToStep2(){
+document.getElementById('liqScanRow').style.display='none';
+document.getElementById('liqNextRow').style.display='none';
+document.getElementById('liqCodeWrap').style.display='block';
+renderLiq();
+var inp=document.getElementById('liqCode');if(inp)inp.focus();
+}
+function liqToStep1(){
+document.getElementById('liqScanRow').style.display='';
+document.getElementById('liqNextRow').style.display='';
+document.getElementById('liqCodeWrap').style.display='none';
+renderLiq();
+}
 function renderLiq(){
 var tb=document.getElementById('liqRows');tb.innerHTML='';
+var locked=liqStep2();
 state.liq.forEach(function(r,i){
 var tr=document.createElement('tr');
 tr.innerHTML='<td class="code">'+esc(r.code)+'</td><td>'+esc(r.kind||'')+'</td><td class="desc">'+esc(r.desc||'')+'</td>';
-var td=document.createElement('td');var b=document.createElement('button');b.textContent='✕ Xóa';
+var td=document.createElement('td');
+if(!locked){var b=document.createElement('button');b.textContent='✕ Xóa';
 b.onclick=function(){state.liq.splice(i,1);renderLiq();};
-td.appendChild(b);tr.appendChild(td);tb.appendChild(tr);
+td.appendChild(b);}
+tr.appendChild(td);tb.appendChild(tr);
 });
 document.getElementById('liqTotal').textContent='Total '+state.liq.length;
 document.getElementById('liqTotalTop').innerHTML='Tổng: <b>'+state.liq.length+'</b> đơn đã quét';
@@ -1733,9 +1751,9 @@ msg('msgLiq','Đã thanh lý '+codes.length+' mã ('+liqCode+').',true);
 try{
 var r=await gs('liquidateBatch',[codes,liqCode]);
 if(!r.ok)throw new Error(r.error);
-state.liq=[];renderLiq();
-document.getElementById('liqCodeWrap').style.display='none';
+state.liq=[];
 document.getElementById('liqCode').value='';
+liqToStep1();
 renderGrid();renderSummary();
 }catch(e){
 entries.forEach(function(en){dropPending(en.code,en);});
@@ -2156,7 +2174,8 @@ document.getElementById('btnBackEdit').onclick=function(){document.getElementByI
 document.getElementById('btnCloseEdit').onclick=function(){document.getElementById('editModal').classList.remove('open');};
 document.getElementById('scanMain').addEventListener('keydown',function(e){if(e.key==='Enter'){var v=e.target.value.trim();state.filter='';renderGrid();openDetail(v);}});
 document.getElementById('scanLiq').addEventListener('keydown',function(e){if(e.key==='Enter'){liqAdd(e.target.value.trim());e.target.value='';}});
-document.getElementById('btnNext').onclick=function(){document.getElementById('liqCodeWrap').style.display='block';};
+document.getElementById('btnNext').onclick=liqToStep2;
+document.getElementById('btnLiqBack').onclick=liqToStep1;
 document.getElementById('btnLiqDone').onclick=liqDone;
 document.getElementById('camMain').onclick=function(){openPhoneScan('scanMain');};
 document.getElementById('scanClear').onclick=function(){var s=document.getElementById('scanMain');s.value='';state.filter='';syncScanClear();renderGrid();s.focus();};
