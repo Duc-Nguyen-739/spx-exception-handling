@@ -66,6 +66,13 @@ test('print-queue-noui: phone enqueue, laptop direct, khong doi DOM/CSS', () => 
   assert.ok(html.includes('btnPrintMain') && html.includes('btnPrintTop') && html.includes('scanPrint'), 'nut In Ma cu phai con nguyen');
 });
 
+test('print-navy: nut In Ma vien navy mau 6 (trang + vien + chu navy)', () => {
+  const i = html.indexOf('#btnPrintMain,#btnPrintTop,#btnPrintEdit,#btnBoxPrint,#btnItemPrint,#btnPrintDetail');
+  assert.ok(i >= 0, 'thieu rule vien navy chung cho nut In Ma');
+  const rule = html.slice(i, html.indexOf('}', i));
+  assert.ok(/border:\s*1\.5px solid #172b48/.test(rule), 'sai mau 6: ' + rule);
+});
+
 test('print-queue: mock du 4 API cho file://', () => {
   for (const fn of ['enqueuePrintJob', 'pollPrintJobs', 'claimPrintJob', 'ackPrintJob']) {
     assert.ok(mock.includes(fn), 'mock thieu ' + fn);
