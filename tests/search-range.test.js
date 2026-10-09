@@ -109,6 +109,14 @@ test('range: lich tong diu + o tran thang khong to', () => {
   assert.ok(block.includes('if(dim)return r;'), 'o tran thang tra ve dim truoc moi overlay');
 });
 
+test('range-mobile-E: 2 dong + nut to, khong cuon ngang (KHOP mockup E)', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.ok(html.includes('<span class="rg-l1">') && html.includes('<span class="rg-l2">'), 'thieu wrap 2 dong');
+  assert.ok(html.includes('#rangebar .rg-l1,#rangebar .rg-l2{display:contents}'), 'desktop phai giu 1 hang');
+  assert.ok(html.includes('#rangebar .rg-l1{flex:1 1 100%}'), 'mobile dong 1 full-width');
+  assert.ok(html.includes('#rangebar .rg-actions .create-big{padding:10px 14px;font-size:12.5px;border-radius:10px}'), 'sai co nut E');
+});
+
 test('range: co chu tim thi bypass (ke ca mo ta, khong gioi han ngay)', () => {
   const old = { code: 'Box.05-09-2026.9', description: 'Thùng tồn kho cần thanh lý', createdAt: '05/09/2026 08:00:00' };
   assert.strictEqual(visible(old, '', R30), false);
