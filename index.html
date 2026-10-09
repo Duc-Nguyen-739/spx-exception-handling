@@ -224,7 +224,7 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 #histCard{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 #histCard h4{flex:none}
 #detailHist{flex:1;min-height:220px;overflow-y:auto;max-height:none;scroll-behavior:smooth}
-@media(max-width:899px){#viewLiq .lscanbox{flex:1;width:auto}#viewLiq #camLiq{flex:none;white-space:nowrap}#viewLiq .lnextrow .primary{flex:1}#detailBody .kv{padding:6px 0;font-size:11.5px}#detailBody .phstrip.n1 .thumb{max-width:220px}#detailBody .phstrip.n1 .thumb img{height:110px;aspect-ratio:auto}#detailBody .phstrip.n2{grid-template-columns:repeat(2,minmax(0,150px));justify-content:center}#detailBody .phstrip.n2 .thumb img{height:110px;aspect-ratio:auto}
+@media(max-width:899px){#viewLiq .lscanbox{flex:1;width:auto}#viewLiq #camLiq{flex:none;white-space:nowrap}#viewLiq .lnextrow .primary{flex:1}#viewPrint .pscan{display:flex;flex-wrap:wrap;gap:8px;max-width:none}#viewPrint .pscanwrap{flex:1;min-width:0}#viewPrint #camPrint{flex:none;width:auto;margin-top:0;white-space:nowrap}#viewPrint .pscan .phint,#viewPrint .pscan .plast{flex:1 1 100%;margin-top:0}#detailBody .kv{padding:6px 0;font-size:11.5px}#detailBody .phstrip.n1 .thumb{max-width:220px}#detailBody .phstrip.n1 .thumb img{height:110px;aspect-ratio:auto}#detailBody .phstrip.n2{grid-template-columns:repeat(2,minmax(0,150px));justify-content:center}#detailBody .phstrip.n2 .thumb img{height:110px;aspect-ratio:auto}
 #detailHist{flex:1;min-height:0;max-height:none}
 #resolveCard{margin:10px -16px -20px;padding:8px 16px 10px;border-top:1px solid var(--line)}
 #resolveCard .btnrow{margin-top:0}
@@ -563,7 +563,7 @@ header{flex-wrap:wrap}
 <div id="singleZone">
 <div class="pstep">Quét mã</div>
 <div class="pscan"><div class="pscanwrap"><span class="pic">⌕</span><input id="scanPrint" class="mono" placeholder="Scan or Input"></div>
-<button id="camPrint" type="button">Quét</button>
+<button id="camPrint" type="button">📷 Quét</button>
 <div class="phint" id="scanPrintHint">Nhập/scan mã Box.… hoặc Item.… đúng định dạng sẽ tự in.</div>
 <div class="plast" id="lastPrint"></div>
 </div>
@@ -1616,6 +1616,7 @@ document.getElementById('viewAccess').style.display='none';
 if(on){['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.remove('on');});curNav='';renderRail();}
 else{setActive('navMain');}
 syncTabHeader(on?'print':'list');
+if(on){try{var sp=document.getElementById('scanPrint');if(sp&&document.getElementById('singleZone').style.display!=='none')sp.focus();}catch(e){}}
 }
 function clearPrintMsgs(){
 document.getElementById('scanPrint').value='';
