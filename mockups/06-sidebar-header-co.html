@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 06: Sidebar mo che trai Display Range + pills - header co theo</title>
+<style>
+:root{--o:#ee4d2d;--navy:#172b48;--ink:#303844;--mut:#97a0ad;--line:#eef0f3;--bg:#f5f6f9;--card:#fff;--blue:#3274f7}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,Roboto,Arial;background:var(--bg);color:var(--ink)}
+.bnav{position:fixed;left:0;top:0;bottom:0;width:250px;background:#1b2434;color:#a7b0bd;padding:10px 8px 14px;display:flex;flex-direction:column;gap:1px;z-index:21;transition:width .28s ease}
+.bnav .brand{color:#fff;font-weight:800;font-size:13px;padding:10px 12px;white-space:nowrap;overflow:hidden}
+.bnav .brand b{color:var(--o)}
+.bnav button{width:100%;text-align:left;border:none;background:transparent;color:#a7b0bd;font-size:13px;font-weight:500;padding:10px 12px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden}
+.bnav button.on{background:rgba(255,255,255,.07);color:#fff}
+.bnav .ftip{font-size:11px;color:#6b7688;padding:8px 12px;line-height:1.6}
+body[data-side="rail"] .bnav{width:64px;align-items:center}
+body[data-side="rail"] .bnav .brand,body[data-side="rail"] .bnav button span,body[data-side="rail"] .bnav .ftip{display:none}
+body[data-side="rail"] .bnav button{text-align:center}
+header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);padding:12px 22px;display:grid;grid-template-columns:1fr minmax(0,720px) 1fr;align-items:center;gap:10px;transition:padding-left .28s ease,padding-right .28s ease}
+body[data-fix="old"] header{padding-left:22px}
+body[data-fix="new"][data-side="open"] header{padding-left:262px}
+body[data-fix="new"][data-side="rail"] header{padding-left:76px}
+body[data-drawer="open"] header{padding-right:498px}
+.search-group{display:flex;gap:8px;align-items:center;background:var(--card);border:1.5px solid #ffcfbd;border-radius:13px;padding:5px 6px 5px 13px;box-shadow:0 1px 6px rgba(238,77,45,.08);min-width:0}
+.search-group input{flex:1;min-width:0;border:none;background:transparent;font-size:14px;font-weight:600;text-align:center;outline:none}
+.search-group .scan{flex:none;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:12.5px;font-weight:700;padding:9px 13px;cursor:pointer}
+.hact{justify-self:end;display:flex;align-items:center;gap:10px}
+.bell{border:none;background:transparent;font-size:18px;cursor:pointer}
+#rangebar{grid-column:1/-1;grid-row:2;display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 16px;font-size:12.5px;position:relative;min-width:0}
+#rangebar .rg-main{flex:1;min-width:0}
+#rangebar .rg-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#rangebar .rg-info{color:var(--navy);font-weight:800;white-space:nowrap}
+#rangebar .rg-date{font-weight:600;white-space:nowrap}
+#rangebar #rgEdit{border:none;background:none;color:var(--blue);font-weight:800;text-decoration:underline;cursor:pointer;font-size:12.5px}
+#rangebar .rg-cap{margin:6px 0 0;font-size:10.5px;color:var(--mut);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rangebar .rg-actions{display:flex;gap:8px;flex:none}
+#rangebar .rg-actions button{border-radius:10px;padding:14px 26px;font-size:15px;font-weight:700;border:1px solid var(--line);background:#fff;cursor:pointer;white-space:nowrap}
+#rangebar .rg-actions button.create{background:var(--o);border-color:var(--o);color:#fff}
+.pills{grid-column:1/-1;grid-row:3;display:flex;gap:7px;flex-wrap:wrap;position:relative}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:8px 14px;font-size:11.5px;font-weight:800;display:inline-flex;gap:7px;align-items:center;color:var(--navy);cursor:pointer;white-space:nowrap}
+.pill .n{border-radius:99px;padding:2px 9px;font-size:10.5px;background:var(--bg)}
+.pill.on{background:var(--navy);color:#fff;border-color:transparent}
+main{margin-left:250px;padding:18px 26px 140px;transition:margin-left .28s ease,padding-right .28s ease}
+body[data-side="rail"] main{margin-left:64px}
+body[data-drawer="open"] main{padding-right:498px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative}
+.card .solid{width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff}
+.card .cap{padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--bg)}
+.card .code{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:700;color:var(--mut)}
+.card .days{font-size:10px;font-weight:800;color:var(--mut);background:var(--bg);border-radius:7px;padding:4px 8px;white-space:nowrap}
+.ovst{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.94);border-radius:7px;padding:3px 8px;font-size:9px;font-weight:800;color:var(--o)}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:470px;max-width:92vw;background:#fff;box-shadow:-20px 0 50px rgba(23,43,72,.25);z-index:30;transform:translateX(105%);transition:transform .28s ease;padding:22px 24px;overflow:auto}
+body[data-drawer="open"] .drawer{transform:translateX(0)}
+.drawer h2{margin:0 0 4px;font-size:15px;color:var(--navy)}
+.drawer .sub{font-size:12px;color:var(--mut);margin-bottom:10px}
+.badge{display:inline-block;font-size:11px;font-weight:800;border-radius:8px;padding:4px 10px;margin:8px 0}
+.badge.bad{background:#fdecec;color:#c81e1e}
+.badge.good{background:#e9faf0;color:#0d9a50}
+.hint{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.65;margin:0 0 12px}
+.hint b{color:var(--navy)}
+.demobar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:99;background:#172b48;color:#fff;border-radius:14px;padding:8px 10px;display:flex;gap:8px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:96vw;flex-wrap:wrap;justify-content:center}
+.demobar .seg{display:flex;background:rgba(255,255,255,.12);border-radius:9px;padding:3px;gap:3px}
+.demobar .seg button{border:none;background:transparent;color:#c6cdd8;font-size:12px;font-weight:800;padding:7px 12px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.demobar .seg button.on{background:#fff;color:var(--navy)}
+.demobar .st{font-size:11px;font-weight:700;color:#9fe6b8;white-space:nowrap}
+#toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#172b48;color:#fff;font-size:12px;font-weight:700;border-radius:10px;padding:10px 14px;opacity:0;transition:opacity .2s;z-index:120;pointer-events:none;max-width:92vw;text-align:center}
+#toast.show{opacity:1}
+.cover-flag{position:absolute;right:10px;top:8px;font-size:11px;font-weight:800;border-radius:8px;padding:4px 10px;display:none}
+body[data-fix="old"][data-side="open"] .cover-flag.bad{display:inline-block;background:#c81e1e;color:#fff}
+body[data-fix="new"] .cover-flag.good{display:inline-block;background:#0d9a50;color:#fff}
+@media(max-width:899px){.bnav{display:none}header{padding:12px 14px}main{margin:0}}
+</style>
+</head>
+<body data-fix="new" data-side="open" data-drawer="open">
+<nav class="bnav">
+<div class="brand"><b>SPX</b> <span>Exception Handling</span></div>
+<button class="on">🏠 <span>Danh sach</span></button>
+<button>🧾 <span>Thanh ly</span></button>
+<button>👤 <span>Role</span></button>
+<button>🔽 <span>Bo loc</span></button>
+<div class="ftip">Sidebar demo: 250px mo rong / 64px thu gon.</div>
+</nav>
+<header>
+<div></div>
+<div class="search-group"><span style="color:var(--o)">⌕</span><input placeholder="Nhap thong tin de tim kiem..."><button class="scan">Quet</button></div>
+<div class="hact"><button class="bell">🔔</button></div>
+<div id="rangebar"><div class="rg-main"><div class="rg-line"><span class="rg-info">Display Range:</span><span class="rg-date">10/09/2026 - 09/10/2026</span><button id="rgEdit" type="button">Edit</button></div><div class="rg-cap">Du lieu cap nhat moi 3 phut. Khong thay thi mo rong pham vi hoac nhap thanh tim kiem.</div></div><div class="rg-actions"><button>In Ma</button><button class="create">＋ Create</button></div><span class="cover-flag bad">TRAI BI CHE</span><span class="cover-flag good">DU THAY</span></div>
+<div class="pills"><button class="pill on">Tat ca <span class="n">14</span></button><button class="pill">Luu kho <span class="n">8</span></button><button class="pill">Resolve <span class="n">3</span></button><button class="pill">Thanh Ly <span class="n">3</span></button><button class="pill">↻ Moi</button></div>
+</header>
+<main>
+<div class="hint" id="hintNew"><b>BAN MOI (de xuat):</b> sidebar mo thi header lui phai 262px, thu gon thi 76px — thanh <b>Display Range</b> + <b>Tat ca 14...</b> co theo, khong bi che trai. Drawer mo thi co phai nhu cu (giu nguyen ban hom qua).</div>
+<div class="hint" id="hintOld" style="display:none"><b>BAN CU (loi 2 anh):</b> header padding-trai co dinh 22px — sidebar 250px de len, mat chu Display Range + pill Tat ca/Luu kho. Thu sidebar thi lai du thay.</div>
+<div id="grid"></div>
+</main>
+<aside class="drawer">
+<h2>Chi tiet — Box.06-10-2026.1</h2>
+<div class="sub">Drawer demo 470px nhu anh that.</div>
+<div id="drawerBadge"></div>
+</aside>
+<div class="demobar">
+<div class="seg"><button id="btnNew" class="on">Moi: header co theo</button><button id="btnOld">Cu: bi che</button></div>
+<div class="seg"><button id="btnOpen" class="on">Sidebar: mo</button><button id="btnRail">Sidebar: thu</button></div>
+<div class="seg"><button id="btnDwOpen" class="on">Drawer: mo</button><button id="btnDwClose">Drawer: dong</button></div>
+<span class="st" id="modeSt"></span>
+</div>
+<div id="toast"></div>
+<script>
+var grid=document.getElementById('grid');
+for(var i=1;i<=8;i++){
+var d=document.createElement('div');d.className='card';
+var st=i%4===0?'Thanh Ly':(i%3===0?'Luu kho':'Resolve');
+var bg=st==='Thanh Ly'?'#d92d20':st==='Luu kho'?'#1c3a2e':'#9aa5b5';
+d.innerHTML='<div class="solid" style="background:'+bg+'">'+st+'</div><span class="ovst">'+st+'</span><div class="cap"><span class="code">Item.09-10-2026.'+i+'</span><span class="days">'+(i%4)+' Ngay</span></div>';
+grid.appendChild(d);
+}
+var toast=document.getElementById('toast'),tT=null;
+function showToast(s){toast.textContent=s;toast.classList.add('show');clearTimeout(tT);tT=setTimeout(function(){toast.classList.remove('show');},1600);}
+function sync(){
+var fix=document.body.dataset.fix,side=document.body.dataset.side,dw=document.body.dataset.drawer;
+document.getElementById('btnNew').classList.toggle('on',fix==='new');
+document.getElementById('btnOld').classList.toggle('on',fix==='old');
+document.getElementById('btnOpen').classList.toggle('on',side==='open');
+document.getElementById('btnRail').classList.toggle('on',side!=='open');
+document.getElementById('btnDwOpen').classList.toggle('on',dw==='open');
+document.getElementById('btnDwClose').classList.toggle('on',dw!=='open');
+document.getElementById('hintNew').style.display=fix==='new'?'':'none';
+document.getElementById('hintOld').style.display=fix==='new'?'none':'';
+document.getElementById('modeSt').textContent=(fix==='new'?'moi':'cu')+' + sidebar '+(side==='open'?'mo':'thu')+' + drawer '+(dw==='open'?'mo':'dong');
+var bad=fix==='old'&&side==='open';
+document.getElementById('drawerBadge').innerHTML=dw!=='open'?'':(bad?'<span class="badge bad">Header trai bi sidebar che</span>':'<span class="badge good">Header co du 2 ben</span>');
+}
+document.getElementById('btnNew').onclick=function(){document.body.dataset.fix='new';sync();showToast('Ban moi: header co theo sidebar');};
+document.getElementById('btnOld').onclick=function(){document.body.dataset.fix='old';sync();showToast('Ban cu: sidebar che trai header');};
+document.getElementById('btnOpen').onclick=function(){document.body.dataset.side='open';sync();};
+document.getElementById('btnRail').onclick=function(){document.body.dataset.side='rail';sync();};
+document.getElementById('btnDwOpen').onclick=function(){document.body.dataset.drawer='open';sync();};
+document.getElementById('btnDwClose').onclick=function(){document.body.dataset.drawer='';sync();};
+document.getElementById('rgEdit').onclick=function(){showToast('Demo: popup Display Range giu nguyen');};
+sync();
+</script>
+</body>
+</html>
