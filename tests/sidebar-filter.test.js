@@ -27,6 +27,12 @@ test('sidebar-filter: CSS don sac desktop, mobile giu nguyen', () => {
 });
 
 
+
+test('footer-divider: vach mo + nut ria phai can giua chieu cao', () => {
+  assert.ok(html.includes('.bottom-row{display:flex;gap:8px;margin-top:auto;align-items:center;justify-content:flex-end;border-top:1px solid rgba(255,255,255,.09);height:58px;padding:0 8px 0 0}'), 'o chan mo: vach + cao 58px + nut ria phai');
+  assert.ok(html.includes('body.rail .railbox .expand{margin-top:auto;width:100%;height:58px;'), 'o chan rail: vach + cao 58px');
+});
+
 test('rail-flyout: nut pheu + bang phu + hover wiring', () => {
   assert.ok(html.includes('id="railFlyout"'), 'thieu flyout');
   assert.ok(html.includes('id="flyStatus"') && html.includes('id="flyKind"'), 'thieu host flyout');
