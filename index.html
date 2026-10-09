@@ -1453,6 +1453,19 @@ if(!pa.children.length)return;
 setTimeout(function(){window.print();},200);
 }
 function doPrint(code){doPrintMany([code]);}
+var STATION_POLL_MS=3000;
+var STATION_COOLDOWN_MS=10000;
+var stationPrinting_=false;
+var stationNextAllowed_=0;
+var stationPrinted_={};
+var stationTimer_=null;
+function isStation_(){try{if(!window.matchMedia||!window.matchMedia('(min-width: 900px)').matches)return false;if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||''))return false;return true;}catch(e){return false;}}
+function stationId_(){try{var k='spx_station_id';var v=null;try{v=localStorage.getItem(k);}catch(e0){}if(!v){v='st-'+Math.random().toString(36).slice(2,10);try{localStorage.setItem(k,v);}catch(e1){}}return v;}catch(e){return 'st-mem';}}
+function viewPrintVisible_(){try{var v=document.getElementById('viewPrint');return !!(v&&v.style.display!=='none');}catch(e){return false;}}
+function waitAfterPrint_(){return new Promise(function(res){var done=false;function fin(){if(done)return;done=true;try{window.removeEventListener('afterprint',fin);}catch(e){}res();}try{window.addEventListener('afterprint',fin);}catch(e){}setTimeout(fin,60000);});}
+function enqueueRemotePrint_(codes){return gs('enqueuePrintJob',[codes]).then(function(r){if(!r||!r.ok)throw new Error((r&&r.error)||'Không gửi được lệnh in.');return r;});}
+async function stationPollOnce_(){try{if(!isStation_())return;if(document.hidden)return;if(!viewPrintVisible_())return;if(stationPrinting_)return;if(Date.now()<stationNextAllowed_)return;var r=await gs('pollPrintJobs',[]);if(!r||!r.ok||!r.data||!r.data.jobs||!r.data.jobs.length)return;var job=null;for(var i=0;i<r.data.jobs.length;i++){if(!stationPrinted_[r.data.jobs[i].job_id]){job=r.data.jobs[i];break;}}if(!job)return;var cl=null;try{cl=await gs('claimPrintJob',[job.job_id,stationId_()]);}catch(e){return;}if(!cl||!cl.ok)return;var codes=(cl.data&&cl.data.codes)||job.codes||[];if(!codes.length)return;stationPrinting_=true;try{document.getElementById('bulkList').innerHTML='';printHint('Nhận lệnh từ điện thoại — đang in '+codes.length+' mã…',true);document.getElementById('lastPrint').innerHTML='Trạm in: <b>'+esc(codes[0])+(codes.length>1?' → '+esc(codes[codes.length-1]):'')+'</b> ('+codes.length+' mã).';doPrintMany(codes);await waitAfterPrint_();try{await gs('ackPrintJob',[job.job_id,true,'station printed']);}catch(e){}stationPrinted_[job.job_id]=1;document.getElementById('lastPrint').innerHTML='Trạm đã in xong: <b>'+esc(codes[0])+(codes.length>1?' → '+esc(codes[codes.length-1]):'')+'</b>.';}finally{stationPrinting_=false;stationNextAllowed_=Date.now()+STATION_COOLDOWN_MS;}}catch(e){}}
+function startStationPoller_(){try{if(stationTimer_)return;stationTimer_=setInterval(function(){stationPollOnce_();},STATION_POLL_MS);}catch(e){}}
 
 var boxPhotos=[],itemPhotos=[];
 var SLOT_LABELS={Box:['Ảnh ngoại quan *','Ảnh sản phẩm *','Ảnh bổ sung'],Item:['Ảnh sản phẩm *']};
@@ -1625,6 +1638,7 @@ if(c===lastAutoPrint)return;
 lastAutoPrint=c;
 document.getElementById('bulkList').innerHTML='';
 var _bh=document.getElementById('bulkHint');_bh.textContent='';_bh.className='phint';
+if(!isStation_()){printHint('Đúng định dạng — đã gửi '+c+' tới trạm in…',true);document.getElementById('lastPrint').innerHTML='Đã gửi: <b>'+esc(c)+'</b> tới trạm in (laptop mở tab In Mã sẽ tự in).';enqueueRemotePrint_([c]).then(function(){document.getElementById('lastPrint').innerHTML='Đã gửi: <b>'+esc(c)+'</b> tới trạm in — chờ laptop in.';}).catch(function(e){printHint((e&&e.message)||'Không gửi được lệnh in.',false);document.getElementById('lastPrint').innerHTML='';lastAutoPrint='';});return;}
 printHint('Đúng định dạng — đang tự in '+c+'…',true);
 document.getElementById('lastPrint').innerHTML='Đã in: <b>'+esc(c)+'</b> (khổ 4x6in).';
 doPrint(c);
@@ -1643,6 +1657,7 @@ ul.innerHTML='';
 codes.forEach(function(c){
 var li=document.createElement('li');li.innerHTML='<span>'+esc(c)+'</span>';ul.appendChild(li);
 });
+if(!isStation_()){try{var er=await enqueueRemotePrint_(codes);h.textContent='Đã gửi '+codes.length+' mã '+k+' tới trạm in ('+codes[0]+' → '+codes[codes.length-1]+') — chờ laptop in.';h.className='phint ok';document.getElementById('lastBulk').innerHTML='Đã gửi 10 mã: <b>'+esc(codes[0])+' → '+esc(codes[codes.length-1])+'</b> tới trạm in.';}catch(ee){h.textContent=(ee&&ee.message)||'Không gửi được lệnh in.';h.className='phint err';}return;}
 h.textContent='Đã giữ chỗ '+codes.length+' mã '+k+' — tự in '+codes[0]+' → '+codes[codes.length-1]+' (1 lệnh in, khổ 4x6in).';h.className='phint ok';
 document.getElementById('lastBulk').innerHTML='Đã in 10 mã: <b>'+esc(codes[0])+' → '+esc(codes[codes.length-1])+'</b>.';
 doPrintMany(codes);
@@ -2051,7 +2066,7 @@ try{var _br=(/^__BUILD/.test(BUILD_REV)?(location.protocol==='file:'?'dev':'…'
 
 window.addEventListener('DOMContentLoaded',function(){
 loadGrid();loadMe();
-try{if(!state._poll)state._poll=setInterval(function(){if(!document.hidden)loadGrid({silent:true,reset:true});},300000);}catch(e){}
+try{if(!state._poll)state._poll=setInterval(function(){if(!document.hidden)loadGrid({silent:true,reset:true});},300000);}catch(e){}try{startStationPoller_();}catch(e){}
 try{var gm=document.getElementById('gridMore');if(gm&&'IntersectionObserver' in window&&!state._io){state._io=new IntersectionObserver(function(es){if(es[0]&&es[0].isIntersecting&&!state.noMore&&!state._loadingGrid)loadGrid({more:true,silent:true});},{rootMargin:'400px'});state._io.observe(gm);}}catch(e){}
 try{initLightbox();}catch(e){}
 try{syncScanClear();}catch(e){}
@@ -2089,8 +2104,8 @@ document.getElementById('btnBoxDone').onclick=submitCreate;
 document.getElementById('btnBoxAgain').onclick=resetCreateForNext;
 document.getElementById('btnItemAgain').onclick=resetCreateForNext;
 document.getElementById('btnItemDone').onclick=function(){state.kind='Item';submitCreate();};
-document.getElementById('btnBoxPrint').onclick=function(){if(state.lastCreated)doPrint(state.lastCreated);};
-document.getElementById('btnItemPrint').onclick=function(){if(state.lastCreated)doPrint(state.lastCreated);};
+document.getElementById('btnBoxPrint').onclick=function(){if(!state.lastCreated)return;if(!isStation_()){enqueueRemotePrint_([state.lastCreated]).then(function(){msg('msgCreate','Đã gửi '+state.lastCreated+' tới trạm in — chờ laptop in.',true);}).catch(function(e){msg('msgCreate',(e&&e.message)||'Không gửi được lệnh in.');});return;}doPrint(state.lastCreated);};
+document.getElementById('btnItemPrint').onclick=function(){if(!state.lastCreated)return;if(!isStation_()){enqueueRemotePrint_([state.lastCreated]).then(function(){msg('msgCreate','Đã gửi '+state.lastCreated+' tới trạm in — chờ laptop in.',true);}).catch(function(e){msg('msgCreate',(e&&e.message)||'Không gửi được lệnh in.');});return;}doPrint(state.lastCreated);};
 document.getElementById('btnWideDetail').onclick=function(){document.body.classList.toggle('wide');};
 document.getElementById('btnCloseDetail').onclick=function(){document.getElementById('detailModal').classList.remove('open');document.body.classList.remove('has-drawer');};
 document.getElementById('btnPrevDetail').onclick=function(){detailNav(-1);};
@@ -2103,7 +2118,7 @@ document.getElementById('btnConfirmResolve').onclick=doResolve;
 document.getElementById('btnScanBill').onclick=function(){openPhoneScan('resolveBill');};
 document.getElementById('resolveBill').addEventListener('keydown',function(e){if(e.key==='Enter')doResolve();});
 document.getElementById('resolveBill').addEventListener('input',function(){if(state.detail&&state.detail.item&&rsDraft.code===state.detail.item.code)rsDraft.bill=this.value;});
-document.getElementById('btnPrintDetail').onclick=function(){if(state.detail)doPrint(state.detail.item.code);};
+document.getElementById('btnPrintDetail').onclick=function(){if(!state.detail||!state.detail.item)return;var _c=state.detail.item.code;if(!isStation_()){enqueueRemotePrint_([_c]).then(function(){msg('msgDetail','Đã gửi '+_c+' tới trạm in — chờ laptop in.',true);}).catch(function(e){msg('msgDetail',(e&&e.message)||'Không gửi được lệnh in.');});return;}doPrint(_c);};
 document.getElementById('navMain').onclick=function(){showLiq(false);};
 document.getElementById('navLiq').onclick=function(){showLiq(true);};
 document.getElementById('navAccess').onclick=function(){showAccess();};
@@ -2131,7 +2146,7 @@ try{var r=await gs('addAdmin',[email]);if(!r||!r.ok)throw new Error((r&&r.error)
 }
 document.getElementById('btnEditDetail').onclick=openEdit;
 document.getElementById('btnConfirmEdit').onclick=confirmEdit;
-document.getElementById('btnPrintEdit').onclick=function(){if(state.detail)doPrint(state.detail.item.code);};
+document.getElementById('btnPrintEdit').onclick=function(){if(!state.detail||!state.detail.item)return;var _c2=state.detail.item.code;if(!isStation_()){enqueueRemotePrint_([_c2]).then(function(){msg('msgEdit','Đã gửi '+_c2+' tới trạm in — chờ laptop in.',true);}).catch(function(e){msg('msgEdit',(e&&e.message)||'Không gửi được lệnh in.');});return;}doPrint(_c2);};
 document.getElementById('btnBackEdit').onclick=function(){document.getElementById('editModal').classList.remove('open');};
 document.getElementById('btnCloseEdit').onclick=function(){document.getElementById('editModal').classList.remove('open');};
 document.getElementById('scanMain').addEventListener('keydown',function(e){if(e.key==='Enter'){var v=e.target.value.trim();state.filter='';renderGrid();openDetail(v);}});

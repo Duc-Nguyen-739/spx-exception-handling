@@ -450,6 +450,7 @@ async function main() {
     check('Popup quet lay config chung, khong copy rieng',
       !!(CAM && CAM.popupCtor && CAM.popupFmt && !CAM.popupDup), CAM && (CAM.popupCtor + '/' + CAM.popupFmt + '/' + !CAM.popupDup));
     await evalIn(ws, `window.print = function(){ window.__PRINTED__ = (window.__PRINTED__ || 0) + 1; };`);
+    await evalIn(ws, `try{if(stationTimer_)clearInterval(stationTimer_);stationTimer_=null;}catch(e){} isStation_ = function(){return true;}; stationPrinted_={}; stationPrinting_=false; stationNextAllowed_=0;`);
     await evalIn(ws, `document.getElementById('btnPrintMain').click()`);
     const pvOk = await waitUntil(ws, "document.getElementById('viewPrint').style.display === 'block'", 3000);
     check('Nut In Ma vao thang tab In Ma', !!pvOk, String(pvOk));
@@ -473,6 +474,16 @@ async function main() {
     })`);
     const B = bk.err ? null : JSON.parse(bk.value);
     check('Bulk sinh 10 ma + tu in 1 lenh duy nhat', !!(bkOk && B && B.n === 10 && B.calls >= 1 && B.jobs === 2 && B.labels === 10), bk.value);
+    await evalIn(ws, `isStation_ = function(){return false;}; document.getElementById('cardSingle').click();`);
+    await evalIn(ws, `document.getElementById('scanPrint').value='Box.06-10-2026.1';document.getElementById('scanPrint').dispatchEvent(new Event('input'))`);
+    const phOk = await waitUntil(ws, "document.getElementById('lastPrint').innerText.includes('Đã gửi') && document.getElementById('lastPrint').innerText.includes('Box.06-10-2026.1')", 5000);
+    const phQ = await evalIn(ws, `JSON.stringify({enq: (window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='enqueuePrintJob';}).length, jobs: window.__PRINTED__||0})`);
+    const PHQ = phQ.err ? null : JSON.parse(phQ.value);
+    check('Phone gui In Ma toi tram (khong in local, khong doi UI)', !!(phOk && PHQ && PHQ.enq >= 1 && PHQ.jobs === 2), phQ.value);
+    const stQ = await evalIn(ws, `JSON.stringify({poll: typeof stationPollOnce_ === 'function', timer: stationTimer_ === null, cool: (typeof STATION_COOLDOWN_MS !== 'undefined' ? STATION_COOLDOWN_MS : 0), gap: (typeof STATION_POLL_MS !== 'undefined' ? STATION_POLL_MS : 0), serial: (typeof stationPrinting_ !== 'undefined' && typeof stationNextAllowed_ !== 'undefined' && typeof waitAfterPrint_ === 'function' && typeof viewPrintVisible_ === 'function')})`);
+    const STQ = stQ.err ? null : JSON.parse(stQ.value);
+    check('Tram poll 3s + serial + nghi 10s sau in xong', !!(STQ && STQ.poll && STQ.cool === 10000 && STQ.gap === 3000 && STQ.serial), stQ.value);
+    await evalIn(ws, `isStation_ = function(){return true;}; document.getElementById('cardSingle').click();`);
     await evalIn(ws, `document.getElementById('cardSingle').click()`);
     const clOk = await waitUntil(ws, "document.querySelectorAll('#bulkList li').length === 0"
       + " && document.getElementById('bulkHint').textContent === ''"

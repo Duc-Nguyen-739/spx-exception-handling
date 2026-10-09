@@ -10,7 +10,7 @@
 - 11 cột × 15k dòng ≈ 165k cells/năm — xa dưới hạn Sheets (10M cells/sheet).
 - Mỗi dòng < 2KB → DB text ~30MB/năm. Ảnh là phần nặng → để Drive, DB chỉ giữ file ID.
 
-## 2. Spreadsheet layout — 3 sheets
+## 2. Spreadsheet layout — 4 sheets (thêm PrintQueue cho in từ xa)
 
 Spreadsheet ID để ở Script Properties `SPREADSHEET_ID` (không hardcode — luật 1).
 
@@ -45,6 +45,12 @@ Spreadsheet ID để ở Script Properties `SPREADSHEET_ID` (không hardcode —
 | `code` | `slot` (`ngoai_quan`/`san_pham`/`bo_sung`/`bo_sung_1`/`bo_sung_2`) | `drive_file_id` | `uploaded_at` |
 
 - Mọi cột ngày (`Photos.uploaded_at`, `ActivityLog.at`, `PrintedCodes.printed_at`, `Users.added_at`) cũng ghi text kèm dấu `'` như `Items.created_at` (chống locale US tự parse).
+
+### `PrintQueue` (hàng in phone → laptop, zero-UI)
+
+| `job_id` | `codes_json` | `requested_at` | `requested_by` | `status` (`pending`/`printing`/`done`/`failed`) | `claimed_by` | `claimed_at` | `done_at` | `note` |
+
+- Phone bấm In Mã → `enqueuePrintJob` append 1 dòng `pending` (1–10 mã, validate `Box./Item.`). Laptop mở tab In Mã poll 3s `pollPrintJobs` → `claimPrintJob` trong `LockService` (`pending→printing`, trạm thua nhận `Đã có trạm nhận`) → render đúng `#printArea` cũ + `window.print()` → `ackPrintJob`. Serial 1 job/lần, xong nghỉ 10s mới poll tiếp. Ngày ghi text kèm dấu `'` như các sheet khác.
 
 ### `ActivityLog` (append-only, ai đổi trạng thái)
 

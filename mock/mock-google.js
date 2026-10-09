@@ -71,6 +71,18 @@
   };
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  var PRINTQUEUE = [];
+  var PRINT_RE_MOCK = /^(Box|Item)\.\d{2}-\d{2}-\d{4}\.\d+$/;
+  function queueCodes(codes) {
+    var seen = {}, list = [];
+    (codes || []).forEach(function (raw) {
+      var s = String(raw || '').trim();
+      if (!s || seen[s]) return;
+      seen[s] = true;
+      list.push(s);
+    });
+    return list;
+  }
 
   function find(code) {
     for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].code === code) return ITEMS[i];
@@ -104,6 +116,49 @@
       var codes = [];
       for (var i = 0; i < n; i++) codes.push(k + '06-10-2026.' + (start + i));
       return { ok: true, data: { codes: codes, kind: kind === 'Item' ? 'Item' : 'Box' } };
+    },
+    enqueuePrintJob: function (codes) {
+      var list = queueCodes(codes);
+      if (!list.length) return { ok: false, error: 'Thiếu mã cần in.' };
+      if (list.length > 10) return { ok: false, error: 'Tối đa 10 mã/lần.' };
+      for (var i = 0; i < list.length; i++) {
+        if (!PRINT_RE_MOCK.test(list[i])) return { ok: false, error: 'Mã chưa đúng định dạng: ' + list[i] };
+      }
+      var id = 'job-' + (PRINTQUEUE.length + 1) + '-' + Date.now();
+      PRINTQUEUE.push({ job_id: id, codes: list, requested_at: '09/10/2026 15:00:00', requested_by: ME, status: 'pending', claimed_by: '', claimed_at: '', done_at: '', note: '' });
+      return { ok: true, data: { job_id: id, count: list.length } };
+    },
+    pollPrintJobs: function () {
+      var out = PRINTQUEUE.filter(function (j) { return j.status === 'pending'; }).slice(0, 20).map(function (j) {
+        return { job_id: j.job_id, codes: j.codes.slice(), requested_at: j.requested_at, requested_by: j.requested_by };
+      });
+      return { ok: true, data: { jobs: out } };
+    },
+    claimPrintJob: function (jobId, stationId) {
+      var id = String(jobId || '').trim();
+      for (var i = 0; i < PRINTQUEUE.length; i++) {
+        if (PRINTQUEUE[i].job_id === id) {
+          if (PRINTQUEUE[i].status !== 'pending') return { ok: false, error: 'Đã có trạm nhận.' };
+          PRINTQUEUE[i].status = 'printing';
+          PRINTQUEUE[i].claimed_by = String(stationId || 'station').slice(0, 60);
+          PRINTQUEUE[i].claimed_at = '09/10/2026 15:00:01';
+          return { ok: true, data: { job_id: id, codes: PRINTQUEUE[i].codes.slice() } };
+        }
+      }
+      return { ok: false, error: 'Việc in không tồn tại.' };
+    },
+    ackPrintJob: function (jobId, okFlag, note) {
+      var id = String(jobId || '').trim();
+      for (var i = 0; i < PRINTQUEUE.length; i++) {
+        if (PRINTQUEUE[i].job_id === id) {
+          if (PRINTQUEUE[i].status !== 'printing' && PRINTQUEUE[i].status !== 'pending') return { ok: false, error: 'Việc đã xong.' };
+          PRINTQUEUE[i].status = okFlag ? 'done' : 'failed';
+          PRINTQUEUE[i].done_at = '09/10/2026 15:00:02';
+          PRINTQUEUE[i].note = String(note || '').slice(0, 200);
+          return { ok: true, data: { job_id: id } };
+        }
+      }
+      return { ok: false, error: 'Việc in không tồn tại.' };
     },
     createBox: function (p) { return create_('Box', p); },
     createItem: function (p) { return create_('Item', p); },

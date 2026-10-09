@@ -17,6 +17,7 @@ var ITEMS_HEADER = ['code', 'created_at', 'description', 'kind', 'photo_path_out
 var PHOTOS_HEADER = ['code', 'slot', 'drive_file_id', 'uploaded_at'];
 var LOG_HEADER = ['at', 'code', 'from_status', 'to_status', 'by', 'note', 'reason'];
 var PRINTED_HEADER = ['code', 'printed_at', 'printed_by', 'kind'];
+var PRINTQUEUE_HEADER = ['job_id', 'codes_json', 'requested_at', 'requested_by', 'status', 'claimed_by', 'claimed_at', 'done_at', 'note'];
 
 // KHỚP import: scripts/import-csv.js STATUS_RULES (copy, không tự bịa thêm).
 var STATUS_RULES = [
@@ -676,6 +677,120 @@ function previewBulkCodes(kind, count) {
       var sh = getSheet_('PrintedCodes', PRINTED_HEADER);
       sh.getRange(sh.getLastRow() + 1, 1, rows.length, PRINTED_HEADER.length).setValues(rows);
       return { codes: codes, kind: k };
+    }));
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function printQueueSheet_() {
+  return getSheet_('PrintQueue', PRINTQUEUE_HEADER);
+}
+
+function validPrintCode_(code) {
+  return /^(Box|Item)\.\d{2}-\d{2}-\d{4}\.\d+$/.test(String(code || '').trim());
+}
+
+function enqueuePrintJob(codes) {
+  try {
+    var seen = {}, list = [];
+    (codes || []).forEach(function (raw) {
+      var s = String(raw || '').trim();
+      if (!s || seen[s]) return;
+      seen[s] = true;
+      list.push(s);
+    });
+    if (!list.length) return fail('Thiếu mã cần in.');
+    if (list.length > 10) return fail('Tối đa 10 mã/lần.');
+    for (var i = 0; i < list.length; i++) {
+      if (!validPrintCode_(list[i])) return fail('Mã chưa đúng định dạng: ' + list[i]);
+    }
+    return ok(withLock_(function () {
+      var sh = printQueueSheet_();
+      var id = Utilities.getUuid();
+      var at = nowStr_(), by = currentEmail_();
+      sh.getRange(sh.getLastRow() + 1, 1, 1, PRINTQUEUE_HEADER.length).setValues(
+        [[id, JSON.stringify(list), "'" + at, by, 'pending', '', '', '', '']]);
+      return { job_id: id, count: list.length };
+    }));
+  } catch (e) { Logger.log(e); return fail('Không gửi được lệnh in: ' + e.message); }
+}
+
+function printQueueTail_(maxRows) {
+  var sh = printQueueSheet_();
+  var last = sh.getLastRow();
+  if (last < 2) return { sh: sh, rows: [], firstRow: 2 };
+  var n = Math.min(last - 1, Math.max(1, maxRows || 500));
+  var firstRow = last - n + 1;
+  return { sh: sh, rows: sh.getRange(firstRow, 1, n, PRINTQUEUE_HEADER.length).getValues(), firstRow: firstRow };
+}
+
+function pollPrintJobs() {
+  try {
+    var t = printQueueTail_(500);
+    var out = [];
+    for (var i = 0; i < t.rows.length && out.length < 20; i++) {
+      if (String(t.rows[i][4] || '').trim() !== 'pending') continue;
+      var codes = [];
+      try { codes = JSON.parse(String(t.rows[i][1] || '[]')); } catch (e0) { codes = []; }
+      codes = (codes || []).filter(function (s) { return !!String(s || '').trim(); });
+      if (!codes.length) continue;
+      out.push({
+        job_id: cellText_(t.rows[i][0]),
+        codes: codes,
+        requested_at: cellText_(t.rows[i][2]),
+        requested_by: cellText_(t.rows[i][3])
+      });
+    }
+    return ok({ jobs: out });
+  } catch (e) { Logger.log(e); return fail('Không đọc được hàng in: ' + e.message); }
+}
+
+function claimPrintJob(jobId, stationId) {
+  try {
+    var id = String(jobId || '').trim();
+    var st = String(stationId || '').trim().slice(0, 60) || 'station';
+    if (!id) return fail('Thiếu việc in.');
+    return ok(withLock_(function () {
+      var sh = printQueueSheet_();
+      var last = sh.getLastRow();
+      if (last < 2) throw new Error('Việc in không tồn tại.');
+      var ids = sh.getRange(2, 1, last - 1, 1).getValues();
+      var row = -1;
+      for (var i = 0; i < ids.length; i++) {
+        if (String(ids[i][0] || '').trim() === id) { row = 2 + i; break; }
+      }
+      if (row < 0) throw new Error('Việc in không tồn tại.');
+      var vals = sh.getRange(row, 1, 1, PRINTQUEUE_HEADER.length).getValues()[0];
+      if (String(vals[4] || '').trim() !== 'pending') throw new Error('Đã có trạm nhận.');
+      var codes = [];
+      try { codes = JSON.parse(String(vals[1] || '[]')); } catch (e0) { codes = []; }
+      if (!codes.length) throw new Error('Việc in rỗng.');
+      sh.getRange(row, 6, 1, 2).setValues([[st, "'" + nowStr_()]]);
+      sh.getRange(row, 5, 1, 1).setValues([['printing']]);
+      return { job_id: id, codes: codes };
+    }));
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function ackPrintJob(jobId, okFlag, note) {
+  try {
+    var id = String(jobId || '').trim();
+    if (!id) return fail('Thiếu việc in.');
+    var msg = String(note || '').slice(0, 200);
+    return ok(withLock_(function () {
+      var sh = printQueueSheet_();
+      var last = sh.getLastRow();
+      if (last < 2) throw new Error('Việc in không tồn tại.');
+      var ids = sh.getRange(2, 1, last - 1, 1).getValues();
+      var row = -1;
+      for (var i = 0; i < ids.length; i++) {
+        if (String(ids[i][0] || '').trim() === id) { row = 2 + i; break; }
+      }
+      if (row < 0) throw new Error('Việc in không tồn tại.');
+      var cur = String(sh.getRange(row, 5, 1, 1).getValues()[0][0] || '').trim();
+      if (cur !== 'printing' && cur !== 'pending') throw new Error('Việc đã xong.');
+      sh.getRange(row, 5, 1, 1).setValues([[okFlag ? 'done' : 'failed']]);
+      sh.getRange(row, 8, 1, 2).setValues([["'" + nowStr_(), msg]]);
+      return { job_id: id };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
