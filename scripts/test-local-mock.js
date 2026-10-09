@@ -554,6 +554,8 @@ async function main() {
     const U = uni.err ? null : JSON.parse(uni.value);
     check('Range + pills gop 1 khoi dinh trong header', !!(U && U.inHead && U.pills && U.sticky === 'sticky'), uni.value);
     check('Bam caption khong hien thong bao', !!(U && U.capSilent === ''), uni.value);
+    const cp = await evalIn(ws, `JSON.stringify({pad: getComputedStyle(document.querySelector('header')).paddingTop, gap: getComputedStyle(document.querySelector('header')).gap, msgHidden: (function(){document.getElementById('msgMain').textContent='';return getComputedStyle(document.getElementById('msgMain')).display;})()})`);
+    check('Mobile siet khe: header 8px + gap 4px + msg rong an', cp.value === '{"pad":"8px","gap":"4px","msgHidden":"none"}', cp.value);
     const rv = await evalIn(ws, `JSON.stringify({bell: !!document.getElementById('btnIntro'), modal: !!document.getElementById('introModal'), first: document.querySelector('.hact').firstElementChild.id})`);
     check('Nut chuong Gioi thieu the cho so ban', rv.value === '{"bell":true,"modal":true,"first":"btnIntro"}', rv.value);
     await evalIn(ws, `document.getElementById('btnIntro').click()`);

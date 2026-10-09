@@ -20,6 +20,7 @@ input,textarea,select{font-family:inherit;font-size:13px;color:var(--ink);backgr
 input:focus,textarea:focus,select:focus{outline:2px solid #ffd9cd;border-color:var(--o)}
 .mono{font-family:ui-monospace,Menlo,monospace}
 .msg{min-height:18px;font-size:12px;margin:8px 2px;font-weight:600}
+#msgMain:empty{display:none}
 .msg.ok{color:#0d9a50}.msg.err{color:var(--o)}
 
 /* ===== header ===== */
@@ -95,7 +96,7 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 .rgfoot button{border-radius:9px;padding:9px 22px;font-size:13px;font-weight:800;border:1px solid var(--line);background:#fff}
 .rgfoot button.primary{background:var(--o);border-color:var(--o);color:#fff}
 .rgfoot button:disabled{opacity:.45;cursor:not-allowed}
-@media(max-width:899px){#rangebar{flex-direction:row;align-items:center;gap:6px;padding:6px 8px}#rangebar .rg-main{overflow-x:auto}#rangebar .rg-line{flex-wrap:wrap;gap:3px 6px;font-size:10px}#rangebar .rg-l1,#rangebar .rg-l2{display:flex;align-items:center;gap:6px}#rangebar .rg-l1{flex:1 1 100%}#rangebar .rg-l2{flex-wrap:nowrap}#rangebar .rg-line .lbl{white-space:nowrap;font-size:10px}#rangebar .rg-info{white-space:nowrap;font-size:10px}#rangebar #rgRangeLabel{white-space:nowrap;font-size:9.5px}#rangebar #rgEdit{font-size:10.5px;padding:2px}#rangebar .rg-line .val{white-space:nowrap;font-size:9.5px}#rangebar .rg-line a{flex:none}#rangebar .rg-line .rg-ico svg{width:14px;height:14px}#rangebar .rg-cap{display:none}#rangebar .rg-actions{justify-content:flex-end}#rangebar .rg-actions .create-big{padding:10px 14px;font-size:12.5px;border-radius:10px}}
+@media(max-width:899px){#rangebar{flex-direction:row;align-items:center;gap:6px;padding:5px 8px}#rangebar .rg-main{overflow-x:auto}#rangebar .rg-line{flex-wrap:wrap;gap:3px 6px;font-size:10px}#rangebar .rg-l1,#rangebar .rg-l2{display:flex;align-items:center;gap:6px}#rangebar .rg-l1{flex:1 1 100%}#rangebar .rg-l2{flex-wrap:nowrap}#rangebar .rg-line .lbl{white-space:nowrap;font-size:10px}#rangebar .rg-info{white-space:nowrap;font-size:10px}#rangebar #rgRangeLabel{white-space:nowrap;font-size:9.5px}#rangebar #rgEdit{font-size:10.5px;padding:2px}#rangebar .rg-line .val{white-space:nowrap;font-size:9.5px}#rangebar .rg-line a{flex:none}#rangebar .rg-line .rg-ico svg{width:14px;height:14px}#rangebar .rg-cap{display:none}#rangebar .rg-actions{justify-content:flex-end}#rangebar .rg-actions .create-big{padding:10px 14px;font-size:12.5px;border-radius:10px}}
 @media(max-width:640px){.rgcals{grid-template-columns:1fr}.rgbody{flex-direction:column}.rgpresets{width:100%;border-right:none;border-bottom:1px solid var(--line);display:flex;overflow:auto}.rgpresets button{white-space:nowrap}.rgover{display:none}}
 #viewPrint .psect{margin:6px 0 12px;font-size:15px;color:var(--navy);padding-left:10px;border-left:4px solid var(--o)}
 #viewPrint .pstep{font-size:12.5px;color:var(--mut);margin:12px 0 8px}
@@ -133,7 +134,7 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 #viewLiq .lnextrow{margin-top:12px;display:flex}
 #viewLiq .lnextrow .primary{flex:0 0 280px;max-width:100%}
 #viewLiq #liqCodeWrap{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px;margin-top:12px;max-width:520px}
-@media(max-width:899px){header{grid-template-columns:1fr auto}header .scanbar{grid-column:1/-1;grid-row:2;width:100%}header #rangebar{grid-column:1/-1;grid-row:3;margin-top:6px}header #pillsRow{grid-column:1/-1;grid-row:4;margin-bottom:0}}
+@media(max-width:899px){header{grid-template-columns:1fr auto;padding:8px 10px;gap:4px}header .scanbar{grid-column:1/-1;grid-row:2;width:100%}header .search-group{padding:3px 5px 3px 11px}header .search-group input{padding:7px 0}header #camMain{padding:8px 11px}header #rangebar{grid-column:1/-1;grid-row:3;margin:4px 0}header #pillsRow{grid-column:1/-1;grid-row:4;margin-bottom:0}main{padding-top:8px}}
 #scanClear{display:none;width:30px;height:30px;flex:none;border:none;border-radius:50%;background:#e8ecf1;color:#5b6572;font-size:13px;font-weight:800;line-height:1;padding:0}
 #scanClear.show{display:block}
 .scanbar svg{color:var(--o);flex:none}
@@ -160,7 +161,7 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 .pill[data-k="liq"].on{background:var(--blue)}
 .pill.on .n{background:rgba(255,255,255,.22);color:#fff}
 .pill:active{transform:scale(.95)}
-@media(max-width:899px){.pills{flex-wrap:nowrap;gap:5px;overflow:hidden}.pill{flex:1 1 0;min-width:0;justify-content:center;padding:6px 4px;font-size:10px;gap:4px;overflow:hidden}.pill .n{font-size:9px;padding:1px 6px;flex:none}.pill:last-child{flex:0 0 auto;padding:6px 10px}}
+@media(max-width:899px){.pills{flex-wrap:nowrap;gap:5px;overflow:hidden}.pill{flex:1 1 0;min-width:0;justify-content:center;padding:5px 4px;font-size:10px;gap:4px;overflow:hidden}.pill .n{font-size:9px;padding:1px 6px;flex:none}.pill:last-child{flex:0 0 auto;padding:5px 10px}}
 
 /* ===== gallery grid (kiểu AppSheet: ảnh vuông + caption) ===== */
 #grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}

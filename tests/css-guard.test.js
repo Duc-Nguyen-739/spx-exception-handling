@@ -29,7 +29,9 @@ test('css-guard: search + range + pills gop 1 khoi dinh trong header', () => {
   assert.ok(html.indexOf('id="pillsRow"') < html.indexOf('</header>'), 'pills phai trong header');
   assert.ok(!html.includes('--hdrH') && !html.includes('syncSticky_'), 'bo do hdrH');
   assert.ok(!html.includes('mới mở chi tiết'), 'bo thong bao caption');
-  assert.ok(html.includes('header #rangebar{grid-column:1/-1;grid-row:3;margin-top:6px}'), 'mobile range sat search');
+  assert.ok(html.includes('header #rangebar{grid-column:1/-1;grid-row:3;margin:4px 0}'), 'mobile range sat');
+  assert.ok(html.includes('header{grid-template-columns:1fr auto;padding:8px 10px;gap:4px}'), 'mobile header siet');
+  assert.ok(html.includes('#msgMain:empty{display:none}'), 'msg rong tu an');
   const headers = rulesFor('header').join(';') + html.slice(html.indexOf('/* ===== header ===== */'), html.indexOf('/* ===== header ===== */') + 400);
   assert.ok(/position\s*:\s*sticky/.test(headers), 'header phai sticky');
 });
