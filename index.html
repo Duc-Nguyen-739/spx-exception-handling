@@ -163,7 +163,7 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 .pill.on .n{background:rgba(255,255,255,.22);color:#fff}
 .pill:active{transform:scale(.95)}
 #ctxBar{display:none;background:var(--tint);border:1px solid #ffd9cd;border-radius:11px;padding:9px 12px;margin-bottom:12px;font-size:12px;font-weight:800;color:var(--navy)}
-#ctxBar.back{cursor:pointer}
+#ctxBar.back{cursor:pointer;display:inline-flex;align-items:center;width:auto;max-width:100%;justify-self:start}
 #liqTotalTop{font-size:12.5px;font-weight:800;color:var(--navy)}
 #liqTotalTop b{color:var(--o)}
 @media(max-width:899px){.pills{flex-wrap:nowrap;gap:5px;overflow:hidden}.pill{flex:1 1 0;min-width:0;justify-content:center;padding:5px 4px;font-size:10px;gap:4px;overflow:hidden}.pill .n{font-size:9px;padding:1px 6px;flex:none}.pill:last-child{flex:0 0 auto;padding:5px 10px}}
@@ -262,8 +262,6 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 .btnrow{display:flex;gap:8px;margin-top:10px}
 .btnrow button{flex:1}
 button.lnk{border:none;background:transparent;color:var(--mut);font-weight:600;font-size:11.5px;padding:9px}
-.backhome{display:inline-flex!important;align-items:center;gap:8px;color:var(--o)!important;font-weight:800!important;font-size:14.5px!important;padding:10px 14px 10px 4px!important}
-.backhome svg{width:19px;height:19px;flex:none}
 /* Gotcha: khong margin-left cho #viewPrint (ID de margin-left cua main theo sidebar) — dich phai bang padding-left. */
 @media(min-width:900px){#viewPrint{margin-top:16px;padding-left:28px}}
 
@@ -556,7 +554,6 @@ header{flex-wrap:wrap}
 </main>
 
 <main id="viewPrint" style="display:none">
-<div class="backrow"><button id="btnBackPrint" class="lnk backhome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Màn hình chính</button></div>
 <h2 class="psect">Chọn cách in</h2>
 <div class="pstep">Chọn cách in</div>
 <div class="pcards">
@@ -1608,8 +1605,7 @@ if(!cx)return;
 cx.classList.remove('back');cx.removeAttribute('data-back');
 if(isList){cx.style.display='none';cx.textContent='';return;}
 cx.style.display='block';
-if(tab==='liq'){cx.textContent='‹ Quay lại';cx.classList.add('back');cx.setAttribute('data-back','1');}
-else if(tab==='print'){cx.textContent='▸ In Mã • scan đúng định dạng là tự in.';}
+if(tab==='liq'||tab==='print'){cx.textContent='‹ Quay lại';cx.classList.add('back');cx.setAttribute('data-back',tab);cx.style.display='';}
 else if(tab==='role'){cx.style.display='none';cx.textContent='';}
 }
 function showPrint(on){
@@ -2147,7 +2143,7 @@ document.getElementById('railFlyout').addEventListener('mouseleave',schedRailFly
 document.getElementById('flyReset').onclick=function(){resetKindStatus();msg('msgMain','Đã reset bộ lọc về mặc định (Tất cả + Box + Item).',true);};
 if(document.addEventListener)document.addEventListener('click',function(e){if(!railFlyOpen)return;var f=document.getElementById('railFlyout'),b=document.getElementById('railFilterBtn');if(f&&f.contains(e.target))return;if(b&&b.contains(e.target))return;railFlyOpen=false;syncRailFly();});
 function liqBack(){if(state.liq.length){document.getElementById('leaveText').textContent='Lô đang có '+state.liq.length+' mã. Bạn muốn hủy task này chứ?';document.getElementById('leaveModal').classList.add('open');}else{showLiq(false);}}
-document.getElementById('ctxBar').onclick=function(){if(this.getAttribute('data-back'))liqBack();};
+document.getElementById('ctxBar').onclick=function(){var b=this.getAttribute('data-back');if(b==='print')showPrint(false);else if(b)liqBack();};
 document.getElementById('btnLeaveOk').onclick=function(){state.liq=[];renderLiq();document.getElementById('leaveModal').classList.remove('open');showLiq(false);};
 document.getElementById('btnLeaveCancel').onclick=function(){document.getElementById('leaveModal').classList.remove('open');};
 renderRail();
@@ -2175,7 +2171,6 @@ document.getElementById('camFileBtn').onclick=function(){document.getElementById
 document.getElementById('camTorchBtn').onclick=function(){toggleTorch_();};
 document.getElementById('camFile').onchange=function(){var f=this.files&&this.files[0];this.value='';camFileDecode_(f);};
 document.getElementById('camModal').addEventListener('click',function(e){if(e.target===this)closePhoneScan();});
-document.getElementById('btnBackPrint').onclick=function(){showPrint(false);};
 document.getElementById('cardSingle').onclick=function(){selectPrintCard('single');};
 document.getElementById('cardBulk').onclick=function(){selectPrintCard('bulk');document.getElementById('printKindModal').classList.add('open');};
 document.getElementById('scanPrint').addEventListener('input',function(){clearTimeout(autoT);autoT=setTimeout(autoPrintSingle,600);});

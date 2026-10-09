@@ -492,9 +492,12 @@ async function main() {
       + " && document.getElementById('singleZone').style.display !== 'none'"
       + " && document.getElementById('bulkZone').style.display === 'none'", 3000);
     check('Doi loai in xoa het thong bao cu', !!clOk, String(clOk));
-    await evalIn(ws, `document.getElementById('btnBackPrint').click()`);
+    const prCtx = await evalIn(ws, `JSON.stringify({t: document.getElementById('ctxBar').textContent, d: getComputedStyle(document.getElementById('ctxBar')).display, w: document.getElementById('ctxBar').getBoundingClientRect().width, pw: document.getElementById('ctxBar').parentElement.getBoundingClientRect().width, noback: !document.getElementById('btnBackPrint')})`);
+    const PRC = prCtx.err ? null : JSON.parse(prCtx.value);
+    check('Tab In Ma: Quay lai gon, bo nut Man hinh chinh', !!(PRC && PRC.t.indexOf('Quay l') >= 0 && (PRC.d === 'flex' || PRC.d === 'inline-flex') && PRC.w > 0 && PRC.w < PRC.pw && PRC.noback), prCtx.value);
+    await evalIn(ws, `document.getElementById('ctxBar').click()`);
     const bkMain = await evalIn(ws, `document.getElementById('viewMain').style.display`);
-    check('Tab In Ma quay ve man hinh chinh', bkMain.value === 'block', String(bkMain.value));
+    check('Tab In Ma: Quay lai ve man hinh chinh', bkMain.value === 'block', String(bkMain.value));
     await evalIn(ws, `document.querySelector('.pill[data-k="liq"]').click()`);
     const liqOk = await waitUntil(ws, "document.querySelectorAll('#grid .card').length === 1"
       + " && document.querySelector('#grid .card .code').textContent.includes('Box.05-10-2026.9')", 5000);
@@ -529,9 +532,9 @@ async function main() {
       + " && document.querySelectorAll('#liqRows tr').length === 0"
       + " && document.getElementById('liqCodeWrap').style.display === 'none'", 8000);
     check('Thanh Ly: Confirm SPXVN chot lo + reset', !!lqDone, String(lqDone));
-    const th = await evalIn(ws, `JSON.stringify({rb: document.getElementById('rangebar').style.display, pl: document.getElementById('pillsRow').style.display, ctx: document.getElementById('ctxBar').style.display, txt: document.getElementById('ctxBar').textContent, tot: document.getElementById('liqTotalTop').innerText})`);
+    const th = await evalIn(ws, `JSON.stringify({rb: document.getElementById('rangebar').style.display, pl: document.getElementById('pillsRow').style.display, ctx: document.getElementById('ctxBar').style.display, txt: document.getElementById('ctxBar').textContent, tot: document.getElementById('liqTotalTop').innerText, cd: getComputedStyle(document.getElementById('ctxBar')).display, w: document.getElementById('ctxBar').getBoundingClientRect().width, pw: document.getElementById('ctxBar').parentElement.getBoundingClientRect().width})`);
     const TH = th.err ? null : JSON.parse(th.value);
-    check('Tab Thanh ly: an Range+pills, hien Quay lai + Tong 0', !!(TH && TH.rb === 'none' && TH.pl === 'none' && TH.ctx === 'block' && TH.txt === '\u2039 Quay l\u1ea1i' && /T\u1ed5ng: 0/.test(TH.tot || '')), th.value);
+    check('Tab Thanh ly: an Range+pills, Quay lai gon + Tong 0', !!(TH && TH.rb === 'none' && TH.pl === 'none' && (TH.ctx === '' || TH.ctx === 'inline-flex') && (TH.cd === 'flex' || TH.cd === 'inline-flex') && TH.w > 0 && TH.w < TH.pw && TH.txt === '\u2039 Quay l\u1ea1i' && /T\u1ed5ng: 0/.test(TH.tot || '')), th.value);
     await evalIn(ws, `document.getElementById('ctxBar').click()`);
     const bkLiq = await waitUntil(ws, "document.getElementById('viewMain').style.display === 'block' && document.getElementById('pillsRow').style.display !== 'none' && document.getElementById('ctxBar').style.display === 'none'", 3000);
     check('Quay lai ve Danh sach hien lai filter', !!bkLiq, String(bkLiq));

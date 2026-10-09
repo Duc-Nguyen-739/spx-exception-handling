@@ -69,3 +69,11 @@ test('css-guard: ctxBar ngu canh thay filter o tab khac (mau B)', () => {
   assert.ok(html.includes("syncTabHeader('role')"), 'showAccess phai sync header');
   assert.ok(html.includes('id="liqTotalTop"'), 'thieu tong don da quet');
 });
+
+test('css-guard: Quay lai gon + In Ma bo Man hinh chinh (mockup 12)', () => {
+  assert.ok(!html.includes('btnBackPrint'), 'bo nut Man hinh chinh tab In Ma');
+  assert.ok(!html.includes('scan \u0111\u00fang \u0111\u1ecbnh d\u1ea1ng l\u00e0 t\u1ef1 in'), 'bo chu text tab In Ma');
+  assert.ok(html.includes("if(tab==='liq'||tab==='print')"), 'In Ma dung Quay lai nhu Thanh ly');
+  assert.ok(html.includes('#ctxBar.back{cursor:pointer;display:inline-flex;align-items:center;width:auto;max-width:100%;justify-self:start}'), 'Quay lai pill gon vua nut');
+  assert.ok(html.includes("if(b==='print')showPrint(false);else if(b)liqBack()"), 'Quay lai In Ma ve danh sach');
+});
