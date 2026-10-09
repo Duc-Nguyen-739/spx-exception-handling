@@ -346,9 +346,6 @@ header .hact{grid-column:3}
 #createModal.done .ph img{height:56px}
 #createModal.done .camSlot{padding:12px 8px;font-size:12px}
 #createModal.done .camSlot .big{font-size:22px}
-#createResult{border:1px solid var(--line);border-radius:13px;background:#f8fafc;padding:10px;margin-top:8px}
-#createQR img,#createQR canvas,#createQR table{width:120px!important;height:120px!important}
-#createQRCode{text-align:center;font-size:12px}
 @media(min-width:900px){#editModal .sheet{max-width:760px}#editPhotos{gap:10px}}
 /* Box gon khong cuon: anh grid 3 cot + nut Xoa overlay + Confirm dinh day. */
 #createModal #boxSlots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -641,22 +638,17 @@ header{flex-wrap:wrap}
 <div class="field"><label>Ảnh *</label><div id="boxSlots"></div></div>
 <div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea id="boxDesc" rows="1" placeholder="VD: Thùng 12 áo thun hoàn, seal còn nguyên…"></textarea></div>
 <div class="field"><label>GHI CHÚ</label><input id="boxNote" placeholder="Nơi để, bù đơn hàng…"></div>
-<div class="row"><button id="btnBoxPrint">🖨 In Mã</button><button id="btnBoxDone" class="primary">Confirm</button></div>
+<div class="row"><button id="btnBoxPrint" style="display:none">🖨 In Mã</button><button id="btnBoxDone" class="primary">Confirm</button></div>
 <button id="btnBoxAgain" style="width:100%;margin-top:8px;display:none">＋ Tạo tiếp</button>
 </div>
 <div id="formItem" style="display:none">
 <div class="field"><label>MÃ ITEM (server cấp khi lưu)</label><div class="coderow"><input id="itemCode" class="mono" readonly placeholder="Item.(ngày-tháng-năm).(số tự sinh)"><button id="btnItemEdit" class="codebtn" type="button">Sửa</button></div><div class="msg" id="itemCodeHint"></div></div>
 <div class="field"><label>Ảnh *</label><div id="itemSlots"></div></div>
 <div class="field"><label>MÔ TẢ SẢN PHẨM *</label><textarea id="itemDesc" rows="2"></textarea></div>
-<div class="row"><button id="btnItemPrint">🖨 In Mã</button><button id="btnItemDone" class="primary">Confirm</button></div>
+<div class="row"><button id="btnItemPrint" style="display:none">🖨 In Mã</button><button id="btnItemDone" class="primary">Confirm</button></div>
 <button id="btnItemAgain" style="width:100%;margin-top:8px;display:none">＋ Tạo tiếp</button>
 </div>
 <div class="msg" id="msgCreate"></div>
-<div id="createResult" style="display:none;text-align:center;margin-top:10px">
-<div class="field"><label style="text-align:left">Mã QR — bấm In Mã để in / gửi tới trạm in</label>
-<div id="createQR" style="display:flex;justify-content:center"></div>
-<div class="mono" id="createQRCode" style="font-weight:800;margin-top:8px;word-break:break-all"></div>
-</div></div>
 </div>
 </div></div>
 
@@ -1433,12 +1425,6 @@ msg('msgDetail',e.message||'Lỗi resolve');
 }
 }
 
-function showCreateQR(code){
-document.getElementById('createQRCode').textContent=code;
-var q=document.getElementById('createQR');q.innerHTML='';
-try{if(typeof QRCode!=='undefined'){new QRCode(q,{text:code,width:120,height:120});}}catch(e){}
-document.getElementById('createResult').style.display='block';
-}
 function doPrintMany(codes){
 var pa=document.getElementById('printArea');pa.innerHTML='';
 (codes||[]).forEach(function(code){
@@ -1577,12 +1563,14 @@ if(r.data.item)upsertItem(r.data.item);
 else await loadGrid({silent:true,reset:true});
 renderGrid();renderSummary();
 setCreateDoneUI(true);
-showCreateQR(r.data.code);
 }catch(e){msg('msgCreate',e.message||'Lỗi tạo mã');}
 }
 function setCreateDoneUI(done){
 var cm=document.getElementById('createModal');if(cm)cm.classList.toggle('done',!!done);
 var b1=document.getElementById('btnBoxDone'),b2=document.getElementById('btnItemDone');
+var p1=document.getElementById('btnBoxPrint'),p2=document.getElementById('btnItemPrint');
+if(p1)p1.style.display=done?'':'none';
+if(p2)p2.style.display=done?'':'none';
 var a1=document.getElementById('btnBoxAgain'),a2=document.getElementById('btnItemAgain');
 if(b1){b1.disabled=!!done;b1.textContent=done?'Đã lưu ✓':'Confirm';}
 if(b2){b2.disabled=!!done;b2.textContent=done?'Đã lưu ✓':'Confirm';}
@@ -1593,7 +1581,6 @@ async function resetCreateForNext(){
 boxPhotos=[];itemPhotos=[];renderSlots('Box');renderSlots('Item');
 document.getElementById('boxDesc').value='';document.getElementById('itemDesc').value='';
 document.getElementById('boxNote').value='';
-document.getElementById('createResult').style.display='none';
 msg('msgCreate','');
 setCreateDoneUI(false);
 await refreshPreview();
@@ -2076,8 +2063,8 @@ renderSlots('Box');renderSlots('Item');
 document.getElementById('btnTheme').onclick=function(){
 applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 };
-document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';setCreateDoneUI(false);};
-document.getElementById('btnCreateTop').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();document.getElementById('createResult').style.display='none';setCreateDoneUI(false);};
+document.getElementById('btnCreate').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();setCreateDoneUI(false);};
+document.getElementById('btnCreateTop').onclick=function(){document.getElementById('createModal').classList.add('open');showCreateStep(1);refreshPreview();setCreateDoneUI(false);};
 document.getElementById('btnCreateMain').onclick=document.getElementById('btnCreateTop').onclick;
 document.getElementById('btnPrintTop').onclick=function(){showPrint(true);};
 document.getElementById('btnPrintMain').onclick=document.getElementById('btnPrintTop').onclick;
