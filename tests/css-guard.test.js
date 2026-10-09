@@ -42,3 +42,13 @@ test('css-guard: main giu margin theo sidebar', () => {
   const rail = rulesFor('body.rail main').join(';');
   assert.ok(/margin-left\s*:\s*64px/.test(rail), 'thieu rail margin 64px');
 });
+
+test('css-guard: drawer mo thi header co phai theo (khong che range + pills)', () => {
+  assert.ok(html.includes('body.has-drawer header{padding-right:498px}'), 'thieu header co 498px');
+  assert.ok(html.includes('body.wide.has-drawer header{padding-right:668px}'), 'thieu header co 668px');
+  assert.ok(html.includes('header{transition:padding-right .28s ease}'), 'thieu transition header');
+  const desk = html.slice(html.indexOf('body.has-drawer main{padding-right:498px}'));
+  const wideHdr = desk.indexOf('body.wide.has-drawer header{padding-right:668px}');
+  const shortHdr = desk.indexOf('header{padding:12px 22px;grid-template-columns:1fr minmax(0,720px) 1fr}');
+  assert.ok(wideHdr > shortHdr && shortHdr >= 0, 'rule co header phai dat SAU shorthand padding');
+});

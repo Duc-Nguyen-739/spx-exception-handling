@@ -578,6 +578,16 @@ async function main() {
     const dg = await evalIn(ws, `(function(){var d=document.getElementById('__probe');return d&&d.getAttribute('data-msg')||'';})()`);
     check('Anh loi hien chan doan [loai]+rev thay vi chu chung chung',
       !!(dgOk && /thiếu mã ảnh/.test(dg.value || '') && /r\d{8}[a-z]/.test(dg.value || '')), dg.value);
+    await send(ws, 'Emulation.setDeviceMetricsOverride', { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
+    await sleep(400);
+    await evalIn(ws, `document.body.classList.add('has-drawer')`);
+    await sleep(400);
+    const dw = await evalIn(ws, `JSON.stringify({pr: getComputedStyle(document.querySelector('header')).paddingRight, vw: window.innerWidth})`);
+    const DW = dw.err ? null : JSON.parse(dw.value);
+    check('Drawer mo: header co phai 498px, khong che range + pills', !!(DW && DW.vw >= 900 && DW.pr === '498px'), dw.value);
+    await evalIn(ws, `document.body.classList.remove('has-drawer')`);
+    await send(ws, 'Emulation.clearDeviceMetricsOverride');
+    await sleep(300);
     const errs = await evalIn(ws, `JSON.stringify(window.__PAGE_ERRORS__ || [])`);
     check('Không lỗi JS trên trang', errs.value === '[]', errs.value);
   } catch (e) {
