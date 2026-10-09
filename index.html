@@ -134,7 +134,7 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 #viewLiq .lnextrow{margin-top:12px;display:flex}
 #viewLiq .lnextrow .primary{flex:0 0 280px;max-width:100%}
 #viewLiq #liqCodeWrap{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px;margin-top:12px;max-width:520px}
-@media(max-width:899px){header{grid-template-columns:1fr auto;padding:8px 10px;gap:4px}header .scanbar{grid-column:1/-1;grid-row:2;width:100%}header .search-group{padding:3px 5px 3px 11px}header .search-group input{padding:7px 0}header #camMain{padding:8px 11px}header #rangebar{grid-column:1/-1;grid-row:3;margin:4px 0}header #pillsRow{grid-column:1/-1;grid-row:4;margin-bottom:0}main{padding-top:8px}}
+@media(max-width:899px){header{grid-template-columns:1fr auto;padding:8px 10px;gap:4px}header .scanbar{grid-column:1/-1;grid-row:2;width:100%}header .search-group{padding:3px 5px 3px 11px}header .search-group input{padding:7px 0}header #camMain{padding:8px 11px}header #rangebar{grid-column:1/-1;grid-row:3;margin:4px 0}header #pillsRow{grid-column:1/-1;grid-row:4;margin-bottom:0}header #ctxBar{grid-column:1/-1;grid-row:4;margin-bottom:0}main{padding-top:8px}}
 #scanClear{display:none;width:30px;height:30px;flex:none;border:none;border-radius:50%;background:#e8ecf1;color:#5b6572;font-size:13px;font-weight:800;line-height:1;padding:0}
 #scanClear.show{display:block}
 .scanbar svg{color:var(--o);flex:none}
@@ -161,6 +161,10 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 .pill[data-k="liq"].on{background:var(--blue)}
 .pill.on .n{background:rgba(255,255,255,.22);color:#fff}
 .pill:active{transform:scale(.95)}
+#ctxBar{display:none;background:var(--tint);border:1px solid #ffd9cd;border-radius:11px;padding:9px 12px;margin-bottom:12px;font-size:12px;font-weight:800;color:var(--navy)}
+#ctxBar.back{cursor:pointer}
+#liqTotalTop{font-size:12.5px;font-weight:800;color:var(--navy)}
+#liqTotalTop b{color:var(--o)}
 @media(max-width:899px){.pills{flex-wrap:nowrap;gap:5px;overflow:hidden}.pill{flex:1 1 0;min-width:0;justify-content:center;padding:5px 4px;font-size:10px;gap:4px;overflow:hidden}.pill .n{font-size:9px;padding:1px 6px;flex:none}.pill:last-child{flex:0 0 auto;padding:5px 10px}}
 
 /* ===== gallery grid (kiểu AppSheet: ảnh vuông + caption) ===== */
@@ -326,6 +330,7 @@ header .hact{grid-column:3}
 #hdrSummary{display:none}
 header #rangebar{grid-column:1/-1;grid-row:2;margin-top:10px}
 header #pillsRow{grid-column:1/-1;grid-row:3;margin-bottom:0}
+header #ctxBar{grid-column:1/-1;grid-row:3;margin-bottom:0}
 header{transition:padding-right .28s ease}
 body.has-drawer header{padding-right:498px}
 body.wide.has-drawer header{padding-right:668px}
@@ -471,6 +476,7 @@ header{flex-wrap:wrap}
 <button id="btnPrintTop" style="display:none">🖨 In Mã</button>
 <div id="rangebar"><div class="rg-main"><div class="rg-line"><span class="rg-l1"><span class="rg-ico"><svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E8F0FE"/><circle cx="10" cy="10" r="8.4" fill="none" stroke="#3274F7" stroke-width="1.1" opacity=".5"/><circle cx="10" cy="6.6" r="1.3" fill="#3274F7"/><rect x="9.05" y="8.8" width="1.9" height="5.6" rx="0.95" fill="#3274F7"/></svg></span><span class="rg-info">Display Range:</span></span><span class="rg-l2"><span id="rgRangeLabel"></span><button id="rgEdit" type="button">Edit</button></div><div class="rg-cap">Dữ liệu được cập nhật mỗi 3 phút. Nếu không tìm thấy, vui lòng mở rộng phạm vi thời gian này hoặc nhập thông tin trên thanh tìm kiếm.</div></div><div class="rg-actions"><span class="topbtns"><button id="btnPrintMain" class="create-big">🖨 In Mã</button><button id="btnCreateMain" class="primary create-big">＋ Create</button></span></div></div>
 <div class="pills" id="pillsRow"></div>
+<div id="ctxBar" style="display:none"></div>
 </header>
 
 <nav class="bnav">
@@ -520,7 +526,7 @@ header{flex-wrap:wrap}
 </main>
 
 <main id="viewLiq" style="display:none">
-<div class="backrow"><button id="btnBackLiq" class="lnk backhome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Màn hình chính</button></div>
+<div class="backrow"><span id="liqTotalTop">Tổng: <b>0</b> đơn đã quét</span><button id="btnBackLiq" class="lnk backhome" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Màn hình chính</button></div>
 <div class="lscanrow">
 <span class="lscanbox"><span class="pic">⌕</span><input id="scanLiq" class="mono" placeholder="Quét hoặc nhập mã…"></span>
 <button id="camLiq">📷 Quét camera</button>
@@ -1601,6 +1607,19 @@ await refreshPreview();
 function setActive(id){['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.toggle('on',n===id);});curNav=id;renderRail();}
 var PRINT_RE=/^(Box|Item)\.\d{2}-\d{2}-\d{4}\.\d+$/;
 var lastAutoPrint='';
+function syncTabHeader(tab){
+var rb=document.getElementById('rangebar'),pl=document.getElementById('pillsRow'),cx=document.getElementById('ctxBar');
+var isList=(tab==='list');
+if(rb)rb.style.display=isList?'':'none';
+if(pl)pl.style.display=isList?'':'none';
+if(!cx)return;
+cx.classList.remove('back');cx.removeAttribute('data-back');
+if(isList){cx.style.display='none';cx.textContent='';return;}
+cx.style.display='block';
+if(tab==='liq'){cx.textContent='‹ Quay lại';cx.classList.add('back');cx.setAttribute('data-back','1');}
+else if(tab==='print'){cx.textContent='▸ In Mã • scan đúng định dạng là tự in.';}
+else if(tab==='role'){var e=state.me||{};cx.textContent='Đăng nhập: '+(e.email||'…')+' · '+(e.role||'…');}
+}
 function showPrint(on){
 document.getElementById('viewPrint').style.display=on?'block':'none';
 document.getElementById('viewMain').style.display=on?'none':'block';
@@ -1608,6 +1627,7 @@ document.getElementById('viewLiq').style.display='none';
 document.getElementById('viewAccess').style.display='none';
 if(on){['navMain','navLiq','navAccess'].forEach(function(n){document.getElementById(n).classList.remove('on');});curNav='';renderRail();}
 else{setActive('navMain');}
+syncTabHeader(on?'print':'list');
 }
 function clearPrintMsgs(){
 document.getElementById('scanPrint').value='';
@@ -1672,6 +1692,7 @@ b.onclick=function(){state.liq.splice(i,1);renderLiq();};
 td.appendChild(b);tr.appendChild(td);tb.appendChild(tr);
 });
 document.getElementById('liqTotal').textContent='Total '+state.liq.length;
+document.getElementById('liqTotalTop').innerHTML='Tổng: <b>'+state.liq.length+'</b> đơn đã quét';
 document.getElementById('liqTblWrap').style.display=state.liq.length?'block':'none';
 document.getElementById('liqEmpty').style.display=state.liq.length?'none':'block';
 document.getElementById('btnNext').disabled=!state.liq.length;
@@ -2118,6 +2139,7 @@ document.getElementById('railFlyout').addEventListener('mouseenter',function(){c
 document.getElementById('railFlyout').addEventListener('mouseleave',schedRailFly);
 document.getElementById('flyReset').onclick=function(){resetKindStatus();msg('msgMain','Đã reset bộ lọc về mặc định (Tất cả + Box + Item).',true);};
 if(document.addEventListener)document.addEventListener('click',function(e){if(!railFlyOpen)return;var f=document.getElementById('railFlyout'),b=document.getElementById('railFilterBtn');if(f&&f.contains(e.target))return;if(b&&b.contains(e.target))return;railFlyOpen=false;syncRailFly();});
+document.getElementById('ctxBar').onclick=function(){if(this.getAttribute('data-back'))document.getElementById('btnBackLiq').click();};
 document.getElementById('btnBackLiq').onclick=function(){if(state.liq.length){document.getElementById('leaveText').textContent='Lô đang có '+state.liq.length+' mã. Bạn muốn hủy task này chứ?';document.getElementById('leaveModal').classList.add('open');}else{showLiq(false);}};
 document.getElementById('btnLeaveOk').onclick=function(){state.liq=[];renderLiq();document.getElementById('leaveModal').classList.remove('open');showLiq(false);};
 document.getElementById('btnLeaveCancel').onclick=function(){document.getElementById('leaveModal').classList.remove('open');};
@@ -2150,8 +2172,9 @@ document.getElementById('cardSingle').onclick=function(){selectPrintCard('single
 document.getElementById('cardBulk').onclick=function(){selectPrintCard('bulk');document.getElementById('printKindModal').classList.add('open');};
 document.getElementById('scanPrint').addEventListener('input',function(){clearTimeout(autoT);autoT=setTimeout(autoPrintSingle,600);});
 document.getElementById('scanPrint').addEventListener('keydown',function(e){if(e.key==='Enter'){clearTimeout(autoT);autoPrintSingle();}});
-function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';document.getElementById('viewPrint').style.display='none';setActive(on?'navLiq':'navMain');}
+function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';document.getElementById('viewPrint').style.display='none';setActive(on?'navLiq':'navMain');syncTabHeader(on?'liq':'list');}
 async function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';document.getElementById('viewPrint').style.display='none';setActive('navAccess');try{await loadMe();}catch(e){}
+syncTabHeader('role');
 var e=state.me||{};
 var dl=document.getElementById('msgDeploy');
 if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?');

@@ -58,3 +58,14 @@ test('css-guard: sidebar mo thi header chua le trai 262px (khong che range + pil
   assert.ok(!html.includes('header{padding:12px 22px;grid-template-columns'), 'cam shorthand reset le trai ve 22px');
   assert.ok(html.includes('body.rail header{padding-left:76px}'), 'rail giu le trai 76px');
 });
+
+test('css-guard: ctxBar ngu canh thay filter o tab khac (mau B)', () => {
+  assert.ok(html.indexOf('id="ctxBar"') < html.indexOf('</header>'), 'ctxBar phai trong header');
+  assert.ok(html.includes('header #ctxBar{grid-column:1/-1;grid-row:4;margin-bottom:0}'), 'thieu ctxBar mobile row 4');
+  assert.ok(html.includes('header #ctxBar{grid-column:1/-1;grid-row:3;margin-bottom:0}'), 'thieu ctxBar desktop row 3');
+  assert.ok(html.includes('function syncTabHeader(tab)'), 'thieu syncTabHeader');
+  assert.ok(html.includes("syncTabHeader(on?'liq':'list')"), 'showLiq phai sync header');
+  assert.ok(html.includes("syncTabHeader(on?'print':'list')"), 'showPrint phai sync header');
+  assert.ok(html.includes("syncTabHeader('role')"), 'showAccess phai sync header');
+  assert.ok(html.includes('id="liqTotalTop"'), 'thieu tong don da quet');
+});

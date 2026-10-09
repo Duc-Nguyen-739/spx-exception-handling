@@ -528,6 +528,17 @@ async function main() {
       + " && document.querySelectorAll('#liqRows tr').length === 0"
       + " && document.getElementById('liqCodeWrap').style.display === 'none'", 8000);
     check('Thanh Ly: Confirm SPXVN chot lo + reset', !!lqDone, String(lqDone));
+    const th = await evalIn(ws, `JSON.stringify({rb: document.getElementById('rangebar').style.display, pl: document.getElementById('pillsRow').style.display, ctx: document.getElementById('ctxBar').style.display, txt: document.getElementById('ctxBar').textContent, tot: document.getElementById('liqTotalTop').innerText})`);
+    const TH = th.err ? null : JSON.parse(th.value);
+    check('Tab Thanh ly: an Range+pills, hien Quay lai + Tong 0', !!(TH && TH.rb === 'none' && TH.pl === 'none' && TH.ctx === 'block' && TH.txt === '\u2039 Quay l\u1ea1i' && /T\u1ed5ng: 0/.test(TH.tot || '')), th.value);
+    await evalIn(ws, `document.getElementById('ctxBar').click()`);
+    const bkLiq = await waitUntil(ws, "document.getElementById('viewMain').style.display === 'block' && document.getElementById('pillsRow').style.display !== 'none' && document.getElementById('ctxBar').style.display === 'none'", 3000);
+    check('Quay lai ve Danh sach hien lai filter', !!bkLiq, String(bkLiq));
+    await evalIn(ws, `document.getElementById('navAccess').click()`);
+    await sleep(400);
+    const rlCtx = await evalIn(ws, `document.getElementById('ctxBar').textContent`);
+    check('Tab Role: ctx hien dong dang nhap', !!(rlCtx.value && rlCtx.value.indexOf('admin.mock@spxexpress.com') >= 0 && rlCtx.value.indexOf('ADMIN') >= 0), rlCtx.value);
+    await evalIn(ws, `document.getElementById('navMain').click()`);
 
     await evalIn(ws, `document.getElementById('btnCreateMain').click()`);
     const ceModal = await waitUntil(ws, "document.getElementById('createModal').classList.contains('open')", 3000);
