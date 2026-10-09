@@ -144,7 +144,7 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 .scanbar input{border:none;background:transparent;padding:9px 0;font-size:14px;font-weight:600;flex:0 1 480px;min-width:0;margin:0 auto;text-align:center}
 .scanbar .create-big{padding:12px 22px;font-size:14px;white-space:nowrap}
 #btnCreateTop,#btnPrintTop,.createrow{display:none!important}
-@media(max-width:899px){#btnPrintMain,#btnPrintTop{display:none!important}}
+@media(max-width:899px){#btnPrintTop{display:none!important}}
 .scanbar input:focus{outline:none}
 .scanbar input::placeholder{color:var(--mut);font-weight:500}
 #camModal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(23,43,72,.55);padding:16px}#camModal.open{display:flex}#camModal .cam-box{background:var(--card);border-radius:16px;max-width:440px;width:100%;padding:14px;display:flex;flex-direction:column;max-height:92dvh;overflow:hidden}#camModal #camView{width:100%;aspect-ratio:4/3;max-height:320px;min-height:0;background:#000;border-radius:12px;overflow:hidden;flex:none}#camView video{width:100%!important;height:100%!important;display:block;object-fit:cover}#camView canvas{max-width:100%}#camStatus{font-size:12px;color:var(--mut);margin:8px 2px 0;min-height:18px;font-weight:600;flex:none}.cam-btnrow{display:flex;gap:8px;margin-top:8px;position:sticky;bottom:0;background:var(--card);padding-top:4px;flex:none}.cam-btnrow button{flex:1}#camPrint{width:100%;margin-top:8px}
@@ -404,7 +404,6 @@ header{flex-wrap:wrap}
 .tl-by .whoami{color:var(--mut);font-weight:600}
 .hist .st{font-size:11px;padding:5px 11px}
 .hist .tl-time .n{font-size:11px;padding:2px 10px}
-@media(max-width:899px){.printOnly{display:none!important}}
 @media(max-width:899px){input,textarea,select,.scanbar input{font-size:16px}}
 @media(max-width:480px){.head-brand span:last-child{display:none}}
 .tl.pending{opacity:.72}
@@ -654,7 +653,7 @@ header{flex-wrap:wrap}
 </div>
 <div class="msg" id="msgCreate"></div>
 <div id="createResult" style="display:none;text-align:center;margin-top:10px">
-<div class="field"><label style="text-align:left">Mã QR — mở trên máy tính để in</label>
+<div class="field"><label style="text-align:left">Mã QR — bấm In Mã để in / gửi tới trạm in</label>
 <div id="createQR" style="display:flex;justify-content:center"></div>
 <div class="mono" id="createQRCode" style="font-weight:800;margin-top:8px;word-break:break-all"></div>
 </div></div>
