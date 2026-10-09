@@ -7,7 +7,7 @@ const assert = require('node:assert');
 const CAM_CODE_COOLDOWN_MS = 1500;
 const CAM_FPS = 25;
 const SCAN_MSG_TYPE = 'spxScanResult';
-const FORMATS = ['QR_CODE', 'CODE_128', 'CODE_39', 'EAN_13'];
+const FORMATS = ['QR_CODE', 'CODE_128'];
 
 function routeOf(target) {
   if (target === 'scanLiq') return 'liqAdd';
@@ -59,8 +59,9 @@ test('camera-scan: ROI gần full-frame + disableFlip (nhạy hơn, rẻ hơn)',
   const fps = html.match(/var CAM_FPS=(\d+)/);
   assert.ok(fps && +fps[1] === CAM_FPS && CAM_FPS >= 20, 'fps phải khớp CAM_FPS và >= 20, đang ' + (fps && fps[1]));
   // ROI rộng x thấp sẽ cắt QR vuông -> chiều cao phải ≥ 80% chiều cao video
-  const bh = html.match(/Math\.min\(h\*(0\.\d+),1080\)/);
-  assert.ok(bh && parseFloat(bh[1]) >= 0.8, 'chiều cao ROI phải ≥80%, đang ' + (bh && bh[1]));
+  const bh = html.match(/h\*\(bill\?([\d.]+):([\d.]+)\)/);
+  assert.ok(bh && parseFloat(bh[2]) >= 0.8, 'QR default ROI height must stay >=80%');
+  assert.ok(bh && parseFloat(bh[1]) < parseFloat(bh[2]) && /resolveBill/.test(html), 'bill Code128 needs own flat ROI');
   assert.ok(/disableFlip:true/.test(html), 'disableFlip phải true — bỏ decode lần 2 ảnh lật ngược');
   assert.ok(!html.includes('qrbox:250'), 'còn qrbox:250 vuông cứng');
   assert.ok(/qrbox:camQrbox_/.test(html), 'qrbox phải là hàm theo viewport');
@@ -92,7 +93,7 @@ test('camera-scan: nhạy hơn — fps cao + khung rộng + native detector + HD
   assert.ok(html.includes('fps:25') || html.includes('fps: 25') || html.includes('CAM_FPS'), 'chưa tăng fps');
   assert.ok(!html.includes('fps:10'), 'còn fps:10 cũ chậm');
   assert.ok(!html.includes('qrbox:250'), 'còn qrbox:250 vuông hẹp (barcode 128 dài bị cắt)');
-  assert.ok(html.includes('ideal') && html.includes('1920'), 'chưa xin camera HD 1920 cho barcode nhỏ');
+  assert.ok(html.includes('ideal:1280') && html.includes('ideal:720'), '720p keeps Safari decode fast');
   assert.ok(html.includes('CODE_128') && html.includes('QR_CODE'), 'thiếu QR/Code128');
 });
 
@@ -106,4 +107,30 @@ test("camera-scan: quet o tim kiem chinh chi dien + loc, khong tu mo chi tiet", 
   const branch = tail.slice(sm, sm + 600);
   assert.ok(!branch.includes("openDetail"), "quet xong con tu mo chi tiet");
   assert.ok(branch.includes("dispatchEvent(new Event('input'") || (branch.includes("state.filter") && branch.includes("renderGrid")), "phai kich hoat loc luoi sau khi dien");
+});
+
+test('camera-scan: ZXing ladder cho anh chup (live loop giu nguyen)', () => {
+  const html = require('node:fs').readFileSync(__dirname + '/../index.html', 'utf8');
+  for (const s of ['ZXING_SCRIPT_URL_', '@zxing/library', 'ensureZxingLib_', 'camZxingOk_', 'zxingDecodeImg_', 'camZxingLadder_', 'camZxingFile_', 'camFileDecodeZ_', 'willReadFrequently', "filter='contrast(1.35)'", 'TRY_HARDER', 'GlobalHistogramBinarizer', 'camCleanCode_']) {
+    assert.ok(html.includes(s), 'thieu ' + s);
+  }
+  assert.ok(html.includes("this.value='';camFileDecodeZ_(f);"), 'nut Chup anh chua di qua dispatcher ZXing');
+  assert.ok(html.includes("'var camTarget='"), 'popup GAS chua inject camTarget cho qrbox theo ngu canh');
+});
+
+test('camera-scan: camQrbox_ theo ngu canh + camCleanCode_ cat FNC1', () => {
+  const vm = require('node:vm');
+  const fs = require('node:fs');
+  const html = fs.readFileSync(__dirname + '/../index.html', 'utf8');
+  const qline = html.split('\n').find((l) => l.indexOf('function camQrbox_') === 0);
+  assert.ok(qline, 'thieu camQrbox_');
+  const tall = vm.runInNewContext(qline + ';camQrbox_(640,480)', { camTarget: '' });
+  assert.ok(tall.height >= 480 * 0.8, 'QR mac dinh phai cao >=80%, dang ' + tall.height);
+  const wide = vm.runInNewContext(qline + ";camQrbox_(640,480,'resolveBill')", { camTarget: '' });
+  assert.ok(wide.width >= 640 * 0.9 && wide.height < tall.height, 'bill phai det rong, dang ' + JSON.stringify(wide));
+  const pop = vm.runInNewContext(qline + ';camQrbox_(640,480)', { camTarget: 'resolveBill' });
+  assert.ok(pop.height === wide.height, 'popup phai theo camTarget da inject');
+  const cline = html.split('\n').find((l) => l.indexOf('function camCleanCode_') === 0);
+  assert.ok(cline, 'thieu camCleanCode_');
+  assert.strictEqual(vm.runInNewContext(cline + ";camCleanCode_('SPXVN123' + String.fromCharCode(29))", {}), 'SPXVN123');
 });

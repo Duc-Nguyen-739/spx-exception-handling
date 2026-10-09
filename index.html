@@ -1999,7 +1999,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')rgClose();})
 
 var camTarget=null,camHtml5=null,camPopup=null,camLastCode='',camLastTs=0,camTorchOn=false;
 var CAM_CODE_COOLDOWN_MS=1500;
-var CAM_FPS=25,CAM_FMT_NAMES=['QR_CODE','CODE_128','CODE_39','EAN_13'];
+var CAM_FPS=25,CAM_FMT_NAMES=['QR_CODE','CODE_128'];
 // Gotcha: html5-qrcode CHI doc formatsToSupport/useBarCodeDetectorIfSupported o
 // config cua CONSTRUCTOR new Html5Qrcode(id,cfg); dat vao start() bi bo qua nen
 // quet ca 17 dinh dang moi khung (cham, mat do nhay).
@@ -2007,11 +2007,13 @@ function camFormats_(){try{if(typeof Html5QrcodeSupportedFormats==='undefined')r
 // Gotcha: thu vien cat video theo qrbox roi decode (canvas = dung kich khung nen
 // khong don bang resolution camera). Khung rong x thap se cat QR vuong -> lay ca
 // chieu cao, chi giu vien 8% moi canh de nhin thay vien khung.
-function camQrbox_(w,h){try{w=+w||640;h=+h||480;var bw=Math.floor(Math.min(w*0.92,1920));var bh=Math.floor(Math.min(h*0.88,1080));if(bw<200)bw=Math.min(w,310);if(bh<160)bh=Math.min(h,180);return {width:bw,height:bh};}catch(e){return {width:310,height:180};}}
+// O bill (resolveBill) chi nhap Code128 vach ngang -> khung det 42% cao van chua ma,
+// it pixel hon nen decode nhanh; QR tem khong bao gio nhap o bill.
+function camQrbox_(w,h,t){try{w=+w||640;h=+h||480;var tgt=(t!==undefined&&t!==null)?String(t):String((typeof camTarget!=='undefined'&&camTarget)||'scanMain');var bill=(tgt==='resolveBill');var bw=Math.floor(Math.min(w*0.92,1920));var bh=Math.floor(Math.min(h*(bill?0.42:0.88),1080));if(bw<200)bw=Math.min(w,310);if(bh<120)bh=Math.min(h,140);return {width:bw,height:bh};}catch(e){return {width:310,height:180};}}
 function camCtorCfg_(){var c={};var fm=camFormats_();if(fm&&fm.length)c.formatsToSupport=fm;c.useBarCodeDetectorIfSupported=true;return c;}
 // disableFlip: mac dinh cu la false -> that bai decode lai 1 lan voi anh lat ngược
 // (nhan in khong bao gi mirror nen vô ích, ton 2x CPU moi khung).
-function camScanConfig_(){var cfg={fps:CAM_FPS,qrbox:camQrbox_,disableFlip:true};try{cfg.videoConstraints={facingMode:{ideal:'environment'},width:{min:640,ideal:1920,max:1920},height:{min:480,ideal:1080,max:1080}};}catch(e){}return cfg;}
+function camScanConfig_(){var cfg={fps:CAM_FPS,qrbox:camQrbox_,disableFlip:true};try{cfg.videoConstraints={facingMode:{ideal:'environment'},width:{min:640,ideal:1280,max:1280},height:{min:480,ideal:720,max:720}};}catch(e){}return cfg;}
 // Popup GAS iframe la 1 document rieng: serialize config chung de 2 duong khong lech.
 function camCfgSrc_(v){if(typeof v==='function')return v.toString();if(v===null)return 'null';if(Array.isArray(v))return '['+v.map(camCfgSrc_).join(',')+']';if(typeof v==='object'){var k=[];for(var x in v)if(Object.prototype.hasOwnProperty.call(v,x))k.push(JSON.stringify(x)+':'+camCfgSrc_(v[x]));return '{'+k.join(',')+'}';}return JSON.stringify(v);}
 function syncTorchBtn_(show){var b=document.getElementById('camTorchBtn');if(!b)return;b.style.display=show?'':'none';if(!show){camTorchOn=false;b.textContent='\uD83D\uDD26 Đèn';}}
@@ -2032,6 +2034,7 @@ return ['<!doctype html>',
 '<div id="bar"><button id="go" type="button" style="display:none">Bật camera</button><button id="x" type="button">Đóng</button></div>',
 '<script>',
 '(function(){var last="",ts=0;function send(c){c=String(c||"").trim();if(!c)return;var n=Date.now();if(c===last&&n-ts<1500)return;last=c;ts=n;try{window.opener.postMessage({type:"spxScanResult",code:c},"*");}catch(e){}document.getElementById("st").textContent="Đã nhận: "+c+" — quét tiếp";}',
+'var camTarget='+JSON.stringify(camTarget||'scanMain')+';',
 'var CTOR_CFG='+camCfgSrc_(camCtorCfg_())+',SCAN_CFG='+camCfgSrc_(camScanConfig_())+';',
 'var h=new Html5Qrcode("live",CTOR_CFG);h.start({facingMode:"environment"},SCAN_CFG,send,function(){}).then(function(){try{var cp=h.getRunningTrackCapabilities();var w={};if(cp&&cp.focusMode&&cp.focusMode.indexOf("continuous")>=0)w.focusMode="continuous";if(cp&&cp.exposureMode&&cp.exposureMode.indexOf("continuous")>=0)w.exposureMode="continuous";if(Object.keys(w).length)h.applyVideoConstraints({advanced:[w]}).catch(function(){});}catch(e){}}).catch(function(){document.getElementById("st").textContent="Bấm Bật camera để bắt đầu.";var g=document.getElementById("go");g.style.display="";g.onclick=function(){location.reload();};});',
 'document.getElementById("x").onclick=function(){window.close();};',
@@ -2040,7 +2043,7 @@ return ['<!doctype html>',
 }
 window.addEventListener('message',function(e){if(e&&e.data&&e.data.type==='spxScanResult'){onPhoneDecoded(String(e.data.code||''));}});
 function openPhoneScan(target){
-camTarget=target;camLastCode='';camLastTs=0;
+camTarget=target;camLastCode='';camLastTs=0;try{ensureZxingLib_();}catch(e){}
 if(camIsFramed_()){try{var pop=window.open('','spxScanPopup');if(pop&&!pop.closed){camPopup=pop;pop.document.write(buildScanPopupHtml_());pop.document.close();try{pop.focus();}catch(e){}var m=target==='scanLiq'?document.getElementById('msgLiq'):document.getElementById('msgMain');if(m){m.textContent='Đã mở cửa sổ quét — đưa mã vào khung camera.';m.className='msg ok';}return;}}catch(e){}}
 openCamModal_();
 }
@@ -2070,6 +2073,21 @@ if(t==='boxCode'||t==='itemCode'){var ci=document.getElementById(t);var kk=t==='
 var sm=document.getElementById('scanMain');if(sm){sm.value=code;try{sm.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){try{state.filter=code;renderGrid();}catch(_){}}}
 closePhoneScan();
 }
+var ZXING_SCRIPT_URL_='https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js';
+var camZxingLoading_=false,camZxingFail_=false,camZxingReader_=null,camZxingGray_=null;
+var camZxingCanvas_=null,camZxingCtx_=null,camZxingSmall_=null,camZxingSmallCtx_=null,camZxingCropC_=null,camZxingCropX_=null;
+function camZxingOk_(){try{return !camZxingFail_&&typeof window.ZXing!=='undefined'&&!!window.ZXing.MultiFormatReader;}catch(e){return false;}}
+function initZxingReader_(){try{if(!camZxingReader_&&window.ZXing&&window.ZXing.MultiFormatReader)camZxingReader_=new window.ZXing.MultiFormatReader();}catch(e){camZxingReader_=null;}}
+function ensureZxingLib_(cb){try{if(camZxingOk_()){initZxingReader_();if(cb)cb(true);return;}if(camZxingLoading_||camZxingFail_){if(cb)cb(false);return;}if(typeof document==='undefined'){if(cb)cb(false);return;}camZxingLoading_=true;var s=document.createElement('script');s.src=ZXING_SCRIPT_URL_;s.async=true;s.onload=function(){camZxingLoading_=false;if(camZxingOk_()){initZxingReader_();if(cb)cb(true);}else{camZxingFail_=true;if(cb)cb(false);}};s.onerror=function(){camZxingLoading_=false;camZxingFail_=true;if(cb)cb(false);};(document.head||document.getElementsByTagName('head')[0]).appendChild(s);}catch(e){try{camZxingLoading_=false;}catch(_){}if(cb)cb(false);}}
+function camZxingFormats_(){try{var F=window.ZXing&&window.ZXing.BarcodeFormat;if(!F)return null;var o=[F.CODE_128,F.QR_CODE].filter(function(v){return v!==undefined&&v!==null;});return o.length?o:null;}catch(e){return null;}}
+function camCleanCode_(s){var t=String(s||'').trim();while(t.length&&t.charCodeAt(t.length-1)===29)t=t.slice(0,-1);return t.trim();}
+function camZxingPaper_(slot,w,h){try{var c=slot==='s'?camZxingSmall_:(slot==='c'?camZxingCropC_:camZxingCanvas_);var x=slot==='s'?camZxingSmallCtx_:(slot==='c'?camZxingCropX_:camZxingCtx_);if(!c){c=document.createElement('canvas');x=c.getContext('2d',{willReadFrequently:true});try{x.filter='contrast(1.35)';}catch(e){}if(slot==='s'){camZxingSmall_=c;camZxingSmallCtx_=x;}else if(slot==='c'){camZxingCropC_=c;camZxingCropX_=x;}else{camZxingCanvas_=c;camZxingCtx_=x;}}if(c.width!==w||c.height!==h){c.width=w;c.height=h;try{x.filter='contrast(1.35)';}catch(e){}}return {c:c,x:x};}catch(e){return null;}}
+// ZXing throw NotFoundException khi khong doc duoc (khong tra null) -> catch rieng tung bac de ladder chay het.
+function zxingDecodeImg_(img,w,h,tryHarder,useGlobal){try{var d=img.data;if(!d||!w||!h)return null;if(!camZxingGray_||camZxingGray_.length!==w*h)camZxingGray_=new Uint8ClampedArray(w*h);var g=camZxingGray_;for(var i=0,p=0;p<w*h;i+=4,p++)g[p]=(d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114)|0;if(!camZxingReader_)initZxingReader_();if(!camZxingReader_)return null;var hints=new Map();var fm=camZxingFormats_();if(fm)hints.set(window.ZXing.DecodeHintType.POSSIBLE_FORMATS,fm);if(tryHarder)hints.set(window.ZXing.DecodeHintType.TRY_HARDER,true);var src=new window.ZXing.RGBLuminanceSource(g,w,h);var B=useGlobal?window.ZXing.GlobalHistogramBinarizer:window.ZXing.HybridBinarizer;var bmp=new window.ZXing.BinaryBitmap(new B(src));try{var r=camZxingReader_.decode(bmp,hints);return r&&r.getText?camCleanCode_(r.getText()):null;}catch(eDecode){return null;}}catch(e){return null;}}
+// Anh chup decode nhieu muc: full 1920 -> 1280 -> crop khung upscale 1.4x + TRY_HARDER. Khong qua 800px: vach Code128 mong bi alias.
+function camZxingLadder_(im){try{var nw=im.naturalWidth||im.width||0,nh=im.naturalHeight||im.height||0;if(!nw||!nh)return null;var sc=Math.min(1,1920/Math.max(nw,nh));var fw=Math.max(1,Math.round(nw*sc)),fh=Math.max(1,Math.round(nh*sc));var full=camZxingPaper_('f',fw,fh);if(!full)return null;full.x.drawImage(im,0,0,fw,fh);var fd=null;try{fd=full.x.getImageData(0,0,fw,fh);}catch(e){return null;}var t=zxingDecodeImg_(fd,fw,fh,false,false);if(t)return t;var s2=Math.min(1,1280/Math.max(fw,fh));if(s2<1){var sw=Math.max(1,Math.round(fw*s2)),sh=Math.max(1,Math.round(fh*s2));var sm=camZxingPaper_('s',sw,sh);if(sm){sm.x.drawImage(full.c,0,0,sw,sh);try{var sd=sm.x.getImageData(0,0,sw,sh);t=zxingDecodeImg_(sd,sw,sh,false,false);if(t)return t;}catch(e){}}}var ix=Math.round(fw*0.08),iy=Math.round(fh*0.10),rw=fw-ix*2,rh=fh-iy*2;if(rw>=40&&rh>=40){var cw=Math.max(1,Math.round(rw*1.4)),ch=Math.max(1,Math.round(rh*1.4));var cp=camZxingPaper_('c',cw,ch);if(cp){cp.x.drawImage(full.c,ix,iy,rw,rh,0,0,cw,ch);try{var cd=cp.x.getImageData(0,0,cw,ch);t=zxingDecodeImg_(cd,cw,ch,true,false);if(t)return t;t=zxingDecodeImg_(cd,cw,ch,true,true);if(t)return t;}catch(e){}}}return null;}catch(e){return null;}}
+function camZxingFile_(file,cb){try{var U=window.URL||window.webkitURL;var url=U.createObjectURL(file);var im=new Image();im.onload=function(){try{U.revokeObjectURL(url);}catch(e){}var code=null;try{code=camZxingLadder_(im);}catch(e){code=null;}cb(code);};im.onerror=function(){try{U.revokeObjectURL(url);}catch(e){}cb(null);};im.src=url;}catch(e){cb(null);}}
+function camFileDecodeZ_(file){if(!file)return;try{ensureZxingLib_();}catch(e){}stopCamStream_();if(camZxingOk_()){try{camZxingFile_(file,function(code){if(code){onPhoneDecoded(code);return;}camFileDecode_(file);});}catch(e){camFileDecode_(file);}return;}camFileDecode_(file);}
 function camFileDecode_(file){
 if(!file)return;
 if(typeof Html5Qrcode==='undefined'){camStatus_('Không tải được thư viện camera.');return;}
@@ -2172,7 +2190,7 @@ document.getElementById('camPrint').onclick=function(){openPhoneScan('scanPrint'
 document.getElementById('camCloseBtn').onclick=function(){closePhoneScan();};
 document.getElementById('camFileBtn').onclick=function(){document.getElementById('camFile').click();};
 document.getElementById('camTorchBtn').onclick=function(){toggleTorch_();};
-document.getElementById('camFile').onchange=function(){var f=this.files&&this.files[0];this.value='';camFileDecode_(f);};
+document.getElementById('camFile').onchange=function(){var f=this.files&&this.files[0];this.value='';camFileDecodeZ_(f);};
 document.getElementById('camModal').addEventListener('click',function(e){if(e.target===this)closePhoneScan();});
 document.getElementById('cardSingle').onclick=function(){selectPrintCard('single');};
 document.getElementById('cardBulk').onclick=function(){selectPrintCard('bulk');document.getElementById('printKindModal').classList.add('open');};

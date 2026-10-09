@@ -444,9 +444,9 @@ async function main() {
       !!(CAM && CAM.fps >= 20 && CAM.flip === true && CAM.qrFn === 'function'), camCfg.value);
     check('Camera ROI gan full-frame (khong cat QR vuong)',
       !!(CAM && CAM.box.width >= 360 * 0.85 && CAM.box.height >= 240 * 0.8), CAM && JSON.stringify(CAM.box));
-    check('Camera gioi han format o CONSTRUCTOR (QR+Code128+Code39+EAN13)',
+    check('Camera gioi han format o CONSTRUCTOR (QR+Code128)',
       !!(CAM && CAM.ctor.useBarCodeDetectorIfSupported === true
-        && (!CAM.enumLoaded || (CAM.ctor.formatsToSupport.length === 4 && CAM.ctor.formatsToSupport[1] === 5))),
+        && (!CAM.enumLoaded || (CAM.ctor.formatsToSupport.length === 2 && CAM.ctor.formatsToSupport[1] === 5))),
       CAM && (CAM.enumLoaded ? JSON.stringify(CAM.ctor.formatsToSupport) : 'enum chua nap (offline)'));
     check('Popup quet lay config chung, khong copy rieng',
       !!(CAM && CAM.popupCtor && CAM.popupFmt && !CAM.popupDup), CAM && (CAM.popupCtor + '/' + CAM.popupFmt + '/' + !CAM.popupDup));
