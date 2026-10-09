@@ -234,7 +234,7 @@ async function main() {
       noNav: !document.getElementById('btnPrevDetail') && !document.getElementById('btnNextDetail')
     })`);
     const RS0 = rs0.err ? null : JSON.parse(rs0.value);
-    check('In Ma tren thanh tieu de (thay prev-next) + Resolve gon 42px, khong lap lich su', !!(RS0 && RS0.h === 42 && RS0.inHead && RS0.noNav), rs0.value);
+    check('In Ma tren thanh tieu de (thay prev-next) + Resolve gon 36px, khong lap lich su', !!(RS0 && RS0.h === 36 && RS0.inHead && RS0.noNav), rs0.value);
     const mob = await evalIn(ws, `JSON.stringify((function(){
       var vw = window.innerWidth;
       var sheet = document.querySelector('#detailModal .sheet');
@@ -272,7 +272,7 @@ async function main() {
       h: Math.round(document.getElementById('btnConfirmResolve').getBoundingClientRect().height)
     })`);
     const RW = rw.err ? null : JSON.parse(rw.value);
-    check('Form bill gọn 1 hàng, Confirm 38px', !!(RW && RW.sameRow && RW.h === 38), rw.value);
+    check('Form bill gọn 1 hàng, Confirm 36px', !!(RW && RW.sameRow && RW.h === 36), rw.value);
     await evalIn(ws, `document.getElementById('btnConfirmResolve').click()`);
     await sleep(300);
     const needBill = await evalIn(ws, `document.getElementById('msgDetail').textContent`);

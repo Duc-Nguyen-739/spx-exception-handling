@@ -21,6 +21,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid #ffd9cd;border-color:v
 .mono{font-family:ui-monospace,Menlo,monospace}
 .msg{min-height:18px;font-size:12px;margin:8px 2px;font-weight:600}
 #msgMain:empty{display:none}
+#msgDetail:empty{display:none}
 .msg.ok{color:#0d9a50}.msg.err{color:var(--o)}
 
 /* ===== header ===== */
@@ -222,20 +223,20 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 #detailBody{flex:none}
 #histCard{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 #histCard h4{flex:none}
-#detailHist{overflow-y:auto;max-height:420px;scroll-behavior:smooth}
+#detailHist{flex:1;min-height:220px;overflow-y:auto;max-height:none;scroll-behavior:smooth}
 @media(max-width:899px){#viewLiq .lscanbox{flex:1;width:auto}#viewLiq #camLiq{flex:none;white-space:nowrap}#viewLiq .lnextrow .primary{flex:1}#detailBody .kv{padding:6px 0;font-size:11.5px}#detailBody .phstrip.n1 .thumb{max-width:220px}#detailBody .phstrip.n1 .thumb img{height:110px;aspect-ratio:auto}#detailBody .phstrip.n2{grid-template-columns:repeat(2,minmax(0,150px));justify-content:center}#detailBody .phstrip.n2 .thumb img{height:110px;aspect-ratio:auto}
 #detailHist{flex:1;min-height:0;max-height:none}
-#resolveCard{margin:10px -16px -20px;padding:10px 16px 16px;border-top:1px solid var(--line)}
+#resolveCard{margin:10px -16px -20px;padding:8px 16px 10px;border-top:1px solid var(--line)}
 #resolveCard .btnrow{margin-top:0}
 .ph img{height:160px}}
-#resolveCard{flex:none;padding-bottom:8px;background:var(--card)}
+#resolveCard{flex:none;padding:8px 0 2px;background:var(--card)}
 #resolveCard .btnrow{display:flex;gap:8px;margin-top:6px}
-#resolveCard .btnrow button{height:42px;padding:0 13px;font-size:13px}
+#resolveCard .btnrow button{height:36px;padding:0 13px;font-size:13px}
 #resolveCard .billrow{align-items:center;gap:6px}
 #resolveCard .billrow button{padding:8px 10px;font-size:12px}
 #resolveCard .billrow input{padding:8px 10px}
 #resolveCard #rsStep2{margin-top:10px}
-#resolveCard #btnConfirmResolve{height:38px;flex:none;padding:0 14px;font-size:12.5px}
+#resolveCard #btnConfirmResolve{height:36px;flex:none;padding:0 14px;font-size:12.5px}
 #resolveCard #btnCancelResolve{padding:6px;font-size:11px}
 #btnPrintDetail{flex:none;width:auto}
 #msgDetail{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
