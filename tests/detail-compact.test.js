@@ -83,7 +83,10 @@ test('tidy: form bill bo label + gon; Role bo Deploy + 3 nut; Liq gon', () => {
 test('intro: nut chuong the cho so ban, mo popup Gioi thieu', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes('<button id="btnIntro"'));
-  assert.ok(html.indexOf('id="btnIntro"') < html.indexOf('id="btnTheme"'));
+  assert.ok(!html.includes('id="btnTheme"'), 'bo nut Sang/Toi');
+  assert.ok(!html.includes('applyTheme') && !html.includes('spx_theme'), 'bo logic theme');
+  assert.ok(!html.includes('data-theme'), 'bo data-theme');
+  assert.ok(!html.includes('.head-brand span:last-child{display:none}'), 'hien chu mobile');
   assert.ok(!html.includes('appRev') && !html.includes('BUILD_REV') && !html.includes('.revtag'));
   assert.ok(html.includes('id="introModal"'));
   assert.ok(html.includes('Giới thiệu - Hướng dẫn sử dụng'));
