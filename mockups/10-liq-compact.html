@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 10 — Tab Thanh Lý gọn (PA-A / PA-B)</title>
+<style>
+:root{--o:#ee4d2d;--tint:#fff5f0;--navy:#172b48;--ink:#303844;--mut:#97a0ad;--line:#eef0f3;--bg:#f5f6f9;--card:#fff;--blue:#3274f7}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,Roboto,Arial;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button{cursor:pointer;font-family:inherit;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 13px;font-size:12.5px;font-weight:700;color:var(--navy)}
+button.primary{background:var(--o);border-color:var(--o);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+input{font-family:inherit;font-size:13px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 12px;width:100%}
+.mono{font-family:ui-monospace,Menlo,monospace}
+
+/* ===== khung gia lap (sidebar + header desktop) ===== */
+.fakeside{position:fixed;left:0;top:0;bottom:0;width:250px;background:#1b2434;color:#a7b0bd;padding:14px 10px;font-size:13px}
+.fakeside .logo{color:#fff;font-weight:800;font-size:13px;margin:4px 6px 22px}
+.fakeside .logo b{color:var(--o)}
+.fakeside .it{padding:10px 12px;border-radius:8px;margin-bottom:2px}
+.fakeside .it.on{background:rgba(255,255,255,.07);color:#fff;font-weight:600}
+.fakehead{margin-left:250px;background:var(--card);border-bottom:1px solid var(--line);padding:12px 22px;display:flex;align-items:center;gap:10px}
+.fakehead .sch{flex:1;max-width:560px;margin:0 auto;border:1.5px solid #ffcfbd;border-radius:13px;padding:9px;text-align:center;color:var(--mut);font-size:12.5px}
+.fakehead .who{margin-left:auto;font-size:10.5px;font-weight:700;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:4px 10px}
+.page{margin-left:250px;padding:18px 26px 60px}
+.toolbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toolbar .t{font-size:12.5px;font-weight:800;color:var(--navy)}
+.sect{margin:22px 0 34px}
+.sect>h2{font-size:14px;color:var(--navy);margin:0 0 4px}
+.sect>p{font-size:12px;color:var(--mut);margin:0 0 12px}
+.tag{display:inline-block;font-size:10px;font-weight:800;border-radius:7px;padding:3px 9px;margin-right:8px;vertical-align:1px}
+.tag.cur{background:#e8ecf1;color:#5b6572}
+.tag.rec{background:var(--tint);color:var(--o)}
+.tag.alt{background:#eef4ff;color:var(--blue)}
+
+/* ===== CSS GOC tab Thanh Ly (copy tu index.html, doi #viewLiq -> .liq) ===== */
+.liq .lscanrow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:8px 10px;margin-bottom:10px;flex-wrap:wrap}
+.liq .lscanbox{position:relative;width:300px;max-width:100%;flex:none}
+.liq .lscanbox .pic{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:14px}
+.liq .lscanbox input{padding-left:32px}
+.liq .lempty{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:30px 0 26px;text-align:center;color:var(--mut);font-size:12.5px;font-weight:600}
+.liq .lempty .big{font-size:32px;display:block;margin-bottom:8px}
+.liq .ltblwrap{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;overflow-x:auto}
+.liq .ltblwrap h3{margin:0;padding:12px 16px;font-size:13.5px;color:var(--navy)}
+.liq .ltable{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
+.liq .ltable th{background:var(--bg);text-align:left;padding:9px 14px;font-size:10.5px;color:var(--mut);border-top:1px solid var(--line);border-bottom:1px solid var(--line);white-space:nowrap}
+.liq .ltable td{padding:9px 14px;border-bottom:1px solid var(--bg);vertical-align:top}
+.liq .ltable tr:last-child td{border-bottom:none}
+.liq .ltable td.code{font-family:ui-monospace,Menlo,monospace;font-weight:700;color:var(--navy);white-space:nowrap}
+.liq .ltable td.desc{max-width:280px;word-break:break-word}
+.liq .ltable tfoot td{color:var(--mut);font-size:11.5px;font-weight:700}
+.liq .lnextrow{margin-top:12px;display:flex}
+.liq .lnextrow .primary{flex:0 0 280px;max-width:100%}
+.liq .ltotal{font-size:12.5px;font-weight:800;color:var(--navy);margin-bottom:10px}
+.liq .ltotal b{color:var(--o)}
+
+/* ===== PA-A: gom scan + Next vao 1 card gon 560px ===== */
+.pa-a .liq-card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px;max-width:560px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.pa-a .lscanrow{background:none;border:none;border-radius:0;padding:0;margin:0}
+.pa-a .lnextrow{margin:0}
+.pa-a .lnextrow .primary{flex:1}
+.pa-a .lempty{max-width:560px;text-align:left;display:flex;align-items:center;gap:12px;padding:16px 18px}
+.pa-a .lempty .big{margin:0;font-size:24px}
+.pa-a .ltblwrap{max-width:560px}
+.pa-a .ltable{min-width:0}
+
+/* ===== PA-B: tung khoi om vua noi dung ===== */
+.pa-b .lscanrow{width:fit-content;max-width:100%}
+.pa-b .lnextrow{width:fit-content;max-width:100%}
+.pa-b .lnextrow .primary{flex:none;min-width:280px}
+.pa-b .lempty{display:inline-flex;align-items:center;gap:10px;padding:16px 22px;text-align:left}
+.pa-b .lempty .big{margin:0;font-size:24px}
+.pa-b .ltblwrap{width:fit-content;max-width:100%;min-width:min(560px,100%)}
+.pa-b .ltable{min-width:0;width:auto;min-width:min(520px,100%)}
+</style>
+</head>
+<body>
+<div class="fakeside">
+  <div class="logo"><b>SPX</b> Exception Handling</div>
+  <div class="it">Danh sách</div>
+  <div class="it on">Thanh lý</div>
+  <div class="it">Role</div>
+  <div class="it">Bộ lọc</div>
+</div>
+<div class="fakehead">
+  <div class="sch">Nhập thông tin để tìm kiếm…</div>
+  <div class="who">duc.nguyenvan05</div>
+</div>
+
+<div class="page">
+  <div class="toolbar">
+    <span class="t">Bộ điều khiển dùng chung:</span>
+    <button id="btnEmpty" class="primary">Xem lúc trống</button>
+    <button id="btnRows">Xem có 3 mã mẫu</button>
+  </div>
+
+  <div class="sect">
+    <h2><span class="tag cur">0 · HIỆN TRẠNG</span>Đối chiếu — các thanh trắng kéo hết màn hình</h2>
+    <p>CSS gốc, chưa sửa. Ô scan chỉ 300px nhưng hộp trắng bao quanh giãn full chiều rộng.</p>
+    <div class="liq" id="m0">
+      <div class="ltotal">Tổng: <b>0</b> đơn đã quét</div>
+      <div class="lscanrow"><span class="lscanbox"><span class="pic">⌕</span><input class="mono" placeholder="Quét hoặc nhập mã…"></span><button>📷 Quét camera</button></div>
+      <div class="lnextrow"><button class="primary" disabled>Next →</button></div>
+      <div class="lempty"><span class="big">🗂️</span><span>Quét mã để thêm vào lô thanh lý</span></div>
+      <div class="ltblwrap" style="display:none"><h3>Chi tiết lô thanh lý</h3><table class="ltable"><thead><tr><th>Mã Đơn</th><th>Loại</th><th>Mô tả</th><th></th></tr></thead><tbody></tbody><tfoot><tr><td colspan="4">Total 0</td></tr></tfoot></table></div>
+    </div>
+  </div>
+
+  <div class="sect">
+    <h2><span class="tag rec">A · ĐỀ XUẤT</span>Card gọn — gom ô quét + nút Next vào 1 hộp 560px</h2>
+    <p>Một hộp duy nhất ôm vừa ô scan + nút Next (full chiều hộp). Ô trống / bảng cũng chỉ rộng 560px, hết khoảng trắng thừa.</p>
+    <div class="liq pa-a" id="mA">
+      <div class="ltotal">Tổng: <b>0</b> đơn đã quét</div>
+      <div class="liq-card">
+        <div class="lscanrow"><span class="lscanbox"><span class="pic">⌕</span><input class="mono" placeholder="Quét hoặc nhập mã…"></span><button>📷 Quét camera</button></div>
+        <div class="lnextrow"><button class="primary" disabled>Next →</button></div>
+      </div>
+      <div class="lempty"><span class="big">🗂️</span><span>Quét mã để thêm vào lô thanh lý</span></div>
+      <div class="ltblwrap" style="display:none"><h3>Chi tiết lô thanh lý</h3><table class="ltable"><thead><tr><th>Mã Đơn</th><th>Loại</th><th>Mô tả</th><th></th></tr></thead><tbody></tbody><tfoot><tr><td colspan="4">Total 0</td></tr></tfoot></table></div>
+    </div>
+  </div>
+
+  <div class="sect">
+    <h2><span class="tag alt">B · PHƯƠNG ÁN 2</span>Từng khối ôm nội dung — không hộp chung</h2>
+    <p>Giữ 3 khối rời như hiện tại, mỗi khối co lại vừa nội dung (fit-content). Bảng co theo nội dung, tối đa full rộng.</p>
+    <div class="liq pa-b" id="mB">
+      <div class="ltotal">Tổng: <b>0</b> đơn đã quét</div>
+      <div class="lscanrow"><span class="lscanbox"><span class="pic">⌕</span><input class="mono" placeholder="Quét hoặc nhập mã…"></span><button>📷 Quét camera</button></div>
+      <div class="lnextrow"><button class="primary" disabled>Next →</button></div>
+      <div class="lempty"><span class="big">🗂️</span><span>Quét mã để thêm vào lô thanh lý</span></div>
+      <div class="ltblwrap" style="display:none"><h3>Chi tiết lô thanh lý</h3><table class="ltable"><thead><tr><th>Mã Đơn</th><th>Loại</th><th>Mô tả</th><th></th></tr></thead><tbody></tbody><tfoot><tr><td colspan="4">Total 0</td></tr></tfoot></table></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var ROWS = [
+  ['Box.09-10-2026.3', 'Box', 'Thùng 12 áo thun hoàn, seal còn nguyên'],
+  ['Item.09-10-2026.7', 'Item', 'Khăn màu đỏ'],
+  ['Box.08-10-2026.9', 'Box', 'Thùng chờ thanh lý']
+];
+function setState(hasRows) {
+  ['m0', 'mA', 'mB'].forEach(function (id) {
+    var root = document.getElementById(id);
+    var n = hasRows ? ROWS.length : 0;
+    root.querySelector('.ltotal').innerHTML = 'Tổng: <b>' + n + '</b> đơn đã quét';
+    root.querySelector('.lnextrow .primary').disabled = !hasRows;
+    root.querySelector('.lempty').style.display = hasRows ? 'none' : '';
+    var wrap = root.querySelector('.ltblwrap');
+    wrap.style.display = hasRows ? '' : 'none';
+    var tb = root.querySelector('tbody');
+    tb.innerHTML = '';
+    ROWS.forEach(function (r) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td class="code">' + r[0] + '</td><td>' + r[1] + '</td><td class="desc">' + r[2] + '</td><td><button>✕</button></td>';
+      tb.appendChild(tr);
+    });
+    root.querySelector('tfoot td').textContent = 'Total ' + n;
+  });
+  document.getElementById('btnEmpty').className = hasRows ? '' : 'primary';
+  document.getElementById('btnRows').className = hasRows ? 'primary' : '';
+}
+document.getElementById('btnEmpty').onclick = function () { setState(false); };
+document.getElementById('btnRows').onclick = function () { setState(true); };
+setState(false);
+</script>
+</body>
+</html>
