@@ -2137,7 +2137,6 @@ if(document.addEventListener)document.addEventListener('click',function(e){if(!r
 document.getElementById('btnBackLiq').onclick=function(){if(state.liq.length){document.getElementById('leaveText').textContent='Lô đang có '+state.liq.length+' mã. Bạn muốn hủy task này chứ?';document.getElementById('leaveModal').classList.add('open');}else{showLiq(false);}};
 document.getElementById('btnLeaveOk').onclick=function(){state.liq=[];renderLiq();document.getElementById('leaveModal').classList.remove('open');showLiq(false);};
 document.getElementById('btnLeaveCancel').onclick=function(){document.getElementById('leaveModal').classList.remove('open');};
-if(window.matchMedia&&window.matchMedia('(min-width: 900px)').matches){document.body.classList.add('rail');}
 renderRail();
 function syncSticky_(){try{var h=document.querySelector('header');if(!h)return;document.documentElement.style.setProperty('--hdrH',Math.ceil(h.getBoundingClientRect().height)+'px');}catch(e){}}
 try{syncSticky_();}catch(e){}
