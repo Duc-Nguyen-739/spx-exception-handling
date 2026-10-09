@@ -337,11 +337,40 @@ body.wide.has-drawer header{padding-right:668px}
 }
 
 /* ===== createModal luôn là dialog nhỏ giữa màn hình (detail giữ drawer phải) ===== */
-#createModal,#editModal,#printKindModal,#introModal{align-items:center;justify-content:center;padding:0 16px}
+#createModal,#editModal,#printKindModal,#introModal,#fbModal{align-items:center;justify-content:center;padding:0 16px}
 #leaveModal{align-items:center;justify-content:center;padding:0 16px}
 #leaveModal .sheet{height:auto}
 #createModal .sheet,#printKindModal .sheet,#introModal .sheet{max-width:440px;width:100%;height:auto;max-height:92%;border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(23,43,72,.35)}
 #editModal .sheet{max-width:440px;width:100%;height:auto;max-height:92%;border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(23,43,72,.35)}
+#fbModal .sheet{max-width:400px;width:100%;height:auto;max-height:92%;min-height:260px;border-radius:20px;padding:0;box-shadow:0 24px 70px rgba(23,43,72,.35);display:flex;flex-direction:column;overflow:hidden}
+.fbhead{position:relative;text-align:center;padding:18px 16px 12px;border-bottom:1px solid var(--line);flex:none}
+.fbhead .big{font-size:26px;line-height:1}
+.fbhead h2{margin:4px 0 0;font-size:14.5px;color:var(--navy)}
+.fbhead .iconBtn{position:absolute;top:10px;right:8px}
+#fbList{flex:1;min-height:0;max-height:min(340px,50vh);overflow-y:auto;padding:10px 14px;background:#fbfcfe}
+.fbfoot{flex:none;padding:12px 14px 14px;border-top:1px solid var(--line);background:var(--card)}
+.fbmsg{display:flex;gap:8px;margin:10px 0}
+.fbmsg .fbava{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;flex:none}
+.fbmsg .fbava.adm{background:var(--o)}
+.fbcol{flex:1;min-width:0}
+.fbnm{font-size:11.5px;font-weight:800;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fbtm{font-size:10.5px;color:var(--mut);font-weight:600;margin-left:6px;vertical-align:bottom}
+.fbbub{background:#fff;border:1px solid var(--line);border-radius:4px 14px 14px 14px;padding:9px 12px;font-size:12.5px;line-height:1.65;margin-top:5px;word-break:break-word}
+.fbmsg.adm .fbbub{background:var(--tint);border-color:#ffd9cd}
+.fbadmBadge{display:inline-block;font-size:9.5px;font-weight:800;background:var(--o);color:#fff;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+#fbList .fbReplyBtn{border:none;background:transparent;color:var(--mut);font-size:11px;font-weight:800;padding:4px 0 0;cursor:pointer}
+#fbList .fbReplyBtn:hover{color:var(--o)}
+.fbRep{margin-top:6px;border-left:3px solid var(--o);background:#fff;border-radius:0 10px 10px 0;padding:8px 12px}
+.fbRep .fbrHead{font-size:11.5px;font-weight:800;color:var(--navy)}
+.fbRep .fbrTm{font-size:10.5px;color:var(--mut);font-weight:600;margin-left:6px}
+.fbRep .fbreTxt{font-size:12.5px;line-height:1.6;padding:3px 0;word-break:break-word}
+.fbRepBox{margin-top:6px;border:1px dashed #ffd9cd;border-radius:10px;padding:8px;background:#fff}
+.fbRepBox textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:16px;min-height:52px;resize:vertical}
+.fbRepBox .fbrow{display:flex;gap:8px;margin-top:7px}
+.fbRepBox .fbrow button{flex:1;min-width:0}
+.fbsend{display:flex;gap:8px}
+.fbsend input{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-family:inherit;font-size:16px;background:#fff;min-width:0}
+.fbEmpty{text-align:center;color:var(--mut);font-size:12px;font-weight:600;padding:30px 10px;line-height:1.8}
 .ehead{display:flex;align-items:center;gap:10px}
 .ehead h2{flex:1;min-width:0;margin:0}
 .ehead .hact{display:flex;gap:6px;flex:none;align-items:center}
@@ -471,6 +500,7 @@ header{flex-wrap:wrap}
 </div>
 </div>
 <div class="hact"><button id="btnIntro" class="bellbtn" type="button" title="Giới thiệu" aria-label="Giới thiệu">🔔</button>
+<button id="btnFeedback" class="bellbtn" type="button" title="Feedback" aria-label="Feedback">💬</button>
 <div id="whoChip" title="Tài khoản đăng nhập"><i id="whoIni">?</i><span id="whoTxt"></span></div></div>
 <button id="btnCreateTop" class="primary" style="display:none">＋ Create</button>
 <button id="btnPrintTop" style="display:none">🖨 In Mã</button>
@@ -679,6 +709,11 @@ header{flex-wrap:wrap}
 <div class="istep">✅ <b>Resolve / Thanh lý:</b> tìm được bill thì mở đơn → <b>Resolve</b> → nhập bill. Thanh lý nhiều đơn thì sang tab <b>Thanh lý</b>, quét đơn liên tục rồi chốt bằng 1 mã SPXVN.</div>
 <div class="istep" style="border-color:#ffcfbd;background:#fff8f0">🖨️ <b>In Mã — đọc kỹ nếu xài điện thoại:</b><br>📱 điện thoại bấm <b>In Mã</b> → 💻 laptop ở kho (đang mở sẵn <b>tab In Mã</b>) tự nhận lệnh → 🖨️ máy in tự in ra.</div>
 </div>
+</div></div>
+<div class="modal" id="fbModal"><div class="sheet">
+<div class="fbhead"><div class="big">💬</div><h2>Feedback</h2><button id="btnCloseFb" class="iconBtn" type="button" title="Đóng">✕</button></div>
+<div id="fbList"></div>
+<div class="fbfoot"><div class="msg" id="msgFb"></div><div class="fbsend"><input id="fbInput" placeholder="Nhắn góp ý cho cả nhóm…" maxlength="2000"><button id="btnFbSend" class="primary" type="button">Gửi</button></div></div>
 </div></div>
 <div id="lightbox" role="dialog" aria-label="Xem ảnh phóng to"><div class="bar"><button id="lbBack" title="Đóng">‹</button><span style="flex:1"></span><button id="lbOut" title="Thu nhỏ">−</button><button id="lbIn" title="Phóng to">＋</button><button id="lbFit" title="Vừa màn hình">⟳</button><button id="lbX" title="Đóng">✕</button></div><div id="lbStage"><img id="lbImg" alt="Ảnh phóng to"></div><div id="lbCap"></div></div>
 <div id="printArea"></div>
@@ -2203,6 +2238,99 @@ var dl=document.getElementById('msgDeploy');
 if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?');
 if((state.me&&state.me.role)!=='ADMIN'){msg('msgAccess','Chỉ ADMIN mới xem được trang này.');return;}
 loadUsers();}
+});
+var fbMsgs=[],fbOpening=false,fbReplyId=null;
+function fbIsAdmin(){return (state.me&&state.me.role)==='ADMIN';}
+function fbNameHtml(m){
+  if(m.role==='ADMIN'||!m.email)return '<span class="fbadmBadge">ADMIN</span>';
+  return esc(m.email);
+}
+function fbAvaHtml(m){
+  var ch=m.role==='ADMIN'?'A':esc(String(m.email||'?').charAt(0).toUpperCase());
+  return '<span class="fbava'+(m.role==='ADMIN'?' adm':'')+'">'+ch+'</span>';
+}
+function fbRepliesHtml(m){
+  if(!(m.replies&&m.replies.length))return '';
+  var h='<div class="fbRep">';
+  m.replies.forEach(function(r){
+    h+='<div class="fbR"><span class="fbrHead">Admin<span class="fbadmBadge">ADMIN</span></span><span class="fbrTm">'+esc(fmtAt(r.at))+'</span>'
+      +'<div class="fbreTxt">'+esc(r.text)+'</div></div>';
+  });
+  h+='</div>';
+  return h;
+}
+function fbMsgHtml(m){
+  var adm=(m.role==='ADMIN'||!m.email);
+  var h='<div class="fbmsg'+(adm?' adm':'')+'">'
+    +fbAvaHtml(m)+'<div class="fbcol">'
+    +'<div><span class="fbnm">'+fbNameHtml(m)+'</span><span class="fbtm">'+esc(fmtAt(m.at))+'</span></div>'
+    +'<div class="fbbub">'+esc(m.text)+'</div>';
+  if(adm){h+=fbRepliesHtml(m);}
+  else{
+    h+=fbRepliesHtml(m);
+    if(fbIsAdmin())h+='<button class="fbReplyBtn" type="button" data-fbid="'+esc(m.id)+'">↩ Reply</button>';
+    if(fbReplyId===m.id)h+='<div class="fbRepBox"><textarea id="fbRepText" placeholder="Trả lời với tư cách Admin…"></textarea>'
+      +'<div class="fbrow"><button class="primary" type="button" data-fbsendreply="'+esc(m.id)+'">Gửi trả lời</button>'
+      +'<button type="button" data-fbcancelreply="1">Hủy</button></div></div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+function renderFbList(){
+  var el=document.getElementById('fbList');
+  if(!el)return;
+  if(!fbMsgs.length){el.innerHTML='<div class="fbEmpty">💬<br>Chưa có góp ý — hãy là người đầu tiên chia sẻ nhé.</div>';return;}
+  el.innerHTML=fbMsgs.map(function(m){return fbMsgHtml(m);}).join('');
+  el.scrollTop=el.scrollHeight;
+}
+async function openFeedback(){
+  var m=document.getElementById('fbModal');if(!m)return;
+  m.classList.add('open');fbReplyId=null;
+  msg('msgFb','Đang tải…',true);
+  fbOpening=true;
+  try{
+    var r=await gs('listFeedback',[]);
+    if(!r||!r.ok)throw new Error((r&&r.error)||'Không tải được feedback');
+    fbMsgs=r.data||[];renderFbList();msg('msgFb','',true);
+  }catch(e){msg('msgFb',e.message||'Lỗi tải feedback');}
+  fbOpening=false;
+  try{document.getElementById('fbInput').focus();}catch(e){}
+}
+async function sendFeedback(){
+  var inp=document.getElementById('fbInput');var v=(inp.value||'').trim();
+  if(!v){msg('msgFb','Nhập góp ý trước.');return;}
+  msg('msgFb','Đang gửi…',true);
+  try{
+    var r=await gs('addFeedback',[v]);
+    if(!r||!r.ok)throw new Error((r&&r.error)||'Gửi thất bại');
+    fbMsgs.push(r.data);inp.value='';renderFbList();msg('msgFb','Đã gửi góp ý.',true);
+  }catch(e){msg('msgFb',e.message||'Lỗi gửi góp ý');}
+}
+async function submitFbReply(id){
+  var ta=document.getElementById('fbRepText');var v=ta?ta.value.trim():'';
+  if(!v){msg('msgFb','Nhập nội dung trả lời.');return;}
+  msg('msgFb','Đang gửi…',true);
+  try{
+    var r=await gs('replyFeedback',[id,v]);
+    if(!r||!r.ok)throw new Error((r&&r.error)||'Gửi thất bại');
+    var m=fbMsgs.find(function(x){return x.id===id;});
+    if(m){(m.replies=m.replies||[]).push(r.data);}
+    fbReplyId=null;renderFbList();msg('msgFb','Đã trả lời.',true);
+  }catch(e){msg('msgFb',e.message||'Lỗi gửi trả lời');}
+}
+document.getElementById('btnFeedback').onclick=function(){if(!fbOpening)openFeedback();};
+document.getElementById('btnCloseFb').onclick=function(){document.getElementById('fbModal').classList.remove('open');};
+document.getElementById('fbModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+document.getElementById('btnFbSend').onclick=sendFeedback;
+document.getElementById('fbInput').addEventListener('keydown',function(e){if(e.key==='Enter')sendFeedback();});
+document.getElementById('fbList').addEventListener('click',function(e){
+  var b=e.target.closest('[data-fbid]');
+  if(b){fbReplyId=fbReplyId===b.getAttribute('data-fbid')?null:b.getAttribute('data-fbid');renderFbList();
+    try{var ta=document.getElementById('fbRepText');if(ta)ta.focus();}catch(err){}return;}
+  var c=e.target.closest('[data-fbcancelreply]');
+  if(c){fbReplyId=null;renderFbList();return;}
+  var s=e.target.closest('[data-fbsendreply]');
+  if(s){submitFbReply(s.getAttribute('data-fbsendreply'));return;}
 });
 </script>
 </body>

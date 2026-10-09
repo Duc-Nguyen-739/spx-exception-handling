@@ -72,6 +72,12 @@
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   var PRINTQUEUE = [];
+  var FEEDBACK = [
+    { id: 'fb-1', at: '08/10/2026 19:19:00', email: 'duc.nguyenvan05@spxexpress.com', role: 'STAFF', text: 'Chức năng mới rất tiện, nhưng khung ảnh hơi nhỏ.', replies: [{ id: 'fr-1', at: '08/10/2026 20:05:00', text: 'Đã ghi nhận — sẽ mở rộng khung ảnh bản cập sau.' }] },
+    { id: 'fb-2', at: '09/10/2026 08:02:00', email: 'lan.tran@spxexpress.com', role: 'STAFF', text: 'Nên thêm xuất Excel để kiểm kê cuối tháng.', replies: [] },
+    { id: 'fb-3', at: '09/10/2026 08:20:00', email: 'tuan.pham@spxexpress.com', role: 'STAFF', text: 'Đề xuất thêm cột trọng lượng vào form create.', replies: [] },
+    { id: 'fb-4', at: '09/10/2026 09:10:00', email: 'admin.mock@spxexpress.com', role: 'ADMIN', text: 'Tôi là admin — góp ý này chỉ hiện “Admin” chứ không email.', replies: [] }
+  ];
   var PRINT_RE_MOCK = /^(Box|Item)\.\d{2}-\d{2}-\d{4}\.\d+$/;
   function queueCodes(codes) {
     var seen = {}, list = [];
@@ -239,6 +245,28 @@
         items[id] = { mime: 'image/png', b64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' };
       });
       return { ok: true, data: { size: size || 400, items: items } };
+    },
+    listFeedback: function () { return { ok: true, data: clone(FEEDBACK) }; },
+    addFeedback: function (text) {
+      var t = String(text || '').trim();
+      if (!t) return { ok: false, error: 'Vui lòng nhập nội dung.' };
+      if (t.length > 2000) return { ok: false, error: 'Tối đa 2000 ký tự.' };
+      var m = { id: 'fb-' + (FEEDBACK.length + 1) + '-' + Date.now(), at: '09/10/2026 15:00:00', email: ME, role: 'ADMIN', text: t, replies: [] };
+      FEEDBACK.push(m);
+      return { ok: true, data: clone(m) };
+    },
+    replyFeedback: function (id, text) {
+      var t = String(text || '').trim();
+      if (!t) return { ok: false, error: 'Vui lòng nhập nội dung.' };
+      if (t.length > 2000) return { ok: false, error: 'Tối đa 2000 ký tự.' };
+      for (var i = 0; i < FEEDBACK.length; i++) {
+        if (FEEDBACK[i].id === String(id || '')) {
+          var rep = { id: 'fr-' + Date.now(), at: '09/10/2026 15:01:00', text: t };
+          FEEDBACK[i].replies.push(rep);
+          return { ok: true, data: clone(rep) };
+        }
+      }
+      return { ok: false, error: 'Không tìm thấy góp ý.' };
     }
   };
 

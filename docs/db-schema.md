@@ -52,6 +52,15 @@ Spreadsheet ID để ở Script Properties `SPREADSHEET_ID` (không hardcode —
 
 - Phone bấm In Mã → `enqueuePrintJob` append 1 dòng `pending` (1–10 mã, validate `Box./Item.`). Laptop mở tab In Mã poll 3s `pollPrintJobs` → `claimPrintJob` trong `LockService` (`pending→printing`, trạm thua nhận `Đã có trạm nhận`) → render đúng `#printArea` cũ + `window.print()` → `ackPrintJob`. Serial 1 job/lần, xong nghỉ 10s mới poll tiếp. Ngày ghi text kèm dấu `'` như các sheet khác.
 
+### `Feedback` (nhóm chat góp ý chung, 1 dòng = 1 tin)
+
+| `id` | `at` | `email` | `role` | `text` |
+
+- Bảng Feedback chung toàn app, không gán vào đơn hàng. Append-only, tin mới ở dưới cùng.
+- `id` = uuid (`fb-` + `Utilities.getUuid()`) — trùng lặp = 0. `at` ghi text `'dd/MM/yyyy HH:mm:ss`. `email` = người gửi; `role` ghi quyền lúc gửi (`ADMIN`/`STAFF`).
+- Những tin do ADMIN gửi (role=`ADMIN`) hiển thị “Admin” + badge, KHÔNG hiện email. Người khác luôn hiện email + thời gian.
+- `FeedbackReplies`: `[id, feedback_id, at, text]` — chỉ ADMIN mới được trả lời (`replyFeedback` gọi `requireAdmin_()`); reply luôn hiển thị “Admin” (không email) dù có phân biệt `by` audit hay không.
+
 ### `ActivityLog` (append-only, ai đổi trạng thái)
 
 | `at` | `code` | `from` | `to` | `by` | `note` | `reason` |

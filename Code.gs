@@ -17,6 +17,9 @@ var ITEMS_HEADER = ['code', 'created_at', 'description', 'kind', 'photo_path_out
 var PHOTOS_HEADER = ['code', 'slot', 'drive_file_id', 'uploaded_at'];
 var LOG_HEADER = ['at', 'code', 'from_status', 'to_status', 'by', 'note', 'reason'];
 var PRINTED_HEADER = ['code', 'printed_at', 'printed_by', 'kind'];
+var FEEDBACK_HEADER = ['id', 'at', 'email', 'role', 'text'];
+var FEEDBACK_REPLY_HEADER = ['id', 'feedback_id', 'at', 'text'];
+var FEEDBACK_TAIL = 100;
 var PRINTQUEUE_HEADER = ['job_id', 'codes_json', 'requested_at', 'requested_by', 'status', 'claimed_by', 'claimed_at', 'done_at', 'note'];
 
 // KHỚP import: scripts/import-csv.js STATUS_RULES (copy, không tự bịa thêm).
@@ -1460,5 +1463,74 @@ function deleteUser(email) {
       if (vals.length) u.sh.getRange(2, 1, vals.length, USERS_HEADER.length).setValues(vals);
       return { email: email };
     }));
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+// ===== Feedback — nhom chat gop y chung, thao tac an danh tung message append-only =====
+
+function readTail_(sh, colCount, tail) {
+  var last = sh.getLastRow();
+  if (last < 2) return [];
+  var start = Math.max(2, last - (tail || 0) + 1);
+  return sh.getRange(start, 1, last - start + 1, colCount).getValues();
+}
+
+function listFeedback() {
+  try {
+    var fSh = getSheet_('Feedback', FEEDBACK_HEADER);
+    var rSh = getSheet_('FeedbackReplies', FEEDBACK_REPLY_HEADER);
+    var rows = readTail_(fSh, FEEDBACK_HEADER.length, FEEDBACK_TAIL);
+    var repRows = readTail_(rSh, FEEDBACK_REPLY_HEADER.length, 4000);
+    var byId = {};
+    for (var j = 0; j < repRows.length; j++) {
+      var pid = cellText_(repRows[j][1]);
+      if (!pid) continue;
+      (byId[pid] = byId[pid] || []).push({ id: cellText_(repRows[j][0]), at: cellText_(repRows[j][2]), text: cellText_(repRows[j][3]) });
+    }
+    var out = rows.map(function (r) {
+      var id = cellText_(r[0]);
+      return { id: id, at: cellText_(r[1]), email: cellText_(r[2]), role: cellText_(r[3]), text: cellText_(r[4]), replies: byId[id] || [] };
+    });
+    return ok(out);
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function addFeedback(text) {
+  try {
+    var t = String(text || '').trim();
+    if (!t) throw new Error('Vui lòng nhập nội dung.');
+    if (t.length > 2000) throw new Error('Tối đa 2000 ký tự.');
+    var email = currentEmail_();
+    if (!email) throw new Error('Không xác định được email.');
+    var at = nowStr_();
+    var role = getRole_();
+    var sh = getSheet_('Feedback', FEEDBACK_HEADER);
+    var id = 'fb-' + Utilities.getUuid();
+    sh.appendRow([id, "'" + at, email, role, t]);
+    return ok({ id: id, at: at, email: email, role: role, text: t, replies: [] });
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function replyFeedback(id, text) {
+  try {
+    requireAdmin_();
+    var t = String(text || '').trim();
+    if (!t) throw new Error('Vui lòng nhập nội dung.');
+    if (t.length > 2000) throw new Error('Tối đa 2000 ký tự.');
+    id = String(id || '').trim();
+    if (!id) throw new Error('Thiếu mã góp ý.');
+    var fSh = getSheet_('Feedback', FEEDBACK_HEADER);
+    var last = fSh.getLastRow();
+    var found = false;
+    if (last >= 2) {
+      var ids = fSh.getRange(2, 1, last - 1, 1).getValues();
+      for (var i = 0; i < ids.length; i++) if (cellText_(ids[i][0]) === id) { found = true; break; }
+    }
+    if (!found) throw new Error('Không tìm thấy góp ý.');
+    var at = nowStr_();
+    var rSh = getSheet_('FeedbackReplies', FEEDBACK_REPLY_HEADER);
+    var rid = 'fr-' + Utilities.getUuid();
+    rSh.appendRow([rid, id, "'" + at, t]);
+    return ok({ id: rid, feedbackId: id, at: at, text: t });
   } catch (e) { Logger.log(e); return fail(e.message); }
 }

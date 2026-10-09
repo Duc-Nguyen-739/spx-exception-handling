@@ -577,6 +577,31 @@ async function main() {
     const ivOpen = await waitUntil(ws, "document.getElementById('introModal').classList.contains('open')", 3000);
     check('Chuong mo popup Gioi thieu', !!ivOpen, String(ivOpen));
     await evalIn(ws, `document.getElementById('btnCloseIntro').click()`);
+    // Feedback (popup messenger rieng, icon gan sau bell)
+    const fbPos = await evalIn(ws, `JSON.stringify((function(){var h=document.querySelector('.hact');return {first:h.firstElementChild.id,next:document.getElementById('btnIntro').nextElementSibling.id};})())`);
+    const FBP = fbPos.err ? null : JSON.parse(fbPos.value);
+    check('Feedback: icon gan sau nut chuong, chua dau tien', !!(FBP && FBP.first==='btnIntro' && FBP.next==='btnFeedback'), fbPos.value);
+    await evalIn(ws, `document.getElementById('btnFeedback').click()`);
+    const fbOpen = await waitUntil(ws, "document.getElementById('fbModal').classList.contains('open') && document.querySelectorAll('#fbList .fbmsg').length >= 3", 8000);
+    const fbState = await evalIn(ws, `JSON.stringify({open: document.getElementById('fbModal').classList.contains('open'), n: document.querySelectorAll('#fbList .fbmsg').length, title: document.querySelector('#fbModal .fbhead h2').textContent, replies: document.querySelectorAll('#fbList .fbReplyBtn').length})`);
+    const FB = fbState.err ? null : JSON.parse(fbState.value);
+    check('Feedback: mo popup + title Feedback + tai >=3 tin + ADMIN thay Reply', !!(fbOpen && FB && FB.title==='Feedback' && FB.n>=3 && FB.replies>=1), fbState.value);
+    // go tin moi
+    await evalIn(ws, `document.getElementById('fbInput').value='Dong gopp y tu chrome test'; document.getElementById('btnFbSend').click()`);
+    const fbSent = await waitUntil(ws, "document.getElementById('fbList').innerText.includes('Dong gopp y tu chrome test')", 8000);
+    check('Feedback: go thanh cong hien tin moi', !!fbSent, String(fbSent));
+    // ADMIN tra loi -> chi hien Admin, khong email
+    await evalIn(ws, `document.querySelector('#fbList .fbReplyBtn').click(); document.querySelector('#fbList .fbRepBox textarea').value='Tra loi tu ADMIN'; document.querySelector('#fbList [data-fbsendreply]').click()`);
+    const fbRep = await waitUntil(ws, "document.getElementById('fbList').innerText.includes('Tra loi tu ADMIN')", 8000);
+    const fbRepProbe = await evalIn(ws, `(document.querySelector('#fbList .fbRep')||{}).innerText||''`);
+    const pt = (fbRepProbe && fbRepProbe.value) ? String(fbRepProbe.value) : '';
+    check('Feedback: Admin reply chi hien Admin, khong email', !!(fbRep && pt.indexOf('Admin')>=0 && pt.indexOf('@')<0), 'len='+(pt.length||0)+' admin='+(pt.indexOf('Admin')>=0)+' at='+(pt.indexOf('@')));
+    // USER an nut Reply
+    await evalIn(ws, `state.me={email:'son.nguyenngoc@spxexpress.com',role:'STAFF'}; renderFbList();`);
+    const fbStaff = await evalIn(ws, `document.querySelectorAll('#fbList .fbReplyBtn').length === 0`);
+    check('Feedback: USER khong thay nut Reply', fbStaff.value === true, String(fbStaff.value));
+    await evalIn(ws, `state.me={email:'admin.mock@spxexpress.com',role:'ADMIN'}; document.getElementById('btnCloseFb').click()`);
+
     await evalIn(ws, `state.range={f:{y:2020,m:1,d:1},t:{y:2020,m:2,d:1}};renderGrid();`);
     const z0 = await evalIn(ws, `document.querySelectorAll('#grid .card').length`);
     check('Range cu -> luoi 0 don', z0.value === 0, String(z0.value));
