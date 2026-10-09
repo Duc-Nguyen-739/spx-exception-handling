@@ -49,6 +49,12 @@ test('css-guard: drawer mo thi header co phai theo (khong che range + pills)', (
   assert.ok(html.includes('header{transition:padding-right .28s ease}'), 'thieu transition header');
   const desk = html.slice(html.indexOf('body.has-drawer main{padding-right:498px}'));
   const wideHdr = desk.indexOf('body.wide.has-drawer header{padding-right:668px}');
-  const shortHdr = desk.indexOf('header{padding:12px 22px;grid-template-columns:1fr minmax(0,720px) 1fr}');
+  const shortHdr = desk.indexOf('header{padding:12px 22px 12px 262px;grid-template-columns:1fr minmax(0,720px) 1fr}');
   assert.ok(wideHdr > shortHdr && shortHdr >= 0, 'rule co header phai dat SAU shorthand padding');
+});
+
+test('css-guard: sidebar mo thi header chua le trai 262px (khong che range + pills)', () => {
+  assert.ok(html.includes('header{padding:12px 22px 12px 262px;grid-template-columns:1fr minmax(0,720px) 1fr}'), 'header desktop phai chua le trai 262px theo sidebar');
+  assert.ok(!html.includes('header{padding:12px 22px;grid-template-columns'), 'cam shorthand reset le trai ve 22px');
+  assert.ok(html.includes('body.rail header{padding-left:76px}'), 'rail giu le trai 76px');
 });

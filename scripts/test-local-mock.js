@@ -586,6 +586,14 @@ async function main() {
     const DW = dw.err ? null : JSON.parse(dw.value);
     check('Drawer mo: header co phai 498px, khong che range + pills', !!(DW && DW.vw >= 900 && DW.pr === '498px'), dw.value);
     await evalIn(ws, `document.body.classList.remove('has-drawer')`);
+    const sb = await evalIn(ws, `JSON.stringify({pl: getComputedStyle(document.querySelector('header')).paddingLeft, rail: document.body.classList.contains('rail')})`);
+    const SB = sb.err ? null : JSON.parse(sb.value);
+    check('Sidebar mo: header chua le trai 262px', !!(SB && SB.rail === false && SB.pl === '262px'), sb.value);
+    await evalIn(ws, `document.body.classList.add('rail')`);
+    await sleep(400);
+    const rl = await evalIn(ws, `getComputedStyle(document.querySelector('header')).paddingLeft`);
+    check('Sidebar thu: header le trai 76px', rl.value === '76px', String(rl.value));
+    await evalIn(ws, `document.body.classList.remove('rail')`);
     await send(ws, 'Emulation.clearDeviceMetricsOverride');
     await sleep(300);
     const errs = await evalIn(ws, `JSON.stringify(window.__PAGE_ERRORS__ || [])`);
