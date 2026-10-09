@@ -6,13 +6,13 @@ const path = require('node:path');
 // Khoa layout tem 4x2 can doi: 1 layout duy nhat, in duoc ca giay 4x2 va 4x6.
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
-test('print-42: @page dung kho tem 4x2', () => {
-  assert.ok(html.includes('@page{size:4in 2in;margin:0}'), 'thieu @page 4x2');
-  assert.ok(!html.includes('@page{size:4in 6in'), 'khong con @page 4x6');
+test('print-42: @page portrait khop driver 4x6, khoi 4x2 nam dau tem', () => {
+  assert.ok(html.includes('@page{size:4in 6in;margin:0}'), 'thieu @page 4x6 portrait khop driver');
+  assert.ok(html.includes('class=\'pslip\'') || html.includes('pslip'), 'thieu khoi .pslip 4x2 dau tem');
+  assert.ok(html.includes('#printArea .plabel .pslip{width:4in;height:2in'), 'khoi phai 4x2');
 });
 
-test('print-42: tem 4x2 can doi, khong sat mep', () => {
-  assert.ok(html.includes('#printArea .plabel{width:4in;height:2in'), 'tem phai 4x2');
+test('print-42: khoi 4x2 can doi padding 4mm', () => {
   assert.ok(html.includes('padding:4mm'), 'padding can doi 4mm');
   assert.ok(html.includes('box-sizing:border-box'), 'box-sizing giu dung 2in');
 });
