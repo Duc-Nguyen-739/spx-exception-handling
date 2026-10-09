@@ -12,6 +12,8 @@ test('sidebar-filter: nut Bo loc + panel thu gon + Reset co mat', () => {
   assert.ok(html.includes('aria-expanded="false"'), 'mac dinh phai thu gon');
   assert.ok(!/id="sideFilterPanel"[^>]*class="[^"]*open/.test(html), 'panel mac dinh khong open');
   assert.ok(html.includes('class="fchev"'), 'thieu chevron');
+  assert.ok(html.includes('class="fchev"><svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>'), 'chevron phai la SVG to');
+  assert.ok(html.includes('stroke-width:2.6'), 'chevron phai net dam 2.6');
   assert.ok(html.includes('class="rwrap"'), 'Reset phai can giua (rwrap)');
 });
 

@@ -176,7 +176,8 @@ async function main() {
     const sf = await evalIn(ws, `JSON.stringify({
       t: !!document.getElementById('sideFilterToggle'),
       collapsed: !document.getElementById('sideFilterPanel').classList.contains('open'),
-      r: !!document.getElementById('sideFilterReset')
+      r: !!document.getElementById('sideFilterReset'),
+      chev: getComputedStyle(document.querySelector('#sideFilterToggle .fchev svg')).width
     })`);
     const SF = sf.err ? null : JSON.parse(sf.value);
     await evalIn(ws, `document.getElementById('sideFilterToggle').click()`);
@@ -186,7 +187,7 @@ async function main() {
     await evalIn(ws, `document.getElementById('sideFilterReset').click()`);
     await sleep(300);
     const sfMsg = await evalIn(ws, `document.getElementById('msgMain').textContent`);
-    check('Sidebar: Bo loc thu gon mac dinh + Reset ve mac dinh', !!(SF && SF.t && SF.collapsed && SF.r && /reset bộ lọc/i.test(sfMsg.value || '')), sfMsg.value);
+    check('Sidebar: Bo loc thu gon mac dinh + Reset ve mac dinh', !!(SF && SF.t && SF.collapsed && SF.r && SF.chev === '18px' && /reset bộ lọc/i.test(sfMsg.value || '')), 'chev=' + (SF && SF.chev) + ' ' + sfMsg.value);
     await evalIn(ws, `document.getElementById('rgEdit').click()`);
     await waitUntil(ws, "document.getElementById('rangeModal').classList.contains('open')", 3000);
     const cal = await evalIn(ws, `JSON.stringify({
