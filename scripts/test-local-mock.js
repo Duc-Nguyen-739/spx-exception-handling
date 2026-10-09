@@ -536,8 +536,8 @@ async function main() {
     check('Quay lai ve Danh sach hien lai filter', !!bkLiq, String(bkLiq));
     await evalIn(ws, `document.getElementById('navAccess').click()`);
     await sleep(400);
-    const rlCtx = await evalIn(ws, `document.getElementById('ctxBar').textContent`);
-    check('Tab Role: ctx hien dong dang nhap', !!(rlCtx.value && rlCtx.value.indexOf('admin.mock@spxexpress.com') >= 0 && rlCtx.value.indexOf('ADMIN') >= 0), rlCtx.value);
+    const rlCtx = await evalIn(ws, `JSON.stringify({d: document.getElementById('ctxBar').style.display, t: document.getElementById('ctxBar').textContent, dl: document.getElementById('msgDeploy').textContent, home: !!document.getElementById('btnBackLiq')})`);
+    check('Tab Role: an ctx duoi search, giu dong dang nhap trong noi dung + bo nut Man hinh chinh', !!(rlCtx.value && rlCtx.value.indexOf('"d":"none"') >= 0 && rlCtx.value.indexOf('admin.mock@spxexpress.com') >= 0 && rlCtx.value.indexOf('ADMIN') >= 0 && rlCtx.value.indexOf('"home":false') >= 0), rlCtx.value);
     await evalIn(ws, `document.getElementById('navMain').click()`);
 
     await evalIn(ws, `document.getElementById('btnCreateMain').click()`);

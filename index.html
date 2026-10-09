@@ -526,7 +526,7 @@ header{flex-wrap:wrap}
 </main>
 
 <main id="viewLiq" style="display:none">
-<div class="backrow"><span id="liqTotalTop">Tổng: <b>0</b> đơn đã quét</span><button id="btnBackLiq" class="lnk backhome" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Màn hình chính</button></div>
+<div class="backrow"><span id="liqTotalTop">Tổng: <b>0</b> đơn đã quét</span></div>
 <div id="liqCodeWrap" style="display:none">
 <div class="field"><label>MÃ THANH LÝ *</label>
 <input id="liqCode" class="mono" placeholder="SPXVN…">
@@ -1619,7 +1619,7 @@ if(isList){cx.style.display='none';cx.textContent='';return;}
 cx.style.display='block';
 if(tab==='liq'){cx.textContent='‹ Quay lại';cx.classList.add('back');cx.setAttribute('data-back','1');}
 else if(tab==='print'){cx.textContent='▸ In Mã • scan đúng định dạng là tự in.';}
-else if(tab==='role'){var e=state.me||{};cx.textContent='Đăng nhập: '+(e.email||'…')+' · '+(e.role||'…');}
+else if(tab==='role'){cx.style.display='none';cx.textContent='';}
 }
 function showPrint(on){
 document.getElementById('viewPrint').style.display=on?'block':'none';
@@ -2157,8 +2157,8 @@ document.getElementById('railFlyout').addEventListener('mouseenter',function(){c
 document.getElementById('railFlyout').addEventListener('mouseleave',schedRailFly);
 document.getElementById('flyReset').onclick=function(){resetKindStatus();msg('msgMain','Đã reset bộ lọc về mặc định (Tất cả + Box + Item).',true);};
 if(document.addEventListener)document.addEventListener('click',function(e){if(!railFlyOpen)return;var f=document.getElementById('railFlyout'),b=document.getElementById('railFilterBtn');if(f&&f.contains(e.target))return;if(b&&b.contains(e.target))return;railFlyOpen=false;syncRailFly();});
-document.getElementById('ctxBar').onclick=function(){if(this.getAttribute('data-back'))document.getElementById('btnBackLiq').click();};
-document.getElementById('btnBackLiq').onclick=function(){if(state.liq.length){document.getElementById('leaveText').textContent='Lô đang có '+state.liq.length+' mã. Bạn muốn hủy task này chứ?';document.getElementById('leaveModal').classList.add('open');}else{showLiq(false);}};
+function liqBack(){if(state.liq.length){document.getElementById('leaveText').textContent='Lô đang có '+state.liq.length+' mã. Bạn muốn hủy task này chứ?';document.getElementById('leaveModal').classList.add('open');}else{showLiq(false);}}
+document.getElementById('ctxBar').onclick=function(){if(this.getAttribute('data-back'))liqBack();};
 document.getElementById('btnLeaveOk').onclick=function(){state.liq=[];renderLiq();document.getElementById('leaveModal').classList.remove('open');showLiq(false);};
 document.getElementById('btnLeaveCancel').onclick=function(){document.getElementById('leaveModal').classList.remove('open');};
 renderRail();
