@@ -1652,7 +1652,7 @@ document.getElementById('viewAccess').style.display='none';
 if(on){setActive('navPrint');}
 else{setActive('navMain');}
 syncTabHeader(on?'print':'list');
-if(on){try{var sp=document.getElementById('scanPrint');if(sp&&document.getElementById('singleZone').style.display!=='none')sp.focus();}catch(e){}}
+if(on&&isStation_()){try{var sp=document.getElementById('scanPrint');if(sp&&document.getElementById('singleZone').style.display!=='none')sp.focus();}catch(e){}}
 }
 function clearPrintMsgs(){
 document.getElementById('scanPrint').value='';
@@ -1670,7 +1670,7 @@ document.getElementById('cardBulk').classList.toggle('on',which==='bulk');
 document.getElementById('singleZone').style.display=which==='single'?'block':'none';
 document.getElementById('bulkZone').style.display=which==='bulk'?'block':'none';
 clearPrintMsgs();
-if(which==='single')document.getElementById('scanPrint').focus();
+if(which==='single'&&isStation_())document.getElementById('scanPrint').focus();
 }
 function printHint(t,ok){var h=document.getElementById('scanPrintHint');h.textContent=t||'';h.className='phint '+(t?(ok?'ok':'err'):'');}
 var autoT=null;
