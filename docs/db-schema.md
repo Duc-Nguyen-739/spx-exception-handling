@@ -61,11 +61,11 @@ Spreadsheet ID để ở Script Properties `SPREADSHEET_ID` (không hardcode —
 - Những tin do ADMIN gửi (role=`ADMIN`) hiển thị “Admin” + badge, KHÔNG hiện email. Người khác luôn hiện email + thời gian.
 - `FeedbackReplies`: `[id, feedback_id, at, text]` — chỉ ADMIN mới được trả lời (`replyFeedback` gọi `requireAdmin_()`); reply luôn hiển thị “Admin” (không email) dù có phân biệt `by` audit hay không.
 
-### `Backlog` (vận hành, read-only từ WebApp — 1 dòng = 1 shipment)
+### `Backlog` (vận hành, read-only từ WebApp — 1 dòng = 1 shipment, 16 cột A-P)
 
-| `shipment_id` | `status_desc` | `station_name` | `next_station_name` | `pickup_station_name` | `created_time` | `lh_trip_number` | `trip_number_arrived` | `inbound_time` | `last_touch_at` | `last_touch_by` | `product_name` | `seller_sort_code` | `return_sort_code` | `buyer_sort_code` | `aging_leadtime` | `cogs` |
+| `shipment_id` | `status_desc` | `station_name` | `next_station_name` | `pickup_station_name` | `created_time` | `lh_trip_number` | `inbound_time` | `last_touch_at` | `last_touch_by` | `product_name` | `seller_sort_code` | `return_sort_code` | `buyer_sort_code` | `aging_leadtime` | `cogs` |
 
-- 3 hàng đầu đặc biệt: A1=`Last update at`, B1=timestamp text (`2026-10-10 18:53:19`, hiển thị web `10/10/2026 18:53:19`); hàng 2 = tiêu đề hiển thị (vd `Shipment ID`); hàng 3 = key `snake_case`; data từ hàng 4. WebApp KHÔNG ghi sheet này (không lock, mọi role đều đọc được như `listFeedback`).
+Sửa 2026-10-10: sheet chỉ còn 16 cột A-P (bỏ cột TO inbound, không còn hàng key): A1=`Last update at`, B1=timestamp text (`2026-10-10 18:53:19`, hiển thị web `10/10/2026 18:53:19`); hàng 2 = tiêu đề hiển thị (vd `Shipment ID`); data từ hàng 3. WebApp KHÔNG ghi sheet này (không lock, mọi role đều đọc được như `listFeedback`).
 - `listBacklog()` đọc 1 batch toàn sheet, trả `{updatedAt, titles, keys, rows, defaults}`; client cache full + tìm/sort/filter/phân trang 50 local. Mặc định hiện 10 cột (`BACKLOG_DEFAULT`, thiếu `seller_sort_code` + `last_touch_by`).
 
 ### `ActivityLog` (append-only, ai đổi trạng thái)

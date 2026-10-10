@@ -1535,10 +1535,11 @@ function replyFeedback(id, text) {
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
-// ===== Backlog — sheet van hanh (read-only): A1/B1 last update, hang 2 tieu de,
-// hang 3 key snake_case, data tu hang 4. Client render + filter/sort local. =====
+// ===== Backlog — sheet van hanh (read-only, 16 cot A-P): A1/B1 last update,
+// hang 2 tieu de hien thi, data tu hang 3 (khong co hang key, khong co cot TO inbound).
+// Client render + filter/sort local theo key chuan vi tri. =====
 var BACKLOG_KEYS = ['shipment_id', 'status_desc', 'station_name', 'next_station_name',
-  'pickup_station_name', 'created_time', 'lh_trip_number', 'trip_number_arrived',
+  'pickup_station_name', 'created_time', 'lh_trip_number',
   'inbound_time', 'last_touch_at', 'last_touch_by', 'product_name', 'seller_sort_code',
   'return_sort_code', 'buyer_sort_code', 'aging_leadtime', 'cogs'];
 var BACKLOG_DEFAULT = ['shipment_id', 'status_desc', 'pickup_station_name', 'created_time',
@@ -1550,12 +1551,12 @@ function listBacklog() {
     if (!sh) throw new Error('Chua co sheet Backlog.');
     var last = sh.getLastRow();
     var width = Math.max(sh.getLastColumn(), BACKLOG_KEYS.length);
-    var vals = sh.getRange(1, 1, Math.max(last, 3), width).getValues();
+    var vals = sh.getRange(1, 1, Math.max(last, 2), width).getValues();
     var updatedAt = cellText_(vals[0][1]);
     var titles = vals[1].map(function (v) { return cellText_(v); });
-    var keys = vals[2].map(function (v) { return String(cellText_(v) || '').trim(); });
+    var keys = BACKLOG_KEYS.slice();
     var rows = [];
-    for (var i = 3; i < vals.length; i++) {
+    for (var i = 2; i < vals.length; i++) {
       var o = {}, has = false;
       for (var k = 0; k < BACKLOG_KEYS.length; k++) {
         var v = cellText_(vals[i][k]);

@@ -337,7 +337,7 @@ def history_bill(from_st, to_st, note):
 
 
 BACKLOG_KEYS = ["shipment_id", "status_desc", "station_name", "next_station_name",
-    "pickup_station_name", "created_time", "lh_trip_number", "trip_number_arrived",
+    "pickup_station_name", "created_time", "lh_trip_number",
     "inbound_time", "last_touch_at", "last_touch_by", "product_name", "seller_sort_code",
     "return_sort_code", "buyer_sort_code", "aging_leadtime", "cogs"]
 BACKLOG_DEFAULT = ["shipment_id", "status_desc", "pickup_station_name", "created_time",

@@ -244,7 +244,7 @@ class TestBacklog(unittest.TestCase):
     """Mirror Code.gs listBacklog: map 17 cot, bo dong trong, fmt COGS."""
 
     def test_keys_and_default(self):
-        self.assertEqual(len(BACKLOG_KEYS), 17)
+        self.assertEqual(len(BACKLOG_KEYS), 16)
         self.assertEqual(BACKLOG_KEYS[0], "shipment_id")
         self.assertEqual(BACKLOG_KEYS[-1], "cogs")
         self.assertEqual(len(BACKLOG_DEFAULT), 10)
@@ -255,17 +255,17 @@ class TestBacklog(unittest.TestCase):
 
     def test_map_row(self):
         vals = ["SPXVN1", "SOC_Packed", "HN SOC", "HN2 SOC", "Hub A",
-                "2026-10-09 14:47:13", "LTQ1", "LTQ1", "2026-10-09 22:48:04",
+                "2026-10-09 14:47:13", "LTQ1", "2026-10-09 22:48:04",
                 "2026-10-09 22:48:05", "spx@shopee.com", "Bột Tảo", "M1",
                 "M2", "M3", "05. 10-24 hours", "35000"]
         o = map_backlog_row(BACKLOG_KEYS, vals)
         self.assertEqual(o["shipment_id"], "SPXVN1")
         self.assertEqual(o["product_name"], "Bột Tảo")
         self.assertEqual(o["cogs"], "35000")
-        self.assertEqual(len(o), 17)
+        self.assertEqual(len(o), 16)
 
     def test_map_row_skips_empty(self):
-        self.assertIsNone(map_backlog_row(BACKLOG_KEYS, [""] * 17))
+        self.assertIsNone(map_backlog_row(BACKLOG_KEYS, [""] * 16))
         self.assertIsNone(map_backlog_row(BACKLOG_KEYS, []))
         self.assertIsNone(map_backlog_row([], ["a"]))
 
