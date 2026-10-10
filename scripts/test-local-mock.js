@@ -152,6 +152,15 @@ function check(name, cond, detail) {
   results.push({ name, pass: !!cond });
   console.log((cond ? 'PASS' : 'FAIL') + '  ' + name + (detail ? '  — ' + detail : ''));
 }
+// Click chuột thật qua input pipeline (tin cậy như người dùng).
+async function clickTh(ws, label) {
+  const r = await evalIn(ws, `(function(){var ths=document.querySelectorAll('#blThead th');for(var i=0;i<ths.length;i++){if(ths[i].textContent.indexOf('${label}')===0){ths[i].scrollIntoView({block:'nearest'});var b=ths[i].getBoundingClientRect();var el=document.elementFromPoint(b.left+b.width/2,b.top+b.height/2);return JSON.stringify({x:b.left+b.width/2,y:b.top+b.height/2,hit:el?((el.id||el.tagName)+' '+(el.className||'')):'none',vw:window.innerWidth,vh:window.innerHeight});}}return null;})()`);
+  if (r.err || !r.value) return false;
+  const p = JSON.parse(r.value);
+  await send(ws, 'Input.dispatchMouseEvent', { type: 'mousePressed', x: p.x, y: p.y, button: 'left', clickCount: 1 });
+  await send(ws, 'Input.dispatchMouseEvent', { type: 'mouseReleased', x: p.x, y: p.y, button: 'left', clickCount: 1 });
+  return true;
+}
 
 async function main() {
   let ws = null;
@@ -601,6 +610,43 @@ async function main() {
     const fbStaff = await evalIn(ws, `document.querySelectorAll('#fbList .fbReplyBtn').length === 0`);
     check('Feedback: USER khong thay nut Reply', fbStaff.value === true, String(fbStaff.value));
     await evalIn(ws, `state.me={email:'admin.mock@spxexpress.com',role:'ADMIN'}; document.getElementById('btnCloseFb').click()`);
+    // Backlog tab (Sheet Backlog read-only, mock 8 dong)
+    // Dong modal chi tiet man hinh chinh con sot tu buoc truoc (mobile overlay che bang)
+    await evalIn(ws, `document.getElementById('detailModal').classList.remove('open');document.body.classList.remove('has-drawer');`);
+    await evalIn(ws, `document.getElementById('navBacklog').click()`);
+    const blOpen = await waitUntil(ws, "document.getElementById('viewBacklog').style.display==='block' && document.querySelectorAll('#blTbody tr').length>=8", 8000);
+    const blMeta = await evalIn(ws, `JSON.stringify({rows: document.querySelectorAll('#blTbody tr').length, ths: document.querySelectorAll('#blThead th').length, upd: document.getElementById('blUpdAt').textContent, cnt: document.getElementById('blCnt').textContent})`);
+    check('Backlog: mo tab tai du lieu + 10 cot mac dinh + meta', !!(blOpen && JSON.parse(blMeta.value).ths===10 && /18:53:19/.test(JSON.parse(blMeta.value).upd)), blMeta.value);
+    await evalIn(ws, `document.getElementById('blQ').value='SOC_Packed'; document.getElementById('blSearch').click()`);
+    const blSearch = await waitUntil(ws, "document.querySelectorAll('#blTbody tr').length===4", 5000);
+    check('Backlog: Tim kiem toan cuc loc con 4 dong', !!blSearch, String(blSearch));
+    await evalIn(ws, `document.getElementById('blQClear').click()`);
+    await waitUntil(ws, "document.querySelectorAll('#blTbody tr').length>=8", 5000);
+    await clickTh(ws, 'COGS');
+    const blSortAsc = await waitUntil(ws, "document.querySelector('#blTbody tr td:last-child').textContent==='6,800'", 5000);
+    check('Backlog: sort COGS 1 lan -> tang dan, dau 6,800', !!blSortAsc, String(blSortAsc));
+    await clickTh(ws, 'COGS');
+    await sleep(400);
+    const blSort = await evalIn(ws, `document.querySelector('#blTbody tr td:last-child').textContent`);
+    check('Backlog: sort COGS 2 lan -> giam dan, dau 178,500', blSort.value === '178,500', blSort.value);
+    await clickTh(ws, 'Status');
+    const blDrop = await waitUntil(ws, "document.getElementById('blHdrop').style.display==='block' && document.querySelectorAll('#blHdrop .hrow').length===4", 5000);
+    check('Backlog: filter Status xo 4 gia tri + nut OK', !!blDrop, String(blDrop));
+    await evalIn(ws, `document.querySelector('#blHdrop .hrow input').click(); document.querySelector('#blHdrop .hok').click()`);
+    const blFilt = await waitUntil(ws, "document.querySelectorAll('#blTbody tr').length===7", 5000);
+    check('Backlog: bo 1 status + OK -> con 7 dong', !!blFilt, String(blFilt));
+    await evalIn(ws, `document.getElementById('blReset').click()`);
+    await waitUntil(ws, "document.querySelectorAll('#blTbody tr').length>=8", 5000);
+    await evalIn(ws, `document.querySelector('#blTbody tr').click()`);
+    const blDetail = await waitUntil(ws, "document.getElementById('blDetail').classList.contains('open') && /SPXVN|MY26/.test(document.getElementById('blDTitle').textContent)", 5000);
+    const blCopy = await evalIn(ws, `document.getElementById('blCopy').textContent`);
+    check('Backlog: click dong mo chi tiet + nut Copy Shipment ID', !!(blDetail && /Copy Shipment ID/.test(blCopy.value || '')), blCopy.value);
+    await evalIn(ws, `document.getElementById('blDClose').click()`);
+    await evalIn(ws, `document.getElementById('blQ').value='zzz999khongton'; document.getElementById('blSearch').click()`);
+    const blEmpty = await waitUntil(ws, "document.querySelectorAll('#blTbody tr').length===0 && document.querySelectorAll('#blThead th').length===10 && document.getElementById('blEmpty').style.display==='block'", 5000);
+    check('Backlog: 0 ket qua van giu tieu de cot', !!blEmpty, String(blEmpty));
+    await evalIn(ws, `document.getElementById('blQClear').click(); document.getElementById('navMain').click()`);
+    await waitUntil(ws, "document.getElementById('viewMain').style.display==='block'", 5000);
 
     await evalIn(ws, `state.range={f:{y:2020,m:1,d:1},t:{y:2020,m:2,d:1}};renderGrid();`);
     const z0 = await evalIn(ws, `document.querySelectorAll('#grid .card').length`);

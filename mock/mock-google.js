@@ -78,6 +78,27 @@
     { id: 'fb-3', at: '09/10/2026 08:20:00', email: 'tuan.pham@spxexpress.com', role: 'STAFF', text: 'Đề xuất thêm cột trọng lượng vào form create.', replies: [] },
     { id: 'fb-4', at: '09/10/2026 09:10:00', email: 'admin.mock@spxexpress.com', role: 'ADMIN', text: 'Tôi là admin — góp ý này chỉ hiện “Admin” chứ không email.', replies: [] }
   ];
+  var BL_KEYS = ['shipment_id', 'status_desc', 'station_name', 'next_station_name',
+    'pickup_station_name', 'created_time', 'lh_trip_number', 'trip_number_arrived',
+    'inbound_time', 'last_touch_at', 'last_touch_by', 'product_name', 'seller_sort_code',
+    'return_sort_code', 'buyer_sort_code', 'aging_leadtime', 'cogs'];
+  var BL_TITLES = ['Shipment ID', 'Status', 'Current station', 'Next station',
+    'Pickup station', 'Created time', 'LH trip number', 'TO inbound',
+    'Inbound time', 'Last touch at', 'Last touch by', 'Product name', 'Seller sort code',
+    'Return sort code', 'Buyer sort code', 'Aging lead time', 'COGS'];
+  var BL_DEFAULT = ['shipment_id', 'status_desc', 'pickup_station_name', 'created_time',
+    'last_touch_at', 'product_name', 'return_sort_code', 'buyer_sort_code', 'aging_leadtime', 'cogs'];
+  function blRow(a) { var o = {}; for (var i = 0; i < BL_KEYS.length; i++) o[BL_KEYS[i]] = a[i]; return o; }
+  var BACKLOG = [
+    blRow(['SPXVN06000101979A', 'SOC_Packed', 'HN SOC', 'HN2 SOC', '51-HCM D12/Thoi An Hub', '2026-10-06 14:56:26', 'LTQA950DTT1L', 'LTQA950DTT1L', '2026-10-09 23:43:40', '2026-10-10 02:37:32', 'huong.lathi@spx', 'Tổng Hợp Các Loại Bột Tảo', 'HCB-51-73-72930', 'HCB-51-73-12THN', 'MBD-24-05-LC0', '05. 10-24 hours', '35000']),
+    blRow(['SPXVN0600101165A', 'SOC_Packed', 'HN SOC', 'HN2 SOC', '26-TBH Thai Thuy 2 Hub', '2026-10-09 10:45:46', 'LTQA950DW4J1', 'LTQA950DW4J1', '2026-10-09 22:48:35', '2026-10-10 04:05:28', 'huong.lathi@spx', '1 x SỮI 220V', 'MBD-26-10-TB11R', 'MBD-26-10-TB11R', 'CT-74-21-PT08', '05. 10-24 hours', '36900']),
+    blRow(['MY261400613828J', 'SOC_Packed', 'HN SOC', 'HN2 SOC', '26-TBH Thai Thuy 2 Hub', '2026-10-09 14:47:13', 'LTQA950DW4J1', 'LTQA950DW4J1', '2026-10-09 22:48:04', '2026-10-09 22:48:05', 'spx@shopee.com', 'Cute long-eared bunny for babies. Jellycat teddy bear', 'MBD-26-10-TB04R', 'MBD-26-10-TB04R', 'SIP-HCM', '05. 10-24 hours', '93943']),
+    blRow(['SPXVN06000127938A', 'SOC_Received', 'HN SOC', '28-NDH My Loc 3 Hub', '24-HPG Vinh Bao 2 Hub', '2026-10-07 10:04:24', 'LTQA94ZTT6S6', 'LTQA94ZTT6S6', '2026-10-10 01:58:04', '2026-10-10 01:58:04', 'spx@shopee.com', 'Set cotton bé gái, thỏ sweet', 'MBD-24-30-18939', 'MBD-24-30-VB09N', 'MBD-28-13-ML0', '05. 10-24 hours', '178500']),
+    blRow(['SPXVN0600058254A', 'SOC_Packed', 'HN SOC', '27-HNM Kim Bang 2 Hub', '24-HPG Le Chan 2 Hub', '2026-10-07 14:28:36', 'LTQA74ZP2L21', 'LTQA74ZP2L21', '2026-10-10 19:01:08', '2026-10-10 19:01:30', '[Ops249328]', 'Lê Bống không ẩn check in sinh nhật (50 x 50 cm)', 'HCA-51-155-10P1N', 'HCA-51-155-10P1N', 'MBD-24-26-HP0', '06. 24-37 hours', '9899']),
+    blRow(['SPXVN0600027396A', 'FMHub_LHTransported', 'HN SOC', '27-HNM Kim Bang 2 Hub', 'AG-21-HNI Cau Giay 3 Hub', '2026-10-09 13:04:36', 'LTQAA4Z2W9H1', 'LTQAA4Z2W9H1', '2026-10-10 11:24:29', '2026-10-10 18:20:36', '[Ops34326]', 'Đinh 1HSD 1/27 Phở mai tách muối', 'HN-20-59-12210', 'HN-21-60-CGQHN', 'MBD-26-07-TH1', '05. 10-24 hours', '140728']),
+    blRow(['SPXVN0600066467A', 'SOC_LHArrived', 'HN2 SOC', 'BD B Mega SOC', '20-HNI Bac Tu Liem 4 Hub', '2026-10-09 17:38:22', 'LTQA94X2ITJ1', 'LTQA94X2ITJ1', '2026-10-10 19:50:34', '2026-10-10 23:32:26', '[81403]', 'HPL - Lan Pin đế thay 7.7V Dung Lượng Cao Từ 40-1500mAh có mạch bảo vệ, pin cho tai nghe, đồng hồ', 'HN-20-07-TH30N', 'HN-20-07-TH30N', 'HCB-50-74-BH12', '2-3 days', '50841']),
+    blRow(['SPXVN0600058274A', 'SOC_Received', 'HN SOC', '27-HNM Duy Tien 2 Hub', '22-BNH Warehouse Inbound 02', '2026-10-09 05:32:28', 'LTQA94TT2GR1', 'LTQA94TT2GR1', '2026-10-10 17:16:04', '2026-10-10 17:16:04', '[Ops18769]', 'Nguyễn Kem Kẹp Nướng WRBG QLV5', 'HN-20-86-15238', 'HN-20-86-15238', 'MBD-24-26-HP0', '05. 10-24 hours', '6800'])
+  ];
   var PRINT_RE_MOCK = /^(Box|Item)\.\d{2}-\d{2}-\d{4}\.\d+$/;
   function queueCodes(codes) {
     var seen = {}, list = [];
@@ -247,6 +268,7 @@
       return { ok: true, data: { size: size || 400, items: items } };
     },
     listFeedback: function () { return { ok: true, data: clone(FEEDBACK) }; },
+    listBacklog: function () { return { ok: true, data: { updatedAt: '2026-10-10 18:53:19', titles: BL_TITLES.slice(), keys: BL_KEYS.slice(), rows: clone(BACKLOG), defaults: BL_DEFAULT.slice() } }; },
     addFeedback: function (text) {
       var t = String(text || '').trim();
       if (!t) return { ok: false, error: 'Vui lòng nhập nội dung.' };

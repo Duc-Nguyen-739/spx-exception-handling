@@ -299,7 +299,7 @@ td .st.adm{background:var(--tint);color:var(--o)}
 .bottom-row .side-toggle{width:40px;height:40px;flex:none;margin:0;border:none;background:transparent;color:#8b98ab;padding:0;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}.side-toggle svg,.railbox .expand svg{display:block}.side-toggle .chevR,.railbox .expand .chevR{display:none}body.rail .side-toggle .chevL,body.rail .railbox .expand .chevL{display:none}body.rail .side-toggle .chevR,body.rail .railbox .expand .chevR{display:block}
 body.rail .bnav{width:64px;padding:10px 0 12px;align-items:center}
 body.rail .bnav .side-brand span,body.rail .bnav .nlab,body.rail .bnav .sfilter,body.rail .bnav .stitle{display:none}
-body.rail .bnav #navMain,body.rail .bnav #navLiq,body.rail .bnav #navPrint,body.rail .bnav #navAccess{display:none}
+body.rail .bnav #navMain,body.rail .bnav #navBacklog,body.rail .bnav #navLiq,body.rail .bnav #navPrint,body.rail .bnav #navAccess{display:none}
 body.rail .bnav .side-brand{justify-content:center}
 body.rail .bnav .side-brand svg{width:44px;height:auto}
 body.rail .bnav button{justify-content:center;padding:11px 0}
@@ -469,6 +469,64 @@ header{flex-wrap:wrap}
 @page{size:4in 6in;margin:0}
 #printArea{width:4in}
 @media print{body>*{display:none!important}#printArea{display:block!important;margin:0;padding:0}#printArea .plabel{width:4in;height:6in;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:center;page-break-after:always}#printArea .plabel:last-child{page-break-after:auto}#printArea .plabel .pslip{width:4in;height:2in;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4mm;box-sizing:border-box}#printArea .pq img,#printArea .pq canvas,#printArea .pq table{width:1.35in!important;height:1.35in!important}#printArea .pcode{font-size:30px;font-weight:800;margin-top:6px;white-space:nowrap;padding:0 4px}}
+/* ===== Backlog tab (KHỚP mockup v11 duyệt) ===== */
+#viewBacklog .bl-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:10px 14px;margin-bottom:10px;font-size:12.5px}
+#viewBacklog .bl-meta .upd{font-weight:800;color:var(--navy)}
+#viewBacklog .bl-meta .upd b{color:var(--o)}
+#viewBacklog .bl-meta .cnt{margin-left:auto;font-size:12.5px;color:var(--navy);font-weight:800}
+#viewBacklog .subnote{font-size:10.5px;color:var(--mut);font-weight:600}
+#viewBacklog .bl-search{display:flex;gap:8px;align-items:center;background:var(--card);border:1.5px solid #ffcfbd;border-radius:13px;padding:5px 6px 5px 13px;margin-bottom:10px;box-shadow:0 1px 6px rgba(238,77,45,.08)}
+#viewBacklog .bl-search svg{color:var(--o);flex:none}
+#viewBacklog .bl-search input{border:none;background:transparent;padding:9px 0;font-size:14px;font-weight:600;flex:1;min-width:0;text-align:center}
+#viewBacklog .bl-search input:focus{outline:none}
+#viewBacklog .bl-search .go{flex:none;white-space:nowrap}
+#blQClear{display:none;width:30px;height:30px;flex:none;border:none;border-radius:50%;background:#e8ecf1;color:#5b6572;font-size:13px;font-weight:800;line-height:1;padding:0}
+#blQClear.show{display:block}
+#viewBacklog .colbar{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:8px 10px;margin-bottom:10px}
+#viewBacklog .colbtn{flex:none;border-radius:99px;padding:8px 14px;font-size:11.5px;font-weight:800;color:var(--navy)}
+#viewBacklog .colbtn.open{border-color:var(--o);color:var(--o);background:var(--tint)}
+#viewBacklog .scrollrow{display:none;gap:7px;overflow-x:auto;flex:1;min-width:0;padding:2px;align-items:center}
+#viewBacklog .scrollrow.show{display:flex}
+#viewBacklog .scrollrow::-webkit-scrollbar{height:6px}
+#viewBacklog .scrollrow::-webkit-scrollbar-thumb{background:#e2e6ec;border-radius:99px}
+#viewBacklog .btnReset{flex:none;border:1px solid #c9d2e0;background:#fff;border-radius:99px;padding:7px 18px;font-size:11px;font-weight:800;color:var(--navy);white-space:nowrap}
+#viewBacklog .pill{flex:none;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:7px 13px;font-size:11px;font-weight:700;color:var(--mut);white-space:nowrap}
+#viewBacklog .pill.on{background:var(--navy);border-color:var(--navy);color:#fff}
+#viewBacklog .tblwrap{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:auto;max-width:100%;width:100%;max-height:calc(100dvh - 330px);min-height:300px}
+#viewBacklog table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;font-family:Roboto,'Helvetica Neue',Arial,system-ui,sans-serif}
+#viewBacklog th{background:var(--bg);text-align:left;padding:9px 8px;font-size:12px;color:var(--mut);font-weight:700;position:sticky;top:0;z-index:2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
+#viewBacklog th.sortable{cursor:pointer;user-select:none}
+#viewBacklog th.sortable .arr{color:var(--o);font-weight:800}
+#viewBacklog th.sortable .arr.dim{color:#c3ccd8}
+#viewBacklog td{padding:9px 8px;border-top:1px solid var(--bg);vertical-align:top;white-space:nowrap;font-size:13px;color:#1f2a37;overflow:hidden;text-overflow:ellipsis}
+#viewBacklog td.sid{font-family:ui-monospace,Menlo,monospace;font-weight:700;color:var(--navy)}
+#viewBacklog tbody tr{cursor:pointer}
+#viewBacklog tbody tr:hover{background:var(--tint)}
+#viewBacklog tbody tr.sel{background:var(--tint);box-shadow:inset 3px 0 0 var(--o)}
+#viewBacklog .empty{padding:34px 16px;text-align:center;color:var(--mut);font-size:12.5px;font-weight:600}
+#viewBacklog .pager{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:10px 14px;margin-top:10px;font-size:12.5px;font-weight:700;position:sticky;bottom:10px;z-index:5;box-shadow:0 6px 20px rgba(23,43,72,.08)}
+#viewBacklog .pager .rng{margin-right:auto;color:var(--navy)}
+#viewBacklog .pager .pg{min-width:36px}
+#viewBacklog .pager .pg.cur{background:var(--navy);border-color:var(--navy);color:#fff}
+#viewBacklog .loading{padding:60px 16px;text-align:center;color:var(--mut);font-weight:700;font-size:13px}
+#viewBacklog .spin{width:34px;height:34px;border-radius:50%;border:4px solid #ffe0d3;border-top-color:var(--o);margin:0 auto 12px;animation:blsp .9s linear infinite}
+@keyframes blsp{to{transform:rotate(360deg)}}
+#blPtip{position:fixed;z-index:60;display:none;max-width:340px;background:#fff;color:#172b48;border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.25);padding:10px 12px;font-size:12.5px;font-weight:600;line-height:1.6;word-break:break-word;pointer-events:none}
+#blPtip b{display:block;font-size:10.5px;color:var(--mut);font-weight:800;margin-bottom:4px}
+#blHdrop{position:fixed;z-index:70;display:none;background:#fff;color:#172b48;border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.22);padding:10px;width:300px}
+#blHdrop .hs{display:flex;gap:7px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:7px 10px;margin-bottom:8px;color:var(--mut)}
+#blHdrop .hs input{border:none;outline:none;flex:1;min-width:0;font-size:12.5px;font-family:inherit;color:#172b48;background:transparent}
+#blHdrop .hlist{max-height:220px;overflow-y:auto;margin-bottom:8px}
+#blHdrop .hrow{display:flex;align-items:center;gap:9px;padding:7px 4px;font-size:12.5px;font-weight:600;cursor:pointer;border-bottom:1px solid var(--bg)}
+#blHdrop .hrow input{accent-color:#172b48;width:15px;height:15px;flex:none}
+#blHdrop .hrow span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#blHdrop .hrow em{font-style:normal;font-size:11px;color:var(--mut);font-weight:700}
+#blHdrop .frow{display:flex;gap:8px}
+#blHdrop .hcancel{flex:1;border:1px solid #c9d2e0;background:#fff;color:var(--navy)}
+#blHdrop .hok{flex:1;background:var(--navy);border-color:var(--navy);color:#fff}
+#viewBacklog .fdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--o);margin-left:5px;vertical-align:middle}
+#blDetail .kv b .hiddenTag{font-size:9px;font-weight:800;background:var(--bg);color:var(--mut);border-radius:6px;padding:2px 6px;margin-left:6px;white-space:nowrap}
+@media(max-width:899px){#navBacklog{display:none}}
 </style>
 </head>
 <body>
@@ -528,6 +586,7 @@ header{flex-wrap:wrap}
     <path d="M6.91737 30L10.1751 25.8334H18.9126L15.6549 30H6.91737Z" fill="#EE4D2D"/>
     </svg><span>Exception Handling</span></span>
 <button id="navMain" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="nlab">Danh sách</span></button>
+<button id="navBacklog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span class="nlab">Backlog</span></button>
 <button id="navLiq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg><span class="nlab">Thanh lý</span></button>
 <button id="navPrint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span class="nlab">In Mã</span></button>
 <button id="navAccess" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="nlab">Role</span></button>
@@ -617,6 +676,23 @@ header{flex-wrap:wrap}
 </div>
 <div id="usersTable" style="margin-top:8px"></div>
 </main>
+
+<main id="viewBacklog" style="display:none">
+<div class="bl-meta"><span class="upd">Cập Nhật Lúc: <b id="blUpdAt">—</b></span><span class="subnote">Dữ liệu 60 phút cập nhật 1 lần.</span><span class="cnt" id="blCnt"></span></div>
+<div class="msg" id="blMsg"></div>
+<div class="bl-search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="blQ" placeholder="Nhập thông tin để tìm..." inputmode="text"><button id="blQClear" title="Xóa tìm kiếm">✕</button><button id="blSearch" class="primary go" type="button">Tìm kiếm</button></div>
+<div class="colbar"><button class="colbtn" id="blColBtn" type="button">Cột &gt;</button><div class="scrollrow" id="blScroll"><button id="blReset" class="btnReset" type="button">Reset</button><span id="blPills" style="display:contents"></span></div></div>
+<div class="tblwrap" id="blWrap"><div class="loading" id="blLoading" style="display:none"><div class="spin"></div><div>Đang tải...</div></div><table id="blTbl" style="display:none"><colgroup id="blColgrp"></colgroup><thead><tr id="blThead"></tr></thead><tbody id="blTbody"></tbody></table><div class="empty" id="blEmpty" style="display:none">Không tìm thấy dòng nào khớp từ khóa.<br>Bấm ✕ để xóa tìm kiếm.</div></div>
+<div class="pager" id="blPager" style="display:none"><span class="rng" id="blRng"></span><button class="pg" id="blPgPrev" type="button">‹ Trước</button><span id="blPgNums" style="display:flex;gap:6px"></span><button class="pg" id="blPgNext" type="button">Sau ›</button></div>
+</main>
+
+<div class="modal" id="blDetail"><div class="sheet">
+<div class="dhead"><span class="dt" id="blDTitle">Thông tin chi tiết</span><span style="flex:1"></span><button id="blDClose" class="iconBtn" title="Đóng">✕</button></div>
+<div class="pcard" id="blDBody"></div>
+<div style="display:flex;gap:8px;margin-top:12px"><button id="blCopy" type="button" style="flex:1">⧉ Copy Shipment ID</button><button id="blDClose2" type="button" style="flex:1" class="primary">Đóng</button></div>
+</div></div>
+<div id="blPtip"></div>
+<div id="blHdrop"></div>
 
 <div class="modal" id="detailModal"><div class="sheet">
 <div class="dhead">
@@ -943,7 +1019,7 @@ var rf=document.createElement('button');rf.type='button';rf.className='pill';rf.
 renderSideFilters();
 }
 }
-var RAILNAV=[['navMain','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>','Danh sách'],['navLiq','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>','Thanh lý'],['navPrint','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>','In Mã'],['navAccess','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>','Role']];
+var RAILNAV=[['navMain','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>','Danh sách'],['navLiq','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>','Thanh lý'],['navBacklog','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>','Backlog'],['navPrint','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>','In Mã'],['navAccess','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>','Role']];
 var railFlyOpen=false,railFlyT=null;
 function openRailFly(){clearTimeout(railFlyT);railFlyOpen=true;syncRailFly();}
 function schedRailFly(){clearTimeout(railFlyT);railFlyT=setTimeout(function(){railFlyOpen=false;syncRailFly();},140);}
@@ -1629,26 +1705,29 @@ setCreateDoneUI(false);
 await refreshPreview();
 }
 
-function setActive(id){['navMain','navLiq','navPrint','navAccess'].forEach(function(n){document.getElementById(n).classList.toggle('on',n===id);});curNav=id;renderRail();}
+function setActive(id){['navMain','navBacklog','navLiq','navPrint','navAccess'].forEach(function(n){document.getElementById(n).classList.toggle('on',n===id);});curNav=id;renderRail();}
 var PRINT_RE=/^(Box|Item)\.\d{2}-\d{2}-\d{4}\.\d+$/;
 var lastAutoPrint='';
 function syncTabHeader(tab){
 var rb=document.getElementById('rangebar'),pl=document.getElementById('pillsRow'),cx=document.getElementById('ctxBar');
+var sb=document.querySelector('header .scanbar');
 var isList=(tab==='list');
 if(rb)rb.style.display=isList?'':'none';
 if(pl)pl.style.display=isList?'':'none';
+if(sb)sb.style.display=(tab==='backlog')?'none':'';
 if(!cx)return;
 cx.classList.remove('back');cx.removeAttribute('data-back');
 if(isList){cx.style.display='none';cx.textContent='';return;}
 cx.style.display='block';
 if(tab==='liq'||tab==='print'){cx.textContent='‹ Quay lại';cx.classList.add('back');cx.setAttribute('data-back',tab);cx.style.display='';}
-else if(tab==='role'){cx.style.display='none';cx.textContent='';}
+else if(tab==='role'||tab==='backlog'){cx.style.display='none';cx.textContent='';}
 }
 function showPrint(on){
 document.getElementById('viewPrint').style.display=on?'block':'none';
 document.getElementById('viewMain').style.display=on?'none':'block';
 document.getElementById('viewLiq').style.display='none';
 document.getElementById('viewAccess').style.display='none';
+document.getElementById('viewBacklog').style.display='none';
 if(on){setActive('navPrint');}
 else{setActive('navMain');}
 syncTabHeader(on?'print':'list');
@@ -2190,6 +2269,7 @@ document.getElementById('btnPrintDetail').onclick=function(){if(!state.detail||!
 document.getElementById('navMain').onclick=function(){showLiq(false);};
 document.getElementById('navLiq').onclick=function(){showLiq(true);};
 document.getElementById('navPrint').onclick=function(){showPrint(true);};
+document.getElementById('navBacklog').onclick=function(){showBacklog(true);};
 document.getElementById('navAccess').onclick=function(){showAccess();};
 document.getElementById('navToggle').onclick=function(){document.body.classList.toggle('rail');};
 document.getElementById('sideFilterToggle').onclick=function(){var p=document.getElementById('sideFilterPanel');var open=p.classList.toggle('open');this.setAttribute('aria-expanded',open?'true':'false');};
@@ -2231,14 +2311,109 @@ document.getElementById('cardSingle').onclick=function(){selectPrintCard('single
 document.getElementById('cardBulk').onclick=function(){selectPrintCard('bulk');document.getElementById('printKindModal').classList.add('open');};
 document.getElementById('scanPrint').addEventListener('input',function(){clearTimeout(autoT);autoT=setTimeout(autoPrintSingle,600);});
 document.getElementById('scanPrint').addEventListener('keydown',function(e){if(e.key==='Enter'){clearTimeout(autoT);autoPrintSingle();}});
-function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';document.getElementById('viewPrint').style.display='none';setActive(on?'navLiq':'navMain');syncTabHeader(on?'liq':'list');if(on&&isStation_()){try{if(liqStep2()){document.getElementById('liqCode').focus();}else{document.getElementById('scanLiq').focus();}}catch(e){}}}
-async function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';document.getElementById('viewPrint').style.display='none';setActive('navAccess');syncTabHeader('role');try{await loadMe();}catch(e){}
+function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';document.getElementById('viewPrint').style.display='none';document.getElementById('viewBacklog').style.display='none';setActive(on?'navLiq':'navMain');syncTabHeader(on?'liq':'list');if(on&&isStation_()){try{if(liqStep2()){document.getElementById('liqCode').focus();}else{document.getElementById('scanLiq').focus();}}catch(e){}}}
+async function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';document.getElementById('viewPrint').style.display='none';document.getElementById('viewBacklog').style.display='none';setActive('navAccess');syncTabHeader('role');try{await loadMe();}catch(e){}
 var e=state.me||{};
 var dl=document.getElementById('msgDeploy');
 if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?');
 if((state.me&&state.me.role)!=='ADMIN'){msg('msgAccess','Chỉ ADMIN mới xem được trang này.');return;}
 loadUsers();}
 });
+/* ===== Backlog tab (Sheet Backlog, read-only; KHỚP mockup v11 duyệt) ===== */
+var blCache=null,blTitles=[],blKeys=[],blVis=[],blDefaults=[],blPage=1,blKeyword='',blSelId=null,blColOpen=false,blSortKey=null,blSortDir=0;
+var blSel={status_desc:null,aging_leadtime:null},blQ={product_name:'',return_sort_code:'',buyer_sort_code:''};
+var BL_PAGE=50;
+var BL_FALLBACK=['shipment_id','status_desc','pickup_station_name','created_time','last_touch_at','product_name','return_sort_code','buyer_sort_code','aging_leadtime','cogs'];
+var BL_COLW={shipment_id:1.25,status_desc:1.05,station_name:0.95,next_station_name:0.95,pickup_station_name:1.3,created_time:1.15,lh_trip_number:1.0,trip_number_arrived:1.0,inbound_time:1.15,last_touch_at:1.15,last_touch_by:1.1,product_name:1.8,seller_sort_code:0.95,return_sort_code:0.95,buyer_sort_code:0.95,aging_leadtime:0.95,cogs:0.7};
+var BL_TIP={product_name:1,last_touch_by:1,pickup_station_name:1};
+var BL_FCOL={status_desc:1,aging_leadtime:1},BL_SCOL={product_name:1,return_sort_code:1,buyer_sort_code:1};
+function blTitle(k){var i=blKeys.indexOf(k);return(i>=0&&blTitles[i])?blTitles[i]:k;}
+function blFmtUpd(s){var m=String(s||'').match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2}(?::\d{2})?)/);return m?(m[3]+'/'+m[2]+'/'+m[1]+' '+m[4]):String(s||'');}
+function blFmtCogs(v){var d=String(v==null?'':v).replace(/[^0-9]/g,'');if(!d)return String(v==null?'':v);return d.replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function blAgingH(s){var t=String(s||'').toLowerCase();var m=t.match(/[\d.]+/);var v=m?parseFloat(m[0]):9999;if(t.indexOf('day')>=0)v=v*24;return v;}
+function blSortVal(k,v){var s=String(v==null?'':v);if(k==='cogs'){var d=s.replace(/[^0-9]/g,'');return d?parseInt(d,10):-1;}if(k==='aging_leadtime')return blAgingH(s);if(/time$|_at$/.test(k)){var t=Date.parse(s.replace(' ','T'));return isNaN(t)?-1:t;}return s.toLocaleLowerCase();}
+function blSetColOpen(o){blColOpen=o;var b=document.getElementById('blColBtn');b.innerHTML=o?'Cột &lt;':'Cột &gt;';b.classList.toggle('open',o);document.getElementById('blScroll').classList.toggle('show',o);}
+function showBacklog(on){
+document.getElementById('viewBacklog').style.display=on?'block':'none';
+document.getElementById('viewMain').style.display=on?'none':'block';
+document.getElementById('viewLiq').style.display='none';
+document.getElementById('viewPrint').style.display='none';
+document.getElementById('viewAccess').style.display='none';
+setActive(on?'navBacklog':'navMain');
+syncTabHeader(on?'backlog':'list');
+if(on){blSetColOpen(false);blCloseDrop();blLoad();}
+}
+async function blLoad(){
+var ld=document.getElementById('blLoading'),tb=document.getElementById('blTbl'),pg=document.getElementById('blPager'),em=document.getElementById('blEmpty');
+ld.style.display='';tb.style.display='none';pg.style.display='none';em.style.display='none';msg('blMsg','');
+try{
+var r=await gs('listBacklog');
+if(!r||!r.ok)throw new Error((r&&r.error)||'Không tải được Backlog.');
+var d=r.data||{};
+blCache=d.rows||[];blTitles=d.titles||[];blKeys=d.keys||[];
+blDefaults=(d.defaults&&d.defaults.length?d.defaults:BL_FALLBACK).slice();
+if(!blVis.length)blVis=blDefaults.slice();
+blPage=1;
+document.getElementById('blUpdAt').textContent=blFmtUpd(d.updatedAt);
+ld.style.display='none';blRenderAll();
+}catch(e){ld.style.display='none';if(blCache){blRenderAll();msg('blMsg','Tải lại thất bại, giữ dữ liệu cũ: '+(e&&e.message||e));}else{msg('blMsg',(e&&e.message)||'Không tải được Backlog.');}}
+}
+function blFiltered(){if(!blCache)return[];var t=blKeyword.trim().toLowerCase();var rows=!t?blCache.slice():blCache.filter(function(r){for(var i=0;i<blKeys.length;i++){if(String(r[blKeys[i]]||'').toLowerCase().indexOf(t)>=0)return true;}return false;});
+rows=rows.filter(function(r){for(var k in blSel){if(blSel[k]&&blSel[k].indexOf(String(r[k]))<0)return false;}for(var q in blQ){if(blQ[q]&&String(r[q]||'').toLowerCase().indexOf(blQ[q].toLowerCase())<0)return false;}return true;});
+if(blSortKey){var num=(blSortKey==='cogs'||blSortKey==='aging_leadtime'||/time$|_at$/.test(blSortKey));rows.sort(function(a,b){var x=blSortVal(blSortKey,a[blSortKey]),y=blSortVal(blSortKey,b[blSortKey]);var dd=num?(x-y):String(x).localeCompare(String(y),'vi',{numeric:true});return blSortDir===1?dd:-dd;});}
+return rows;}
+function blToggleCol(k){var i=blVis.indexOf(k);if(i>=0){if(blVis.length<=1)return;blVis.splice(i,1);}else{blVis.push(k);var order=(blKeys.length?blKeys:Object.keys(BL_COLW));blVis.sort(function(a,b){return order.indexOf(a)-order.indexOf(b);});}blRenderAll();}
+function blRenderPills(){var p=document.getElementById('blPills');p.innerHTML='';var all=(blKeys.length?blKeys:Object.keys(BL_COLW));all.forEach(function(k){var b=document.createElement('button');b.type='button';b.className='pill'+(blVis.indexOf(k)>=0?' on':'');b.textContent=blTitle(k);b.title=k;b.onclick=function(){blToggleCol(k);};p.appendChild(b);});}
+function blRenderHead(){var th=document.getElementById('blThead');th.innerHTML='';var grp=document.getElementById('blColgrp');grp.innerHTML='';var sum=0;blVis.forEach(function(k){sum+=BL_COLW[k]||1;});blVis.forEach(function(k){var col=document.createElement('col');col.style.width=((BL_COLW[k]||1)/sum*100).toFixed(2)+'%';grp.appendChild(col);});blVis.forEach(function(k){var c=document.createElement('th');c.textContent=blTitle(k);
+if(BL_FCOL[k]||BL_SCOL[k]){c.title='Bấm để lọc: '+blTitle(k);var dv=document.createElement('span');dv.className='arr';dv.textContent=' ▾';c.appendChild(dv);var act=BL_FCOL[k]?!!blSel[k]:!!blQ[k];if(act){var fd=document.createElement('span');fd.className='fdot';fd.title='Đang lọc';c.appendChild(fd);}c.onclick=(function(kk,tt){return function(e){e.stopPropagation();var hd=document.getElementById('blHdrop');if(hd.style.display==='block'){blCloseDrop();blRenderHead();return;}if(BL_FCOL[kk])blOpenFilter(kk,tt);else blOpenSearch(kk,tt);};})(k,c);}
+else{c.title='Bấm để sắp xếp: '+blTitle(k);var on=(blSortKey===k);var arr=document.createElement('span');arr.className='arr'+(on?'':' dim');arr.textContent=on?(blSortDir===1?' ▲':' ▼'):' ↕';c.appendChild(arr);c.onclick=function(){if(blSortKey!==k){blSortKey=k;blSortDir=1;}else{blSortDir=blSortDir===1?-1:0;if(blSortDir===0)blSortKey=null;}blPage=1;blCloseDrop();blRenderHead();blRenderRows();};}
+th.appendChild(c);});}
+function blRenderRows(){
+var rows=blFiltered();
+var pages=Math.max(1,Math.ceil(rows.length/BL_PAGE));
+if(blPage>pages)blPage=pages;
+var start=(blPage-1)*BL_PAGE;
+var tb=document.getElementById('blTbody');tb.innerHTML='';
+rows.slice(start,start+BL_PAGE).forEach(function(r){var tr=document.createElement('tr');if(r.shipment_id===blSelId)tr.className='sel';blVis.forEach(function(k){var td=document.createElement('td');td.textContent=(k==='cogs'?blFmtCogs(r[k]):(r[k]==null?'':r[k]));if(k==='shipment_id')td.className='sid';if(BL_TIP[k]){td.setAttribute('data-full',String(r[k]==null?'':r[k]));td.setAttribute('data-title',blTitle(k));td.onmouseenter=function(){blTipIn(td);};td.onmouseleave=blTipOut;td.onclick=function(e){e.stopPropagation();blTipOut();blOpenDetail(r.shipment_id);};}tr.appendChild(td);});tr.onclick=function(){blOpenDetail(r.shipment_id);};tb.appendChild(tr);});
+document.getElementById('blCnt').textContent=rows.length+' đơn';
+document.getElementById('blRng').textContent='Total '+rows.length+' đơn';
+var pn=document.getElementById('blPgNums');pn.innerHTML='';
+for(var p=1;p<=pages;p++){if(pages>7&&(p>3&&p<pages-1&&Math.abs(p-blPage)>1)){if(pn.lastChild&&pn.lastChild.textContent==='…')continue;var d=document.createElement('span');d.textContent='…';d.style.padding='8px 2px';pn.appendChild(d);continue;}(function(pp){var b=document.createElement('button');b.type='button';b.className='pg'+(pp===blPage?' cur':'');b.textContent=pp;b.onclick=function(){blPage=pp;blRenderRows();document.getElementById('blWrap').scrollTop=0;};pn.appendChild(b);})(p);}
+document.getElementById('blPgPrev').disabled=(blPage<=1);
+document.getElementById('blPgNext').disabled=(blPage>=pages);
+document.getElementById('blEmpty').style.display=rows.length?'none':'block';
+document.getElementById('blTbl').style.display='';
+document.getElementById('blPager').style.display='';
+}
+function blRenderAll(){blRenderPills();blRenderHead();blRenderRows();}
+function blOpenDetail(id){blSelId=id;var r=null;(blCache||[]).forEach(function(x){if(x.shipment_id===id)r=x;});if(!r)return;document.getElementById('blDTitle').textContent=id;var bd=document.getElementById('blDBody');bd.innerHTML='';var all=(blKeys.length?blKeys:Object.keys(BL_COLW));all.forEach(function(k){var row=document.createElement('div');row.className='kv';var b=document.createElement('b');b.textContent=blTitle(k);if(blVis.indexOf(k)<0){var tag=document.createElement('span');tag.className='hiddenTag';tag.textContent='Đang Ẩn';b.appendChild(document.createTextNode(' '));b.appendChild(tag);}var s=document.createElement('span');s.textContent=(k==='cogs'?blFmtCogs(r[k]):(r[k]==null?'':r[k]));row.appendChild(b);row.appendChild(s);bd.appendChild(row);});document.getElementById('blDetail').classList.add('open');document.body.classList.add('has-drawer');blRenderRows();}
+function blCloseDetail(){document.getElementById('blDetail').classList.remove('open');document.body.classList.remove('has-drawer');blSelId=null;if(blCache)blRenderRows();}
+function blDistinct(k){var m={},arr=[];blCache.forEach(function(r){var v=String(r[k]==null?'':r[k]);if(!(v in m)){m[v]=0;arr.push(v);}m[v]++;});arr.sort(function(a,b){return a.localeCompare(b,'vi',{numeric:true});});return arr.map(function(v){return{v:v,n:m[v]};});}
+function blPlaceDrop(th){var hd=document.getElementById('blHdrop');var r=th.getBoundingClientRect();hd.style.display='block';var w=Math.min(300,window.innerWidth-20);hd.style.width=w+'px';hd.style.left=Math.max(10,Math.min(r.left,window.innerWidth-w-10))+'px';var top=r.bottom+6;if(top>window.innerHeight-330)top=Math.max(10,r.top-330);hd.style.top=top+'px';}
+function blCloseDrop(){var hd=document.getElementById('blHdrop');hd.style.display='none';hd.innerHTML='';}
+function blMagSvg(){return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';}
+function blOpenFilter(k,th){blCloseDrop();var hd=document.getElementById('blHdrop');var items=blDistinct(k);var sel=blSel[k]?blSel[k].slice():items.map(function(x){return x.v;});hd.innerHTML='';var box=document.createElement('div');box.className='hs';box.innerHTML=blMagSvg();var inp=document.createElement('input');inp.placeholder='Tìm '+blTitle(k)+'...';box.appendChild(inp);hd.appendChild(box);var list=document.createElement('div');list.className='hlist';hd.appendChild(list);function draw(f){list.innerHTML='';items.forEach(function(x){if(f&&x.v.toLowerCase().indexOf(f)<0)return;var lb=document.createElement('label');lb.className='hrow';var cb=document.createElement('input');cb.type='checkbox';cb.checked=sel.indexOf(x.v)>=0;cb.onchange=function(){var i=sel.indexOf(x.v);if(cb.checked&&i<0)sel.push(x.v);if(!cb.checked&&i>=0)sel.splice(i,1);};var sp=document.createElement('span');sp.textContent=x.v;var ct=document.createElement('em');ct.textContent=x.n;lb.appendChild(cb);lb.appendChild(sp);lb.appendChild(ct);list.appendChild(lb);});}draw('');inp.oninput=function(){draw(inp.value.trim().toLowerCase());};var fr=document.createElement('div');fr.className='frow';var cc=document.createElement('button');cc.type='button';cc.className='hcancel';cc.textContent='Cancel';cc.onclick=blCloseDrop;var ok=document.createElement('button');ok.type='button';ok.className='hok';ok.textContent='OK';ok.onclick=function(){blSel[k]=(sel.length===items.length?null:sel);blPage=1;blCloseDrop();blRenderHead();blRenderRows();};fr.appendChild(cc);fr.appendChild(ok);hd.appendChild(fr);blPlaceDrop(th);}
+function blOpenSearch(k,th){blCloseDrop();var hd=document.getElementById('blHdrop');hd.innerHTML='';var box=document.createElement('div');box.className='hs';box.innerHTML=blMagSvg();var inp=document.createElement('input');inp.placeholder='Tìm '+blTitle(k)+'...';inp.value=blQ[k]||'';box.appendChild(inp);hd.appendChild(box);var fr=document.createElement('div');fr.className='frow';var clr=document.createElement('button');clr.type='button';clr.className='hcancel';clr.textContent='Xóa';clr.onclick=function(){blQ[k]='';blPage=1;blCloseDrop();blRenderHead();blRenderRows();};var go=document.createElement('button');go.type='button';go.className='hok';go.textContent='Tìm';go.onclick=function(){blQ[k]=inp.value.trim();blPage=1;blCloseDrop();blRenderHead();blRenderRows();};inp.onkeydown=function(e){if(e.key==='Enter')go.onclick();};fr.appendChild(clr);fr.appendChild(go);hd.appendChild(fr);blPlaceDrop(th);setTimeout(function(){inp.focus();},0);}
+var blPtip=document.getElementById('blPtip'),blTipT=null;
+function blTipShow(td){var full=td.getAttribute('data-full')||'';if(!(td.scrollWidth>td.clientWidth+2))return;blPtip.innerHTML='';var b=document.createElement('b');b.textContent=td.getAttribute('data-title')||'';var s=document.createElement('span');s.textContent=full;blPtip.appendChild(b);blPtip.appendChild(s);blPtip.style.display='block';var r=td.getBoundingClientRect();var w=Math.min(340,window.innerWidth-20);blPtip.style.maxWidth=w+'px';blPtip.style.left=Math.max(10,Math.min(r.left,window.innerWidth-w-10))+'px';var top=r.bottom+8;if(top+140>window.innerHeight)top=Math.max(10,r.top-blPtip.offsetHeight-8);blPtip.style.top=top+'px';}
+function blTipIn(td){clearTimeout(blTipT);blTipT=setTimeout(function(){blTipShow(td);},200);}
+function blTipOut(){clearTimeout(blTipT);blPtip.style.display='none';}
+document.getElementById('blColBtn').onclick=function(){blSetColOpen(!blColOpen);};
+document.getElementById('blReset').onclick=function(){blVis=blDefaults.slice();blSortKey=null;blSortDir=0;blSel={status_desc:null,aging_leadtime:null};blQ={product_name:'',return_sort_code:'',buyer_sort_code:''};blPage=1;blRenderAll();};
+function blDoSearch(){blKeyword=document.getElementById('blQ').value;document.getElementById('blQClear').classList.toggle('show',blKeyword.trim().length>0);blPage=1;if(!blCache)return;blRenderRows();document.getElementById('blWrap').scrollTop=0;}
+document.getElementById('blSearch').onclick=blDoSearch;
+document.getElementById('blQ').addEventListener('keydown',function(e){if(e.key==='Enter')blDoSearch();});
+document.getElementById('blQ').addEventListener('input',function(){document.getElementById('blQClear').classList.toggle('show',this.value.trim().length>0);if(!this.value&&blCache){blKeyword='';blPage=1;blRenderRows();}});
+document.getElementById('blQClear').onclick=function(){document.getElementById('blQ').value='';blKeyword='';blPage=1;document.getElementById('blQClear').classList.remove('show');if(blCache)blRenderRows();document.getElementById('blQ').focus();};
+document.getElementById('blPgPrev').onclick=function(){if(blPage>1){blPage--;blRenderRows();document.getElementById('blWrap').scrollTop=0;}};
+document.getElementById('blPgNext').onclick=function(){blPage++;blRenderRows();document.getElementById('blWrap').scrollTop=0;};
+document.getElementById('blDClose').onclick=blCloseDetail;
+document.getElementById('blDClose2').onclick=blCloseDetail;
+document.getElementById('blCopy').onclick=function(){var t=blSelId||'';function done(){msg('blMsg','Đã copy '+t+'.',true);}if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){msg('blMsg','Không copy được.');});}else{try{var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done();}catch(e){msg('blMsg','Không copy được.');}}};
+document.getElementById('blDetail').addEventListener('click',function(e){if(e.target===this)blCloseDetail();});
+document.getElementById('blWrap').addEventListener('scroll',function(){blTipOut();blCloseDrop();});
+if(document.addEventListener){document.addEventListener('keydown',function(e){if(e.key==='Escape'){blCloseDrop();blCloseDetail();}});
+document.addEventListener('click',function(e){var hd=document.getElementById('blHdrop');if(hd.style.display==='block'&&!hd.contains(e.target))blCloseDrop();});}
 var fbMsgs=[],fbOpening=false,fbReplyId=null;
 function fbIsAdmin(){return (state.me&&state.me.role)==='ADMIN';}
 function fbNameHtml(m){

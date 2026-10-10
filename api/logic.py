@@ -334,3 +334,34 @@ def history_bill(from_st, to_st, note):
     if from_st != to_st and to_st in ("da_tim_bill", "thanh_ly"):
         return note or ""
     return ""
+
+
+BACKLOG_KEYS = ["shipment_id", "status_desc", "station_name", "next_station_name",
+    "pickup_station_name", "created_time", "lh_trip_number", "trip_number_arrived",
+    "inbound_time", "last_touch_at", "last_touch_by", "product_name", "seller_sort_code",
+    "return_sort_code", "buyer_sort_code", "aging_leadtime", "cogs"]
+BACKLOG_DEFAULT = ["shipment_id", "status_desc", "pickup_station_name", "created_time",
+    "last_touch_at", "product_name", "return_sort_code", "buyer_sort_code",
+    "aging_leadtime", "cogs"]
+
+
+def map_backlog_row(keys, values):
+    # KHỚP Code.gs listBacklog: map vị trí theo key chuẩn, bỏ dòng trống.
+    if not keys or not values:
+        return None
+    o = {}
+    has = False
+    for i, k in enumerate(BACKLOG_KEYS):
+        v = "" if i >= len(values) or values[i] is None else str(values[i])
+        o[k] = v
+        if v:
+            has = True
+    return o if has else None
+
+
+def fmt_cogs(v):
+    # KHỚP client blFmtCogs: nhóm nghìn để dễ đọc.
+    d = re.sub(r"[^0-9]", "", str(v if v is not None else ""))
+    if not d:
+        return str(v if v is not None else "")
+    return "{:,}".format(int(d))

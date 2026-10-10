@@ -5,7 +5,8 @@ from api.logic import (
     gen_code, next_seq, next_seq_reserved, bulk_codes, BULK_MAX,
     storage_days, parse_created_smart, code_date, can_resolve, can_liquidate,
     canonical_status, canonical_kind, valid_liq_code, can_edit_status,
-    history_bill, map_history_row,
+    history_bill, map_history_row, map_backlog_row, fmt_cogs, BACKLOG_KEYS,
+    BACKLOG_DEFAULT,
     check_create_photos, can_delete_user, extract_drive_id, can_edit, CODE_RE, TZ,
     valid_custom_code, custom_code_exists, can_edit_basic, staff_edit_notes,
 )
@@ -237,6 +238,42 @@ class TestListFullBatch(unittest.TestCase):
                                      "", "Thao tác sai"], "Box.06-10-2026.1")
         self.assertEqual(e["reason"], "Thao tác sai")
         self.assertEqual(history_bill(e["from"], e["to"], e["note"]), "")
+
+
+class TestBacklog(unittest.TestCase):
+    """Mirror Code.gs listBacklog: map 17 cot, bo dong trong, fmt COGS."""
+
+    def test_keys_and_default(self):
+        self.assertEqual(len(BACKLOG_KEYS), 17)
+        self.assertEqual(BACKLOG_KEYS[0], "shipment_id")
+        self.assertEqual(BACKLOG_KEYS[-1], "cogs")
+        self.assertEqual(len(BACKLOG_DEFAULT), 10)
+        self.assertNotIn("seller_sort_code", BACKLOG_DEFAULT)
+        self.assertNotIn("last_touch_by", BACKLOG_DEFAULT)
+        for k in BACKLOG_DEFAULT:
+            self.assertIn(k, BACKLOG_KEYS)
+
+    def test_map_row(self):
+        vals = ["SPXVN1", "SOC_Packed", "HN SOC", "HN2 SOC", "Hub A",
+                "2026-10-09 14:47:13", "LTQ1", "LTQ1", "2026-10-09 22:48:04",
+                "2026-10-09 22:48:05", "spx@shopee.com", "Bột Tảo", "M1",
+                "M2", "M3", "05. 10-24 hours", "35000"]
+        o = map_backlog_row(BACKLOG_KEYS, vals)
+        self.assertEqual(o["shipment_id"], "SPXVN1")
+        self.assertEqual(o["product_name"], "Bột Tảo")
+        self.assertEqual(o["cogs"], "35000")
+        self.assertEqual(len(o), 17)
+
+    def test_map_row_skips_empty(self):
+        self.assertIsNone(map_backlog_row(BACKLOG_KEYS, [""] * 17))
+        self.assertIsNone(map_backlog_row(BACKLOG_KEYS, []))
+        self.assertIsNone(map_backlog_row([], ["a"]))
+
+    def test_fmt_cogs(self):
+        self.assertEqual(fmt_cogs("1334565"), "1,334,565")
+        self.assertEqual(fmt_cogs("35000"), "35,000")
+        self.assertEqual(fmt_cogs(""), "")
+        self.assertIsNone(fmt_cogs(None) or None)
 
 
 if __name__ == "__main__":
