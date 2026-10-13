@@ -186,13 +186,19 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
 .rrow .inp{padding:9px 14px;font-size:12px}
 .msg{font-size:10px;font-weight:700;color:var(--stR)}
 
-/* ===== Role — ma trận quyền ===== */
+/* ===== Role — cột quyền trải ngang theo tab ===== */
 .mtxWrap{max-width:920px;margin:0 auto;width:100%}
-.mtx{width:100%;border-collapse:collapse;font-size:11.5px}
-.mtx td{border-top:1px solid var(--line);padding:10px;white-space:normal}
-.mtx .act b{display:block;font-size:11.5px}
-.mtx .act small{color:var(--mut);font-size:9.5px;font-weight:600}
-.mtx .c{text-align:center;width:92px}
+.roleCols{display:flex;gap:11px;overflow-x:auto;padding:4px 2px 12px;align-items:stretch;scrollbar-width:thin}
+.rcol{flex:0 0 240px;display:flex;flex-direction:column;gap:2px;background:var(--card);border:1px solid rgba(255,255,255,.75);border-radius:var(--r2);padding:12px 13px;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur));position:relative}
+.rcol .rhead{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--brand);padding-bottom:8px;border-bottom:var(--lineW) solid var(--line);margin-bottom:4px}
+.rcol .rhead i{font-style:normal}
+.rcol .rtag{margin-left:auto;font-size:8px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+.prow{display:flex;flex-direction:column;gap:6px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.prow:last-child{border-bottom:none}
+.prow .pl b{display:block;font-size:11px;line-height:1.3}
+.prow .pl small{color:var(--mut);font-size:9px;font-weight:600}
+.prow .cks{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.cklab{display:flex;gap:6px;align-items:center;font-size:8.5px;font-weight:800;color:var(--mut);letter-spacing:.04em}
 .ck{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--line);background:var(--inp);display:inline-grid;place-items:center;cursor:pointer;font-size:13px;font-weight:800;color:transparent;font-family:inherit;vertical-align:middle}
 .ck.on{background:var(--stR);border-color:var(--stR);color:#fff}
 .ck.no{color:var(--mut);background:var(--bg)}
@@ -332,23 +338,27 @@ var FEEDBACK=[{id:1,t:'08/10 19:19',who:'lan.tran@spxexpress.com',me:false,txt:'
 
 /* ================= phân quyền ================= */
 var PERMS=[
- ['create','Tạo Box/Item mới','Chụp mã mới nhập kho'],
- ['photo','Chụp / tải ảnh hiện trường','Box 2 ảnh · Item 1 ảnh'],
- ['note','Sửa mô tả / ghi chú','Chỉ 2 ô này, không đổi được gì khác'],
- ['resolve','Resolve — nhập bill + Confirm','Gán bill SPXVN cho đơn'],
- ['print','In Mã (1 hoặc nhiều)','In tem 4×6in QR'],
- ['liqAdd','Thêm đơn vào lô thanh lý','Đưa đơn vào giỏ, chưa chốt'],
- ['liq','Confirm chốt lô thanh lý','Không thể bỏ — chỉ ADMIN'],
- ['editFull','Sửa đầy đủ đơn · đổi trạng thái ngược','Sửa bill, xóa, lùi trạng thái'],
- ['role','Bảng quyền · đổi vai trò user','Tích/bỏ quyền STAFF, ASC/DESC'],
- ['adminReply','Trả lời chat với nhãn “Admin”','Tín hiệu CSKH duyệt']
+ ['create','Tạo Box/Item mới','Chụp mã mới nhập kho','list'],
+ ['photo','Chụp / tải ảnh hiện trường','Box 2 ảnh · Item 1 ảnh','list'],
+ ['note','Sửa mô tả / ghi chú','Chỉ 2 ô này, không đổi được gì khác','list'],
+ ['resolve','Resolve — nhập bill + Confirm','Gán bill SPXVN cho đơn','list'],
+ ['editFull','Sửa đầy đủ đơn · lùi trạng thái','Sửa bill, xóa, lùi trạng thái','list'],
+ ['blView','Xem tab Backlog','Sheet đối soát read-only','backlog'],
+ ['blExport','Xuất Excel kiểm kê','Bảng đối soát cuối tháng','backlog'],
+ ['liqAdd','Thêm đơn vào lô thanh lý','Đưa đơn vào giỏ, chưa chốt','liq'],
+ ['liq','Confirm chốt lô thanh lý','Không thể bỏ — chỉ ADMIN','liq'],
+ ['print','In Mã — 1 tem 4×6in','In lại tem lẻ','print'],
+ ['printBulk','In hàng loạt (10 mã)','Lấy nhanh N mã gần nhất','print'],
+ ['role','Bảng quyền · đổi vai trò user','Tích/bỏ quyền STAFF, ASC/DESC','role'],
+ ['adminReply','Trả lời chat với nhãn “Admin”','Tín hiệu CSKH duyệt','role']
 ];
+var GRP=[['list','🗃','Danh sách'],['backlog','▤','Backlog'],['liq','🧾','Thanh lý'],['print','🖨','In Mã'],['role','🛡','Role']];
 var S={mock:'m1',tab:'list',device:'pc',meRole:'admin',q:'',f:'all',kind:'all',
  sel:null,rz:'idle',ed:null,
  cart:{codes:[],step:1},
  pn:{codes:[],kind:'Box'},
  cm:{open:false,step:1,kind:'Box',photos:0,desc:'',note:'',code:'',done:''},
- sp:{create:true,photo:true,note:true,resolve:true,print:true,liqAdd:true,liq:false,editFull:false,role:false,adminReply:false}};
+ sp:{create:true,photo:true,note:true,resolve:true,editFull:false,blView:true,blExport:false,liqAdd:true,liq:false,print:true,printBulk:false,role:false,adminReply:false}};
 function isAdm(){return S.meRole==='admin'}
 function ME(){return isAdm()?'admin.mock@spxexpress.com':'son.nguyenngoc@spxexpress.com'}
 function can(k){return isAdm()||S.sp[k]}
@@ -452,9 +462,11 @@ R.list=function(){var rows=listData();
  '<div class="recentRow" style="max-width:760px;margin:8px auto 0">'+ITEMS.slice(0,6).map(function(x){return '<button class="pill" data-act="open" data-id="'+x.code+'">'+x.code.split('.')[0]+'.•'+x.code.slice(-1)+'</button>'}).join('')+'</div>'+
  pillsRow().replace('class="pills"','class="pills" style="max-width:760px;margin:2px auto 0;width:100%"')+
  '<div style="max-width:760px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:8px">'+rows.map(function(it){return hrow(it,true)}).join('')+(rows.length?'':'<div class="empty">Trống</div>')+'</div>'};
-R.backlog=function(){var q=S.q.toLowerCase();
+R.backlog=function(){
+ if(!can('blView'))return '<div class="panelBox mtxWrap"><h3>▤ Backlog</h3><div class="empty">Staff chưa được tích quyền “Xem tab Backlog” — ADMIN mở trong tab Role.</div></div>';
+ var q=S.q.toLowerCase();
  var rows=BACKLOG.filter(function(r){return !q||(r.sid+r.prod+r.buyer).toLowerCase().indexOf(q)>=0}).slice(0,10);
- return '<div class="ctx">Backlog — sheet read-only · Tổng COGS <b>'+fmt(rows.reduce(function(a,r){return a+r.cogs},0))+' ₫</b> · 42 dòng · phân trang 50</div>'+
+ return '<div class="ctx" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">Backlog — sheet read-only · Tổng COGS <b>'+fmt(rows.reduce(function(a,r){return a+r.cogs},0))+' ₫</b> · 42 dòng · phân trang 50<button class="btn mini" style="margin-left:auto" data-act="blXls" '+(can('blExport')?'':'disabled')+'>⬇ Xuất Excel kiểm kê</button></div>'+
  '<div class="tblwrap"><table><thead><tr><th>Shipment ID</th><th>Product</th><th>Return</th><th>Buyer</th><th>Status</th><th>Aging</th><th style="text-align:right">COGS</th></tr></thead><tbody>'+
  rows.map(function(r){return '<tr><td class="sid">'+r.sid+'</td><td>'+r.prod+'</td><td>'+r.ret+'</td><td>'+r.buyer+'</td><td><span class="chip '+(r.status==='Đủ'?'sR':r.status==='Thiếu'?'sO':'sL')+'">'+r.status+'</span></td><td>'+r.aging+' ngày</td><td class="num">'+fmt(r.cogs)+' ₫</td></tr>'}).join('')+'</tbody></table></div>'};
 R.liq=function(){var c=S.cart;
@@ -477,21 +489,25 @@ R.print=function(){var p=S.pn;
  '<span class="pill" style="cursor:default">Lấy nhanh:</span>'+
  '<button class="pill'+(p.kind==='Box'?' on':'')+'" data-act="pkind" data-id="Box">Box</button>'+
  '<button class="pill'+(p.kind==='Item'?' on':'')+'" data-act="pkind" data-id="Item">Item</button>'+
- '<button class="btn mini" data-act="printSample">10 mã '+p.kind+' gần nhất</button></div>'+
- (can('print')?'':'<div class="msg" style="color:var(--stO)">Staff chưa được tích quyền In Mã — nút trên bị khóa.</div>')+'</div>'+
- (p.codes.length?'<div class="mtxWrap" style="margin-top:4px"><div class="ctx">Xem trước '+p.codes.length+' tem (giả lập lệnh in)</div><div class="labelsGrid">'+p.codes.map(label).join('')+'</div><button class="btn pri" data-act="printSend" '+(can('print')?'':'disabled')+'>🖨 Gửi lệnh in ('+p.codes.length+' tem)</button></div>':'')};
+ '<button class="btn mini" data-act="printSample" '+(can('printBulk')?'':'disabled')+'>10 mã '+p.kind+' gần nhất</button></div>'+
+ (can('print')?'':'<div class="msg" style="color:var(--stO)">Staff chưa được tích quyền In Mã — nút trên bị khóa.</div>')+
+ (!can('printBulk')&&can('print')?'<div class="ctx">Quyền “In hàng loạt” do ADMIN tích — hiện chỉ in từng tem.</div>':'')+'</div>'+
+ (p.codes.length?'<div class="mtxWrap" style="margin-top:4px"><div class="ctx">Xem trước '+p.codes.length+' tem (giả lập lệnh in)</div><div class="labelsGrid">'+p.codes.map(label).join('')+'</div><button class="btn pri" data-act="printSend" '+(can('print')&&(p.codes.length<2||can('printBulk'))?'':'disabled')+'>🖨 Gửi lệnh in ('+p.codes.length+' tem)</button></div>':'')};
 R.role=function(){
  var editable=isAdm();
- var rows=PERMS.map(function(pr){var k=pr[0];
-  var st='<button class="ck'+(S.sp[k]?' on':' no')+'" '+(editable?'':'disabled')+' data-act="perm" data-id="'+k+'">'+(S.sp[k]?'✓':'–')+'</button>';
-  var ad='<span class="ck on lock" title="ADMIN mặc định đầy đủ">✓</span>';
-  return '<tr><td class="act"><b>'+pr[1]+'</b><small>'+pr[2]+'</small></td><td class="c">'+st+'</td><td class="c">'+ad+'</td></tr>'}).join('');
- return '<div class="mtxWrap panelBox"><h3>🛡 Role — ma trận phân quyền</h3>'+
+ function ckBtn(k){return '<button class="ck'+(S.sp[k]?' on':' no')+'" '+(editable?'':'disabled')+' data-act="perm" data-id="'+k+'" title="STAFF: '+(S.sp[k]?'được làm':'bị chặn')+'">'+(S.sp[k]?'✓':'–')+'</button>'}
+ var cols=GRP.map(function(g){
+  var ps=PERMS.filter(function(p){return p[3]===g[0]});
+  return '<div class="rcol"><div class="rhead"><i>'+g[1]+'</i>'+g[2]+'<span class="rtag">'+ps.length+' quyền</span></div>'+
+  ps.map(function(p){return '<div class="prow"><div class="pl"><b>'+p[1]+'</b><small>'+p[2]+'</small></div>'+
+  '<div class="cks"><span class="cklab">STAFF '+ckBtn(p[0])+'</span><span class="cklab">ADMIN <span class="ck on lock" title="ADMIN mặc định đầy đủ — không bỏ được">✓</span></span></div></div>'}).join('')+
+  '</div>'}).join('');
+ return '<div class="mtxWrap panelBox"><h3>🛡 Role — phân quyền theo tab (trải ngang trái → phải)</h3>'+
  '<div class="ctx">Đăng nhập: '+ME()+' ('+(isAdm()?'ADMIN':'STAFF')+')</div>'+
- (editable?'<div class="msg">Bạn là ADMIN — tích/bỏ từng ô để qui định Staff được làm gì. Thay đổi áp dụng ngay vào UI (thử bấm “Đăng nhập: Staff” trên thanh).</div>'
+ (editable?'<div class="msg">Bạn là ADMIN — tích/bỏ từng ô STAFF theo quyền của từng tab. Thay đổi áp dụng ngay vào UI (thử bấm “Đăng nhập: Staff” trên thanh).</div>'
  :'<div class="msg" style="color:var(--stO)">Staff chỉ xem được bảng quyền — ô tích bị khóa. Đăng nhập Admin trên thanh để sửa.</div>')+
- '<div class="tblwrap"><table class="mtx"><thead><tr><th>Hành động</th><th class="c">STAFF</th><th class="c">ADMIN</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
- '<div class="legend"><span class="ck on">✓</span> được làm · <span class="ck no">–</span> bị chặn · <span class="ck lock on">✓</span> ADMIN luôn có (không bỏ được)</div></div>'+
+ '<div class="roleCols">'+cols+'</div>'+
+ '<div class="legend"><span class="ck on">✓</span> được làm · <span class="ck no">–</span> bị chặn · <span class="ck lock on">✓</span> ADMIN luôn có (không bỏ được) · cuộn ngang nếu thiếu chỗ</div></div>'+
  '<div class="mtxWrap panelBox"><h3>Người dùng</h3><div class="ctx">Đổi vai trò — chỉ ADMIN (quyền “Bảng quyền · đổi vai trò”)</div>'+
  USERS.map(function(u,i){return '<div class="hrow" style="cursor:default"><div class="tx" style="font-size:11.5px;font-weight:800">'+esc(u.email)+'</div><span class="chip '+(u.role==='ADMIN'?'sO':'sL')+'">'+u.role+'</span><button class="btn mini" data-act="toggleRole" data-id="'+i+'" '+((editable&&can('role'))?'':'disabled')+'>→ '+(u.role==='ADMIN'?'STAFF':'ADMIN')+'</button></div>'}).join('')+'</div>'};
 
@@ -580,6 +596,8 @@ var A={
  tab:function(el){setTab(el.dataset.id)},
  f:function(el){S.f=el.dataset.id;if(S.tab!=='list')setTab('list');else render()},
  kind:function(el){S.kind=el.dataset.id;render()},
+ blXls:function(){if(!can('blExport')){toast('Staff chưa được quyền Xuất Excel — tab Role, cột Backlog');return}
+  toast('✓ Đã xuất 42 dòng Backlog → Excel kiểm kê (mock)')},
  open:function(el){openDetail(el.dataset.id)},
  openInline:function(el){S.sel=el.dataset.id;S.rz='idle';S.ed=null;render()},
  closeDetail:function(){closeDetail();render()},
