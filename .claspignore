@@ -5,6 +5,7 @@ docs/**
 tasks/**
 test-fixtures/**
 scripts/**
+skills/**
 mock/**
 mockups/**
 dist/**
