@@ -544,7 +544,7 @@ function readLogTail_(maxRows, site) {
 
 function photosForCodes_(want, site) {
   var map = {}, seen = {};
-  var vals = readPhotosTail_(site);
+  var vals = readPhotosTail_(TAIL_ROWS, site);
   for (var i = 0; i < vals.length; i++) {
     var code = String(vals[i][0] || '').trim();
     if (!want[code]) continue;
@@ -558,7 +558,7 @@ function photosForCodes_(want, site) {
 }
 
 function logsForCodes_(want, site) {
-  var r = readLogTail_(site);
+  var r = readLogTail_(TAIL_ROWS, site);
   if (!r.cols || r.cols.code < 0) return null;
   var byCode = {}, seen = {};
   for (var i = 0; i < r.rows.length; i++) {
