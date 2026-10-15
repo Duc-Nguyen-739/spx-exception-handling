@@ -10,6 +10,7 @@ from api.logic import (
     check_create_photos, can_delete_user, extract_drive_id, can_edit, CODE_RE, TZ,
     valid_custom_code, custom_code_exists, can_edit_basic, staff_edit_notes,
     PERM_KEYS, PERM_DEFAULT, parse_perms, check_perm,
+    SITE_SUFFIX, SITE_LABELS, norm_site, sheet_name,
 )
 
 
@@ -313,6 +314,34 @@ class TestPerms(unittest.TestCase):
     def test_check_perm(self):
         self.assertEqual(check_perm({"create": 1}, "create"), (True, ""))
         self.assertEqual(check_perm({"create": 0}, "create")[0], False)
+
+
+class TestSite(unittest.TestCase):
+    def test_norm_site(self):
+        self.assertEqual(norm_site("HN"), "HN")
+        self.assertEqual(norm_site("HN SOC"), "HN")
+        self.assertEqual(norm_site("HNSOC"), "HN")
+        self.assertEqual(norm_site("hn soc"), "HN")
+        self.assertEqual(norm_site("HN2"), "HN2")
+        self.assertEqual(norm_site("HN2 SOC"), "HN2")
+        self.assertEqual(norm_site(""), "HN2")
+        self.assertEqual(norm_site(None), "HN2")
+        self.assertEqual(norm_site("xyz"), "HN2")
+
+    def test_sheet_name(self):
+        self.assertEqual(sheet_name("Items", "HN"), "ItemsHNSOC")
+        self.assertEqual(sheet_name("Items", "HN2"), "Items")
+        self.assertEqual(sheet_name("Backlog"), "Backlog")
+        self.assertEqual(sheet_name("Backlog", None), "Backlog")
+        for b in ["Logic", "Note", "Backlog", "Feedback", "FeedbackReplies",
+                  "PrintQueue", "Thumbs", "PrintedCodes", "ActivityLog",
+                  "Photos", "Items", "Users"]:
+            self.assertEqual(sheet_name(b, "HN"), b + "HNSOC")
+            self.assertEqual(sheet_name(b, "HN2"), b)
+
+    def test_site_labels(self):
+        self.assertEqual(SITE_LABELS, {"HN2": "HN2 SOC", "HN": "HN SOC"})
+        self.assertEqual(SITE_SUFFIX, {"HN2": "", "HN": "HNSOC"})
 
 
 if __name__ == "__main__":

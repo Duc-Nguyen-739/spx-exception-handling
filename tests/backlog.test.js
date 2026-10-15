@@ -68,9 +68,9 @@ test('backlog: Code.gs — listBacklog read-only tu hang 4, gate backlog', () =>
   assert.ok(/var BACKLOG_KEYS/.test(gs), 'missing BACKLOG_KEYS');
   assert.ok(/var BACKLOG_DEFAULT/.test(gs), 'missing BACKLOG_DEFAULT');
   var body = gs.split('function listBacklog')[1].split(/^function /m)[0];
-  assert.ok(body.indexOf('getSheetByName(\'Backlog\')') >= 0, 'must read Backlog sheet');
+  assert.ok(body.indexOf("getSheetByName(sheetName_('Backlog'") >= 0, 'must read Backlog sheet theo site');
   assert.ok(body.indexOf('requireAdmin_') < 0, 'listBacklog must not gate ADMIN');
-  assert.ok(body.indexOf("checkPerm_('backlog')") >= 0, 'listBacklog must gate backlog');
+  assert.ok(body.indexOf("checkPerm_('backlog',") >= 0, 'listBacklog must gate backlog');
   assert.ok(body.indexOf('LockService') < 0, 'listBacklog must not lock (read-only)');
   assert.ok(/defaults:\s*BACKLOG_DEFAULT/.test(body), 'must return defaults');
 });

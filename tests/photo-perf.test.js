@@ -16,7 +16,7 @@ test('photo-perf: Code.gs co getThumb (UrlFetch + OAuth, clamp size, folder chec
   const b = gs.slice(gs.indexOf('function getThumb('), gs.indexOf('function parseCreated_('));
   assert.ok(b.includes('UrlFetchApp.fetch'));
   assert.ok(b.includes('ScriptApp.getOAuthToken()'));
-  assert.ok(b.includes('inPhotoFolder_(fileId)'), 'kiem folder O(1) thay photoIds_ full-scan');
+  assert.ok(b.includes('inPhotoFolder_(fileId,'), 'kiem folder O(1) theo site thay photoIds_ full-scan');
   assert.ok(!b.includes('photoIds_()'), 'khong quet full sheet o duong anh');
   assert.ok(b.includes('&sz=w'));
   assert.ok(b.includes('2 * 1024 * 1024'), 'chan blob thumb qua lon');
@@ -24,7 +24,7 @@ test('photo-perf: Code.gs co getThumb (UrlFetch + OAuth, clamp size, folder chec
 
 test('photo-perf: client thu dung thu tu direct -> getThumb -> getPhoto', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes("gs('getThumb',[id,800])"));
+  assert.ok(html.includes("gs('getThumb',[id,800,siteCur])"));
   const i = html.indexOf('function photoFallback(');
   const block = html.slice(i, html.indexOf('}', html.indexOf('else{done();}')) + 1);
   const ti = block.indexOf('serverThumb(id)');
@@ -61,7 +61,7 @@ test('photo-perf: Code.gs co getThumbs batch (1 call nhieu anh, cap 24, loi 1 an
   assert.strictEqual((gs.match(/function getThumbs\(/g) || []).length, 1);
   const b = gs.slice(gs.indexOf('function getThumbs('), gs.indexOf('function parseCreated_('));
   assert.ok(b.includes('slice(0, 24)'), 'cap 24 id/call giu payload duoi gioi han');
-  assert.ok(b.includes('inPhotoFolder_(fid)'), 'kiem folder O(1) tung anh, khong full-scan');
+  assert.ok(b.includes('inPhotoFolder_(fid,'), 'kiem folder O(1) tung anh theo site, khong full-scan');
   assert.ok(b.includes('ScriptApp.getOAuthToken()'));
   assert.ok(b.includes('out[fid] = { error:'), 'loi 1 anh khong fail ca lo');
   assert.ok(b.includes('return ok({ size: sz, items: out })'));
@@ -70,7 +70,7 @@ test('photo-perf: Code.gs co getThumbs batch (1 call nhieu anh, cap 24, loi 1 an
 test('photo-perf: mo chi tiet am bounded + cache 2 lop (hien ngay lan 2)', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes('function serverThumbsBatch(ids){'), 'batch on-demand van giu');
-  assert.ok(html.includes("gs('getThumbs',[ch,400])"), 'batch dung thumb nho w400');
+  assert.ok(html.includes("gs('getThumbs',[ch,400,siteCur])"), 'batch dung thumb nho w400');
   const wi = html.indexOf('function warmDetailImages(code){');
   assert.ok(wi > 0);
   assert.ok(html.slice(wi, wi + 700).includes('ids.slice(0,3)'), 'warm chi tiet toi da 3 id, khong dot GAS');

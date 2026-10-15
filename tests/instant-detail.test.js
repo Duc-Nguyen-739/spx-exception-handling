@@ -34,5 +34,5 @@ test('instant-detail: log Tao moi gon, khong suffix share', () => {
 test('instant-detail: poll 5 phut silent + bo qua khi tab an', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes('loadGrid({silent:true,reset:true});},300000)'));
-  assert.ok(html.includes("gs('listFull',[PAGE,off])"));
+  assert.ok(html.includes("gs('listFull',[PAGE,off,siteCur])"));
 });

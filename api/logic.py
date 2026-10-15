@@ -407,3 +407,19 @@ def fmt_cogs(v):
     if len(d) > 12:
         d = d[:-9].lstrip("0") or "0"
     return "{:,}".format(int(d))
+
+
+# KHOP Code.gs normSite_/sheetName_: 2 kho HN2 (sheet goc) / HN (duoi HNSOC).
+SITE_SUFFIX = {"HN2": "", "HN": "HNSOC"}
+SITE_LABELS = {"HN2": "HN2 SOC", "HN": "HN SOC"}
+
+
+def norm_site(s):
+    t = (s or "").strip().upper()
+    if t in ("HN", "HN SOC", "HNSOC"):
+        return "HN"
+    return "HN2"
+
+
+def sheet_name(base, site=None):
+    return f"{base or ''}{SITE_SUFFIX.get(norm_site(site), '')}"

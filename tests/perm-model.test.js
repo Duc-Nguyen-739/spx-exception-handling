@@ -99,14 +99,14 @@ test('perm-model: gate du 12 key checkPerm_', () => {
   const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
   const keys = extractKeys(gs);
   for (const k of keys) {
-    assert.ok(gs.includes("checkPerm_('" + k + "')"), 'thieu gate ' + k);
+    assert.ok(gs.includes("checkPerm_('" + k + "',"), 'thieu gate ' + k);
   }
 });
 
 test('perm-model: readUsers_ dung ensureUsersHeader_', () => {
   const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
-  assert.ok(gs.includes('function ensureUsersHeader_()'), 'missing ensureUsersHeader_');
-  const i = gs.indexOf('function readUsers_()');
+  assert.ok(gs.includes('function ensureUsersHeader_('), 'missing ensureUsersHeader_');
+  const i = gs.indexOf('function readUsers_(');
   const block = gs.slice(i, i + 600);
-  assert.ok(block.includes('ensureUsersHeader_()'), 'readUsers_ phai goi ensureUsersHeader_');
+  assert.ok(block.includes('ensureUsersHeader_('), 'readUsers_ phai goi ensureUsersHeader_');
 });

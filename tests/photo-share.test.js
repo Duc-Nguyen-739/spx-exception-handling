@@ -122,7 +122,7 @@ test('photo-share: reshare cursor batch, khong timeout o 40-60k file', () => {
   assert.ok(b.includes('order.slice(acc.i, acc.i + RESHARE_BATCH)'), 'moi call 1 batch');
   assert.ok(b.includes('deleteProperty'), 'xong thi don cursor');
   assert.ok(b.includes('done: done, processed: acc.i'), 'tra tien do cho client lap');
-  assert.ok(HTML.includes("gs('fixPhotoSharing',[guard>0])"), 'client tu chay tiep den done');
+  assert.ok(HTML.includes("gs('fixPhotoSharing',[guard>0,siteCur])"), 'client tu chay tiep den done');
   assert.ok(!HTML.includes('id="btnFixShare"'), 'da go nut khoi tab Role (ham server giu nguyen)');
 });
 
@@ -136,6 +136,6 @@ test('photo-share: audit file ngoai folder chi doc, co cursor', () => {
   assert.ok(!b.includes('setSharing'), 'tuyet doi khong doi share');
   assert.ok(!b.includes('setValues') && !b.includes('appendRow'), 'khong ghi sheet');
   assert.ok(!HTML.includes('id="btnAuditPh"'), 'da go nut khoi tab Role (ham server giu nguyen)');
-  assert.ok(HTML.includes("gs('auditPhotosOutsideFolder',[next])"), 'client lap theo cursor');
+  assert.ok(HTML.includes("gs('auditPhotosOutsideFolder',[next,siteCur])"), 'client lap theo cursor');
   assert.ok(HTML.includes('miss+=(r.data.outsideCount||0)'), 'cong don file ngoai folder qua cac batch');
 });

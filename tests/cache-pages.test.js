@@ -36,11 +36,11 @@ test('pages: merge tich luy — trang sau khong xoa trang truoc, trung thi updat
 
 test('pages: server ho tro offset (readHeadItems_ window + listFull/listItems)', () => {
   const gs = fs.readFileSync('Code.gs', 'utf8');
-  assert.ok(gs.includes('function readHeadItems_(maxRows, offset)'));
+  assert.ok(gs.includes('function readHeadItems_(maxRows, offset, site)'));
   assert.ok(gs.includes('sh.getRange(2 + off, 1, n, ITEMS_HEADER.length)'));
-  assert.ok(gs.includes('function listFull(limit, offset)'));
-  assert.ok(gs.includes('function listItems(limit, offset)'));
-  assert.ok(gs.includes('readHeadItems_(n, offset)'));
+  assert.ok(gs.includes('function listFull(limit, offset, site)'));
+  assert.ok(gs.includes('function listItems(limit, offset, site)'));
+  assert.ok(gs.includes('readHeadItems_(n, offset, site)'));
 });
 
 test('pages: sentinel + observer chi goi khi cuon toi (khong goi thua)', () => {

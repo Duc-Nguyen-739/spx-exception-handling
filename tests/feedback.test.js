@@ -67,7 +67,7 @@ test('feedback: Code.gs — 3 endpoint + checkPerm_ adminReply trong reply', () 
   assert.ok(/function addFeedback/.test(gs), 'missing addFeedback');
   assert.ok(/function replyFeedback/.test(gs), 'missing replyFeedback');
   var rep = gs.split('function replyFeedback')[1].split('function')[0];
-  assert.ok(rep.indexOf("checkPerm_('adminReply')") >= 0, 'replyFeedback must gate adminReply');
+  assert.ok(rep.indexOf("checkPerm_('adminReply',") >= 0, 'replyFeedback must gate adminReply');
   assert.ok(/Function addFeedback/.test(gs) || /function addFeedback/.test(gs), 'missing addFeedback');
 });
 

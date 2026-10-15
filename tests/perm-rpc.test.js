@@ -63,19 +63,19 @@ function decideBranch(toStatus, cur, delN, addN) {
 test('perm-rpc: adminEditItem tach 3 quyen — STAFF doi status can editStatus', () => {
   assert.deepStrictEqual(decideBranch('thanh_ly', 'chua_xu_ly', 0, 0), ['editStatus']);
   const blk = extractFn('adminEditItem');
-  assert.ok(blk.includes("checkPerm_('editStatus')"), 'missing editStatus gate');
+  assert.ok(blk.includes("checkPerm_('editStatus',"), 'missing editStatus gate');
 });
 
 test('perm-rpc: adminEditItem — chi mo ta can note', () => {
   assert.deepStrictEqual(decideBranch('', 'chua_xu_ly', 0, 0), ['note']);
   const blk = extractFn('adminEditItem');
-  assert.ok(blk.includes("checkPerm_('note')"), 'missing note gate');
+  assert.ok(blk.includes("checkPerm_('note',"), 'missing note gate');
 });
 
 test('perm-rpc: adminEditItem — them anh can editPhotos', () => {
   assert.deepStrictEqual(decideBranch('', 'chua_xu_ly', 0, 1), ['editPhotos']);
   const blk = extractFn('adminEditItem');
-  assert.ok(blk.includes("checkPerm_('editPhotos')"), 'missing editPhotos gate');
+  assert.ok(blk.includes("checkPerm_('editPhotos',"), 'missing editPhotos gate');
 });
 
 test('perm-rpc: adminEditItem — doi status + anh can ca hai', () => {

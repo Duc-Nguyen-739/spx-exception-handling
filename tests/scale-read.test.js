@@ -21,7 +21,7 @@ test('scale-read: findItemRow_ TextFinder bounded + fallback loop', () => {
   assert.ok(b.includes('matchEntireCell(true)'), 'khop dung ma');
   assert.ok(b.includes('getRange(2, 1, last - 1, 1)'), 'bound theo getLastRow');
   assert.ok(b.includes('findNext()'), 'tra 1 ma thi findNext');
-  assert.ok(b.includes('readItemCodes_()'), 'giu fallback loop cu');
+  assert.ok(b.includes('readItemCodes_(site)'), 'giu fallback loop cu theo site');
 });
 
 test('scale-read: photosForCodesStrict_ bounded + cap + dedup', () => {
@@ -38,9 +38,9 @@ test('scale-read: duong doc user uu tien tail roi strict, full cuoi cung', () =>
   for (const fn of ['function photosByCode_(', 'function firstExtraMap_(']) {
     const end = fn === 'function photosByCode_(' ? 'function readPhotosTail_(' : 'function listItems(';
     const b = GS.slice(GS.indexOf(fn), GS.indexOf(end));
-    const iTail = b.indexOf('photosForCodes_(want)');
-    const iStrict = b.indexOf('photosForCodesStrict_(want)');
-    const iFull = b.indexOf('readPhotosAll_()');
+    const iTail = b.indexOf('photosForCodes_(want, site)');
+    const iStrict = b.indexOf('photosForCodesStrict_(want, site)');
+    const iFull = b.indexOf('readPhotosAll_(site)');
     assert.ok(iTail > 0 && iStrict > iTail && iFull > iStrict, fn + ': tail -> strict -> full');
   }
 });

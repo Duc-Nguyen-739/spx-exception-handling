@@ -66,7 +66,7 @@ test('photo-chain: ma tran day du qua tung case doc lap', async () => {
   async function one(src, cell, origUrl, dataUrl, responses) {
     const calls = [];
     const sandbox = {
-      photoCache: {}, photoLoading: {}, APP_REV: REV,
+      photoCache: {}, photoLoading: {}, siteCur: 'HN2', APP_REV: REV,
       putPhotoCache: () => {},
       idbGet: () => Promise.resolve(null),
       idbDel: () => {},
@@ -154,7 +154,7 @@ test('photo-chain: phan loai link khong lo gia tri that', async () => {
 test('photo-chain: khong loop vo han khi anh server tra ve lai hong', async () => {
   const calls = [];
   const sandbox = {
-    photoCache: {}, photoLoading: {}, APP_REV: REV,
+    photoCache: {}, photoLoading: {}, siteCur: 'HN2', APP_REV: REV,
     putPhotoCache: () => {},
     idbGet: () => Promise.resolve(null),
     idbDel: () => {},
@@ -193,6 +193,7 @@ test('photo-chain: blob rac tu IDB duoc truc xuat roi tai lai qua server', async
   const sandbox = {
     photoCache: { ['t' + ID_A]: 'blob:poison', [ID_A]: 'blob:poison-full' },
     photoLoading: {},
+    siteCur: 'HN2',
     APP_REV: REV,
     putPhotoCache: () => {},
     idbGet: () => Promise.resolve(null),
@@ -227,7 +228,7 @@ test('photo-chain: blob rac tu IDB duoc truc xuat roi tai lai qua server', async
 test('photo-chain: truc xuat chi 1 lan, loi tiep thi dung khong loop', async () => {
   const calls = [];
   const sandbox = {
-    photoCache: {}, photoLoading: {},
+    photoCache: {}, photoLoading: {}, siteCur: 'HN2',
     APP_REV: REV,
     putPhotoCache: () => {},
     idbGet: () => Promise.resolve(null),
@@ -264,7 +265,7 @@ test('photo-chain: truc xuat chi 1 lan, loi tiep thi dung khong loop', async () 
 test('photo-chain: IDB hit chi 1 lan, blob hong thi rot server khong loop', async () => {
   const calls = [];
   const sandbox = {
-    photoCache: {}, photoLoading: {}, APP_REV: REV,
+    photoCache: {}, photoLoading: {}, siteCur: 'HN2', APP_REV: REV,
     putPhotoCache: (k, u) => { sandbox.photoCache[k] = u; },
     idbGet: () => Promise.resolve({ type: 'image/jpeg' }),
     idbDel: () => {},

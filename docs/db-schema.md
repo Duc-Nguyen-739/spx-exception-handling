@@ -75,6 +75,15 @@ Sửa 2026-10-10: sheet chỉ còn 16 cột A-P (bỏ cột TO inbound, không c
 - `note`: mã bill khi chuyển sang Resolve/Thanh Lý (hiện dòng riêng trong Chi tiết trạng thái) · `Edit <Mô tả/Ghi chú>: cũ => mới` khi STAFF sửa trường (from = to, `by` = email) · `ADMIN Edit <Mô tả/Ghi chú>: cũ => mới` khi ADMIN sửa trường (from = to, không hiện email) · `ADMIN chỉnh sửa Ảnh` khi đổi ảnh · mốc đổi trạng thái trong Edit ghi `by` = `ADMIN đổi trạng thái` (không ghi email ADMIN) · `Tạo mới…` khi tạo đơn. Ghi đè tay bị cấm — mọi đổi `status` qua WebApp để có log.
 - `reason`: lý do ADMIN điền khi đổi trạng thái trong Edit (hiện dòng `Lý do: …` dưới `ADMIN đổi trạng thái`, để trống thì không hiện). Cột mới thêm sau — sheet cũ thiếu thì server bỏ qua, không lỗi.
 
+### Hai kho HN2/HN (station selector)
+
+HN2 dùng đúng tên dưới đây; HN dùng tên + đuôi `HNSOC` (`ItemsHNSOC`, `PhotosHNSOC`,
+`ActivityLogHNSOC`, `PrintedCodesHNSOC`, `PrintQueueHNSOC`, `FeedbackHNSOC`,
+`FeedbackRepliesHNSOC`, `BacklogHNSOC`, `UsersHNSOC`). Server chọn tên qua
+`sheetName_()` duy nhất theo `site` cuối mỗi RPC. `Logic`/`Note`/`Thumbs` không có code nào
+gọi nên không tách bằng code. Ảnh HN nằm cây `FOLDER_ID_HN` (subfolder `YYYY-MM`).
+
+
 ## 3. `status` chuẩn hóa (5 giá trị, tiếng Việt hiển thị)
 
 `chua_xu_ly` · `da_tim_bill` · `da_cho_di` · `thanh_ly` · `tieu_huy`

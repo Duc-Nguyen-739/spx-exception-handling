@@ -19,8 +19,8 @@ test('photo-allowlist: 3 API anh dung folder check, photoIds_ da xoa', () => {
   }
   const photo = GS.slice(GS.indexOf('function getPhoto('), GS.indexOf('function parseCreated_('));
   assert.ok(!photo.includes('photoIds_()'), 'duong anh khong duoc quet full sheet');
-  assert.ok(photo.includes('inPhotoFolder_(fileId)'), 'getPhoto phai kiem folder');
-  assert.ok(photo.includes('inPhotoFolder_(fid)'), 'getThumbs phai kiem folder tung anh');
+  assert.ok(photo.includes('inPhotoFolder_(fileId,'), 'getPhoto phai kiem folder theo site');
+  assert.ok(photo.includes('inPhotoFolder_(fid,'), 'getThumbs phai kiem folder tung anh theo site');
 });
 
 test('photo-allowlist: co cache ScriptCache + gioi han depth', () => {

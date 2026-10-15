@@ -600,6 +600,19 @@ header{flex-wrap:wrap}
 #viewBacklog .fdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--o);margin-left:5px;vertical-align:middle}
 #blDetail .kv b .hiddenTag{font-size:9px;font-weight:800;background:var(--bg);color:var(--mut);border-radius:6px;padding:2px 6px;margin-left:6px;white-space:nowrap}
 @media(max-width:899px){#navBacklog{display:none}}
+/* ===== site selector HN/HN2 (KHOP mockup 08) ===== */
+.brandtxt{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;position:relative}
+#siteBtnHead{display:inline-flex;align-items:center;gap:6px;border:1.5px solid #ffcfbd;background:#fff5f0;border-radius:10px;padding:5px 10px;font-size:11.5px;font-weight:800;color:var(--navy);white-space:nowrap}
+#siteBtnHead .chev{font-size:9px;color:var(--mut)}
+#siteMenuHead{position:absolute;top:100%;left:0;z-index:60;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 40px rgba(23,43,72,.22);overflow:hidden;margin-top:4px}
+#siteMenuHead button{display:block;width:100%;text-align:left;border:none;background:#fff;padding:11px 14px;font-size:12.5px;font-weight:700;color:var(--navy)}
+#siteMenuHead button+button{border-top:1px solid var(--bg)}
+#siteMenuHead button.sel{color:var(--o);background:var(--tint)}
+#siteBtnSide,#siteMenuSide{display:none}
+@media(min-width:900px){#siteBtnSide{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:8px 0 0;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;font-size:12.5px;font-weight:700}#siteBtnSide .chev{font-size:9px;color:#8b98ab}#siteMenuSide{margin:6px 0 0;border:1px solid rgba(255,255,255,.12);border-radius:12px;overflow:hidden}#siteMenuSide button{display:block;width:100%;text-align:left;border:none;background:transparent;padding:10px 12px;font-size:12.5px;font-weight:600;color:#a7b0bd}#siteMenuSide button+button{border-top:1px solid rgba(255,255,255,.08)}#siteMenuSide button.sel{color:#fff;background:rgba(255,255,255,.09)}}
+body.rail #siteBtnSide,body.rail #siteMenuSide{display:none!important}
+#siteToast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);background:#172b48;color:#fff;font-size:12.5px;font-weight:700;border-radius:12px;padding:11px 18px;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:99;max-width:92vw;text-align:center}
+#siteToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
@@ -620,7 +633,7 @@ header{flex-wrap:wrap}
     <path d="M72.178 28.7188L71.61 29.3825L71.6122 29.3803C71.78 29.5596 71.9832 29.7083 72.2209 29.8275C72.4586 29.9456 72.7531 30.0036 73.1045 29.9992C73.3507 29.9992 73.568 29.9653 73.7562 29.8964C73.9445 29.8275 74.1069 29.7379 74.2433 29.6274C74.3787 29.517 74.488 29.3923 74.568 29.2524C74.648 29.1124 74.7018 28.9725 74.7282 28.8303C74.762 28.6423 74.7549 28.4783 74.7058 28.3361C74.6578 28.1951 74.5811 28.0704 74.4767 27.9644C74.3723 27.8572 74.2502 27.7643 74.1103 27.6855C73.9704 27.6068 73.8261 27.5336 73.6784 27.4669L73.6023 27.4352C73.5317 27.4013 73.4622 27.3696 73.3916 27.3378C73.3221 27.3061 73.2603 27.2733 73.2072 27.2373C73.1542 27.2012 73.1155 27.1607 73.0889 27.1148C73.0623 27.0689 73.0545 27.0142 73.0642 26.9519C73.0785 26.8852 73.1321 26.8185 73.2241 26.7518C73.316 26.6851 73.4543 26.6577 73.6402 26.6709C73.7932 26.6796 73.9415 26.7113 74.085 26.7682C74.2285 26.825 74.3446 26.8863 74.4343 26.953L75 26.3024C74.9538 26.2521 74.89 26.2007 74.8089 26.146C74.7277 26.0925 74.6344 26.0411 74.5291 25.993C74.4237 25.9448 74.3051 25.9066 74.1721 25.8771C74.039 25.8475 73.8948 25.8333 73.7405 25.8333C73.4986 25.8333 73.2847 25.8672 73.0986 25.9339C72.9126 26.0017 72.7535 26.0881 72.6227 26.1941C72.4907 26.3002 72.388 26.4172 72.3137 26.544C72.2405 26.6709 72.1891 26.7977 72.1608 26.9224C72.1134 27.1399 72.1169 27.3225 72.1714 27.4701C72.2259 27.6178 72.3058 27.7446 72.4124 27.8485C72.5191 27.9523 72.6446 28.0387 72.7879 28.1076C72.9312 28.1765 73.0714 28.2377 73.2094 28.2924C73.2649 28.3132 73.3258 28.3383 73.392 28.3678C73.4583 28.3974 73.5201 28.4312 73.5764 28.4684C73.6327 28.5056 73.679 28.5482 73.7154 28.5963C73.7519 28.6445 73.7652 28.7002 73.7554 28.7625C73.75 28.8205 73.7306 28.8719 73.697 28.9156C73.6635 28.9594 73.6202 28.9954 73.5672 29.025C73.5141 29.0545 73.4558 29.0764 73.391 29.0906C73.3262 29.1048 73.2582 29.1124 73.1871 29.1124C72.9869 29.1092 72.8069 29.0742 72.646 29.0097C72.4851 28.9451 72.3291 28.8478 72.178 28.7188Z" fill="#EE4D2D"/>
     <path d="M3.33578 25.8334H8.7915L5.53379 30H0L3.33578 25.8334Z" fill="#EE4D2D"/>
     <path d="M6.91737 30L10.1751 25.8334H18.9126L15.6549 30H6.91737Z" fill="#EE4D2D"/>
-    </svg><span>Exception Handling</span></span>
+    </svg><span class="brandtxt"><span>Exception Handling</span><button id="siteBtnHead" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="siteLabelHead">HN2 SOC</span><span class="chev">▼</span></button><div id="siteMenuHead" role="listbox" style="display:none"><button type="button" data-site="HN" role="option">HN SOC</button><button type="button" data-site="HN2" role="option">HN2 SOC</button></div></span></span>
 <div id="hdrSummary"></div>
 <div class="hact" id="hdrAct"><button id="btnIntro" class="bellbtn" type="button" title="Giới thiệu" aria-label="Giới thiệu">🔔</button><button id="btnFeedback" class="bellbtn" type="button" title="Feedback" aria-label="Feedback">💬</button><div id="whoChip" title="Tài khoản đăng nhập"><i id="whoIni">?</i><span id="whoTxt"></span></div></div>
 <div id="mHide"><div class="mh-clip"><div class="mh-pad">
@@ -658,6 +671,8 @@ header{flex-wrap:wrap}
     <path d="M3.33578 25.8334H8.7915L5.53379 30H0L3.33578 25.8334Z" fill="#EE4D2D"/>
     <path d="M6.91737 30L10.1751 25.8334H18.9126L15.6549 30H6.91737Z" fill="#EE4D2D"/>
     </svg><span>Exception Handling</span></span>
+<button id="siteBtnSide" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="siteLabelSide">HN2 SOC</span><span class="chev">▼</span></button>
+<div id="siteMenuSide" role="listbox" style="display:none"><button type="button" data-site="HN">HN SOC</button><button type="button" data-site="HN2">HN2 SOC</button></div>
 <button id="navMain" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="nlab">Danh sách</span></button>
 <button id="navDash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="nlab">Dashboard</span></button>
 <button id="navBacklog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span class="nlab">Backlog</span></button>
@@ -897,6 +912,15 @@ var PERM_GROUPS=[{g:'Đơn & thao tác chính',keys:['create','resolve','liq','p
 var PERM_SHORT={create:'Tạo mới',resolve:'Resolve',liq:'Thanh lý',print:'In mã',note:'Mô tả',editStatus:'Đổi TT',editPhotos:'Ảnh',backlog:'Backlog',feedback:'Góp ý',adminReply:'Reply',roleView:'Xem Role',roleManage:'User'};
 var PERM_INFO={create:{rpc:'createBox/createItem',off:'Ẩn Tạo mới'},resolve:{rpc:'resolveItem',off:'Ẩn nút Resolve'},liq:{rpc:'liquidateBatch',off:'Ẩn tab Thanh lý'},print:{rpc:'enqueuePrintJob/pollPrintJobs',off:'Ẩn nút In Mã'},note:{rpc:'editItem',off:'Ẩn Mô tả/Ghi chú'},editStatus:{rpc:'adminEditItem (nhanh trang thai)',off:'Ẩn khối Trạng thái'},editPhotos:{rpc:'adminEditItem (nhanh anh)',off:'Ẩn khối Ảnh'},backlog:{rpc:'listBacklog',off:'Ẩn tab Backlog'},feedback:{rpc:'addFeedback',off:'Ẩn nút Góp ý'},adminReply:{rpc:'replyFeedback',off:'Ẩn nút Reply'},roleView:{rpc:'listUsers',off:'Ẩn tab Role'},roleManage:{rpc:'addUser/setUserPerms/deleteUser',off:'Ẩn ô Thêm + cột Xóa'}};
 var PAGE=150;
+// 2 kho HN2/HN (KHOP Code.gs normSite_/sheetName_): HN2 sheet goc, HN duoi HNSOC.
+var SITE_LIST=[{id:'HN2',label:'HN2 SOC'},{id:'HN',label:'HN SOC'}];
+var siteCur='HN2';
+try{var _ss=null;try{_ss=localStorage.getItem('spx_site');}catch(e0){}if(_ss==='HN'||_ss==='HN2')siteCur=_ss;}catch(e){}
+function siteLabel_(id){return id==='HN'?'HN SOC':'HN2 SOC';}
+function paintSite_(){try{var l=siteLabel_(siteCur);var a=document.getElementById('siteLabelHead');if(a)a.textContent=l;var b=document.getElementById('siteLabelSide');if(b)b.textContent=l;var btns=document.querySelectorAll('#siteMenuHead [data-site],#siteMenuSide [data-site]');for(var i=0;i<btns.length;i++){var on=btns[i].getAttribute('data-site')===siteCur;btns[i].classList.toggle('sel',on);btns[i].setAttribute('aria-selected',on?'true':'false');}}catch(e){}}
+function siteToast_(t){try{var e=document.getElementById('siteToast');if(!e)return;e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(function(){e.classList.remove('show');},2200);}catch(x){}}
+function toggleSiteMenu_(force){try{var h=document.getElementById('siteMenuHead'),s=document.getElementById('siteMenuSide');var show=typeof force==='boolean'?force:(h&&h.style.display==='none');if(h)h.style.display=show?'block':'none';var desk=window.matchMedia&&matchMedia('(min-width:900px)').matches&&!document.body.classList.contains('rail');if(s)s.style.display=(show&&desk)?'block':'none';var b1=document.getElementById('siteBtnHead');if(b1)b1.setAttribute('aria-expanded',show?'true':'false');var b2=document.getElementById('siteBtnSide');if(b2)b2.setAttribute('aria-expanded',show?'true':'false');}catch(e){}}
+async function setSite_(id){id=(id==='HN')?'HN':'HN2';if(id===siteCur){toggleSiteMenu_(false);return;}siteCur=id;try{try{localStorage.setItem('spx_site',id);}catch(e0){}}catch(e){}paintSite_();toggleSiteMenu_(false);try{state.items=[];state.itemMap={};state.detailCache={};state.detailAt={};state.page=1;state.noMore=false;state.uiPage=1;state.detail=null;state.liq=[];photoCache={};photoLoading={};preWarmed={};}catch(e1){}try{blCache=null;blPage=1;}catch(e2){}try{var dm=document.getElementById('detailModal');if(dm)dm.classList.remove('open');document.body.classList.remove('has-drawer');}catch(e3){}siteToast_('Đã chuyển sang '+siteLabel_(id));try{var blOpen=false;try{blOpen=document.getElementById('viewBacklog').style.display!=='none';}catch(e4){}if(blOpen){await blLoad();}else{await loadGrid({reset:true});}try{if(document.getElementById('viewAccess').style.display!=='none')await loadUsers();}catch(e5){}try{if(document.getElementById('fbModal').classList.contains('open'))await openFeedback();}catch(e6){}try{renderDash();}catch(e7){}}catch(e8){try{await loadGrid({reset:true});}catch(e9){}}}
 var preWarmed={};
 function hasGs(){return typeof google!=='undefined'&&google.script&&google.script.run;}
 function gs(fn,args){return new Promise(function(res,rej){
@@ -921,8 +945,8 @@ function thumb(it){return it.imgProduct||it.imgOuter||(it.extras&&it.extras[0])|
 var visWarmT_=null;function scheduleVisibleWarm(){try{if(document.hidden||visWarmT_)return;visWarmT_=setTimeout(function(){visWarmT_=null;try{warmVisibleOrders();}catch(e){}},800);}catch(e){}}function warmVisibleOrders(){if(document.hidden)return;var ids=[],vis=[];try{vis=visibleItems().slice(0,30);}catch(e){return;}for(var i=0;i<vis.length;i++){var it=vis[i];if(!it)continue;var urls=detailImgUrls_(it);for(var j=0;j<urls.length;j++){var id=extractDriveId(urls[j]);if(id&&!photoCache['t'+id]&&ids.indexOf(id)<0)ids.push(id);}}ids=ids.slice(0,90);if(!ids.length)return;try{warmPhotoCache(ids);}catch(e){}}function prefetchHeadThumbs(){try{if(document.hidden)return;if(IMG_A_DEAD){var ids=[];var vs=visibleItems().slice(0,24);for(var i=0;i<vs.length;i++){var pid=extractDriveId(thumb(vs[i]));if(pid&&!photoCache['t'+pid]&&ids.indexOf(pid)<0)ids.push(pid);}if(ids.length)serverThumbsBatch(ids);return;}var vis=visibleItems().slice(0,24);for(var i=0;i<vis.length;i++){var u=cachedSrc(thumb(vis[i]));if(u&&!preWarmed[u]){preWarmed[u]=1;try{var im=new Image();im.src=u;}catch(e){}}}}catch(e){}}
 function extractDriveId(u){var s=String(u||'');var m=s.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);if(m)return m[1];m=s.match(/\/d\/([a-zA-Z0-9_-]{10,})/);return m?m[1]:'';}
 var photoCache={},photoLoading={},photoCacheOrder=[];function putPhotoCache(k,u){if(!k||!u||photoCache[k])return;if(u.indexOf('data:')===0&&u.indexOf('data:image/')!==0)return;if(photoCacheOrder.length>=600){var old=photoCacheOrder.shift();var ou=photoCache[old];delete photoCache[old];if(ou&&ou.indexOf('blob:')===0){try{URL.revokeObjectURL(ou);}catch(e){}}}photoCacheOrder.push(k);photoCache[k]=u;try{idbQueue(k,u);}catch(e){}}var IDB_MAX=600,idbDb_=null,idbDead_=false,idbPend_={},idbMem_={},idbMemOrder_=[];function idbKeyOf(k){if(!k)return '';return (k.charAt(0)==='t')?k.slice(1)+'_w400':String(k)+'_full';}function idbMemGet(id){var e=idbMem_['i'+id];return e?e.blob:null;}function idbMemPut(id,blob,mime){var k='i'+id;if(!blob||idbMem_[k])return;idbMem_[k]={blob:blob,mime:mime||'image/jpeg',at:Date.now()};idbMemOrder_.push(k);while(idbMemOrder_.length>IDB_MAX){var o=idbMemOrder_.shift();delete idbMem_[o];}}function idbDb(){if(idbDb_)return Promise.resolve(idbDb_);if(idbDead_||typeof indexedDB==='undefined'){idbDead_=true;return Promise.resolve(null);}return new Promise(function(res){try{var rq=indexedDB.open('spx-img',2);rq.onupgradeneeded=function(e){try{var db=e.target.result;if(!db.objectStoreNames.contains('th')){var st=db.createObjectStore('th',{keyPath:'id'});st.createIndex('at','at',{unique:false});}else{e.target.transaction.objectStore('th').clear();}}catch(err){}};rq.onsuccess=function(){idbDb_=rq.result;res(idbDb_);};rq.onerror=function(){idbDead_=true;res(null);};rq.onblocked=function(){res(null);};}catch(e){idbDead_=true;res(null);}});}function idbGet(id){var m=idbMemGet(id);if(m)return Promise.resolve(m);return idbDb().then(function(db){if(!db)return null;return new Promise(function(res){try{var tx=db.transaction('th','readonly');var g=tx.objectStore('th').get(id);g.onsuccess=function(){var v=g.result;if(v&&v.blob){idbMemPut(id,v.blob,v.mime);res(v.blob);}else res(null);};g.onerror=function(){res(null);};}catch(e){res(null);}});}).catch(function(){return null;});}function idbPut(id,blob,mime){if(!id||!blob)return Promise.resolve();idbMemPut(id,blob,mime||'image/jpeg');return idbDb().then(function(db){if(!db)return;return new Promise(function(res){try{var tx=db.transaction('th','readwrite');tx.objectStore('th').put({id:id,blob:blob,mime:mime||'image/jpeg',at:Date.now()});tx.oncomplete=function(){res();};tx.onerror=function(){res();};tx.onabort=function(){res();};}catch(e){res();}});}).then(function(){return idbTrim();}).catch(function(){});}function idbDel(id){try{var k='i'+id;var ix=idbMemOrder_.indexOf(k);if(ix>=0)idbMemOrder_.splice(ix,1);delete idbMem_[k];}catch(e){}try{idbDb().then(function(db){if(!db)return;try{var tx=db.transaction('th','readwrite');tx.objectStore('th').delete(id);}catch(e){}}).catch(function(){});}catch(e){}}function idbTrim(){return idbDb().then(function(db){if(!db)return;return new Promise(function(res){try{var tx=db.transaction('th','readwrite');var st=tx.objectStore('th');var q=st.count();q.onsuccess=function(){var over=(q.result||0)-IDB_MAX;if(over<=0){res();return;}var cur=st.index('at').openKeyCursor();var n=0;cur.onsuccess=function(){var r=cur.result;if(!r||n>=over){res();return;}n++;try{st.delete(r.primaryKey);}catch(e){}r.continue();};cur.onerror=function(){res();};};q.onerror=function(){res();};}catch(e){res();}});}).catch(function(){});}function idbQueue(k,u){if(!u||u.indexOf('data:')!==0)return;var id=idbKeyOf(k);if(!/^[A-Za-z0-9_-]{10,}$/.test(id)||idbMemGet(id)||idbPend_[id])return;idbPend_[id]=1;try{fetch(u).then(function(r){return r.blob();}).then(function(b){return idbPut(id,b);}).then(function(){delete idbPend_[id];}).catch(function(){delete idbPend_[id];});}catch(e){delete idbPend_[id];}}function hydrateFromIdb(code){var dc=null,it=null;try{dc=state.detailCache[code];it=dc&&dc.item;}catch(e){return Promise.resolve(false);}if(!it)return Promise.resolve(false);var ids=detailImgUrls_(it).map(function(u){return extractDriveId(u);}).filter(function(id,i,a){return id&&a.indexOf(id)===i;});var miss=ids.filter(function(id){return !photoCache['t'+id];});if(!miss.length)return Promise.resolve(false);return Promise.all(miss.map(function(id){return idbGet(idbKeyOf('t'+id)).then(function(b){if(!b||photoCache['t'+id])return;if(!b.type||b.type.indexOf('image/')!==0){try{idbDel(idbKeyOf('t'+id));}catch(e){}return;}try{putPhotoCache('t'+id,URL.createObjectURL(b));swapCachedImgs();}catch(e){}});}));}function primeImages_(code){var p=null;try{p=hydrateFromIdb(code);}catch(e){}var go=function(){try{warmDetailImages(code);}catch(e){}};if(p&&typeof p.then==='function')p.then(go).catch(go);else go();}function cachedSrc(url){var id=extractDriveId(url||'');if(id&&photoCache['t'+id])return photoCache['t'+id];return url;}function detailImgUrls_(it){it=it||{};var o=[];if(it.imgOuter)o.push(it.imgOuter);if(it.imgProduct)o.push(it.imgProduct);(it.extras||[]).forEach(function(u){if(u)o.push(u);});return o.filter(Boolean);}function warmPhotoCache(ids){try{return serverThumbsBatch(ids).then(function(){try{swapCachedImgs();}catch(e){}}).catch(function(){});}catch(e){return Promise.resolve([]);}}function warmDetailImages(code){try{var dc=state.detailCache[code];var it=dc&&dc.item;if(!it)return;var urls=detailImgUrls_(it);var ids=[];urls.forEach(function(u){var id=extractDriveId(u);if(id&&!photoCache['t'+id]&&ids.indexOf(id)<0)ids.push(id);});if(ids.length)warmPhotoCache(ids.slice(0,3));}catch(e){}}function swapCachedImgs(){try{var imgs=document.querySelectorAll('#grid img,#detailBody img');for(var i=0;i<imgs.length;i++){var im=imgs[i];var cur=im.getAttribute('src')||im.src||'';var nu=cachedSrc(cur);if(nu&&nu!==cur)im.src=nu;}}catch(e){}}
-function serverThumb(id){var k='t'+id;if(photoCache[k])return Promise.resolve(photoCache[k]);if(photoLoading[k])return photoLoading[k];photoLoading[k]=gs('getThumb',[id,800]).then(function(r){delete photoLoading[k];if(!r||!r.ok||!r.data||!r.data.b64)throw new Error((r&&r.error)||'loi');var u='data:'+(r.data.mime||'image/jpeg')+';base64,'+r.data.b64;putPhotoCache(k,u);return u;}).catch(function(e){delete photoLoading[k];throw e;});return photoLoading[k];}function serverThumbsBatch(ids){var uniq=[];(ids||[]).forEach(function(v){var id=String(v||'').trim();if(/^[a-zA-Z0-9_-]{10,}$/.test(id)&&!photoCache['t'+id]&&!photoLoading['t'+id]&&uniq.indexOf(id)<0)uniq.push(id);});uniq=uniq.slice(0,60);if(!uniq.length)return Promise.resolve([]);var chunks=[];for(var i=0;i<uniq.length;i+=20)chunks.push(uniq.slice(i,i+20));var jobs=chunks.map(function(ch){var bk='batch:'+ch.join(',');if(photoLoading[bk])return photoLoading[bk];photoLoading[bk]=gs('getThumbs',[ch,400]).then(function(r){delete photoLoading[bk];if(r&&r.ok&&r.data&&r.data.items){for(var id in r.data.items){var e=r.data.items[id];if(e&&e.b64)putPhotoCache('t'+id,'data:'+(e.mime||'image/jpeg')+';base64,'+e.b64);}}return ch;}).catch(function(){delete photoLoading[bk];return [];});return photoLoading[bk];});return Promise.all(jobs);}
-function serverPhoto(id){if(photoCache[id])return Promise.resolve(photoCache[id]);if(photoLoading[id])return photoLoading[id];photoLoading[id]=gs('getPhoto',[id]).then(function(r){delete photoLoading[id];if(!r||!r.ok||!r.data||!r.data.b64)throw new Error((r&&r.error)||'loi');var u='data:'+(r.data.mime||'image/jpeg')+';base64,'+r.data.b64;putPhotoCache(id,u);return u;}).catch(function(e){delete photoLoading[id];throw e;});return photoLoading[id];}
+function serverThumb(id){var k='t'+id;if(photoCache[k])return Promise.resolve(photoCache[k]);if(photoLoading[k])return photoLoading[k];photoLoading[k]=gs('getThumb',[id,800,siteCur]).then(function(r){delete photoLoading[k];if(!r||!r.ok||!r.data||!r.data.b64)throw new Error((r&&r.error)||'loi');var u='data:'+(r.data.mime||'image/jpeg')+';base64,'+r.data.b64;putPhotoCache(k,u);return u;}).catch(function(e){delete photoLoading[k];throw e;});return photoLoading[k];}function serverThumbsBatch(ids){var uniq=[];(ids||[]).forEach(function(v){var id=String(v||'').trim();if(/^[a-zA-Z0-9_-]{10,}$/.test(id)&&!photoCache['t'+id]&&!photoLoading['t'+id]&&uniq.indexOf(id)<0)uniq.push(id);});uniq=uniq.slice(0,60);if(!uniq.length)return Promise.resolve([]);var chunks=[];for(var i=0;i<uniq.length;i+=20)chunks.push(uniq.slice(i,i+20));var jobs=chunks.map(function(ch){var bk='batch:'+ch.join(',');if(photoLoading[bk])return photoLoading[bk];photoLoading[bk]=gs('getThumbs',[ch,400,siteCur]).then(function(r){delete photoLoading[bk];if(r&&r.ok&&r.data&&r.data.items){for(var id in r.data.items){var e=r.data.items[id];if(e&&e.b64)putPhotoCache('t'+id,'data:'+(e.mime||'image/jpeg')+';base64,'+e.b64);}}return ch;}).catch(function(){delete photoLoading[bk];return [];});return photoLoading[bk];});return Promise.all(jobs);}
+function serverPhoto(id){if(photoCache[id])return Promise.resolve(photoCache[id]);if(photoLoading[id])return photoLoading[id];photoLoading[id]=gs('getPhoto',[id,siteCur]).then(function(r){delete photoLoading[id];if(!r||!r.ok||!r.data||!r.data.b64)throw new Error((r&&r.error)||'loi');var u='data:'+(r.data.mime||'image/jpeg')+';base64,'+r.data.b64;putPhotoCache(id,u);return u;}).catch(function(e){delete photoLoading[id];throw e;});return photoLoading[id];}
 var APP_REV='r20261008h';function urlKind_(u){var s=String(u||'');if(!s)return 'trống';if(/^data:/.test(s))return 'data';if(/^blob:/.test(s))return 'blob';if(/drive\.google\.com\/thumbnail/.test(s))return 'drive';if(/googleusercontent\.com/.test(s))return 'tem';if(/appsheet|gettablefileurl/i.test(s))return 'appsheet';if(/^https?:/.test(s))return 'link';return 'lạ';}function cellDriveId_(im){try{var w=im.closest?(im.closest('.thumb')||im.closest('.ph')):null;var ou=(w&&w.getAttribute&&w.getAttribute('data-url'))||(im.dataset&&im.dataset.orig)||'';return extractDriveId(ou);}catch(e){return '';}}function useServerImg_(im,id,u,showNo,done){if(u&&/^data:image\//.test(u)){im.src=u;return;}if(im.dataset.sv==='2'){done('Không tải được ảnh.');return;}im.dataset.sv='2';serverPhoto(id).then(function(u2){im.src=u2;}).catch(function(e){done(errText_(e));});}var IMG_A_FAILS=0,IMG_A_DEAD=false;function photoFallback(im,url,showNo){var src=url||im.src||'';var id=extractDriveId(src);if(id&&!im.dataset.iq){idbGet(idbKeyOf('t'+id)).then(function(b){if(b&&b.type&&b.type.indexOf('image/')===0){var u=URL.createObjectURL(b);putPhotoCache('t'+id,u);try{im.dataset.iq='1';}catch(e){}im.src=u;return;}fallbackToServer_(im,src,showNo,id);}).catch(function(){fallbackToServer_(im,src,showNo,id);});return;}fallbackToServer_(im,src,showNo,id);}function fallbackToServer_(im,src,showNo,id){try{if(/^https:\/\/drive\.google\.com\/thumbnail/.test(src)){if(IMG_A_FAILS<99)IMG_A_FAILS++;if(IMG_A_FAILS>=3)IMG_A_DEAD=true;}}catch(e){}function done(m){var k=urlKind_(src);showNo((m||'Không tải được ảnh')+' · ['+k+']'+(id?'':' · thiếu mã ảnh')+' · '+APP_REV);}if(!id&&im&&im.dataset&&/^data:|^blob:/.test(src))id=cellDriveId_(im);if(!id){done('');return;}if(!im.dataset.fx&&/^data:|^blob:/.test(src)&&id){im.dataset.fx='1';try{delete photoCache['t'+id];}catch(e){}try{delete photoCache[id];}catch(e){}try{idbDel(idbKeyOf('t'+id));}catch(e){}}if(!im.dataset.sv){im.dataset.sv='1';serverThumb(id).then(function(u){useServerImg_(im,id,u,showNo,done);}).catch(function(e1){im.dataset.sv='2';serverPhoto(id).then(function(u){im.src=u;}).catch(function(e2){done(errText_(e2)||errText_(e1));});});}else if(im.dataset.sv==='1'){im.dataset.sv='2';serverPhoto(id).then(function(u){im.src=u;}).catch(function(e2){done(errText_(e2));});}else{done();}}function errText_(e){return String((e&&e.message)||e||'').trim();}
 function stClass(s){return s==='da_tim_bill'?'Resolve':(s==='thanh_ly'?'thanhly':'');}
 var STATUS_LABEL={chua_xu_ly:'Lưu kho',da_tim_bill:'Resolve',da_cho_di:'Đã cho đi',thanh_ly:'Thanh Lý',tieu_huy:'Tiêu hủy'};
@@ -1049,7 +1073,7 @@ return state.detailCache[code];
 }
 async function refreshDetail(code){
 try{
-var r=await gs('getItem',[code]);
+var r=await gs('getItem',[code,siteCur]);
 if(r&&r.ok){
 var d=cacheDetail_(code,r.data.item,r.data.history,r.data.item&&r.data.item.slots);
 if(state.detail&&state.detail.item&&state.detail.item.code===code){state.detail=d;paintDetail(code,'');}
@@ -1067,7 +1091,7 @@ var off=(page-1)*PAGE;
 state._loadingGrid=(async function(){
 try{
 var full=null;
-try{var rf=await gs('listFull',[PAGE,off]);if(rf&&rf.ok&&Array.isArray(rf.data))full=rf.data;}catch(fe){full=null;}
+try{var rf=await gs('listFull',[PAGE,off,siteCur]);if(rf&&rf.ok&&Array.isArray(rf.data))full=rf.data;}catch(fe){full=null;}
 if(full){
 full.forEach(function(e){
 if(!e||!e.item||!e.item.code)return;
@@ -1076,7 +1100,7 @@ cacheDetail_(e.item.code,e.item,e.history,e.item.slots);
 if(full.length<PAGE)state.noMore=true;else state.page=page+1;
 try{var cur=state.detail&&state.detail.item&&state.detail.item.code;if(cur&&state.detailCache[cur]){state.detail=state.detailCache[cur];renderDetailBody();renderTimeline();}}catch(ee){}
 }else{
-var r=await gs('listItems',[PAGE,off]);
+var r=await gs('listItems',[PAGE,off,siteCur]);
 if(!r.ok)throw new Error(r.error);
 mergeItems(r.data);
 if(r.data.length<PAGE)state.noMore=true;else state.page=page+1;
@@ -1366,7 +1390,7 @@ state.detail={item:lc,history:[]};
 paintDetail(code,'');
 msg('msgDetail','Đang tải chi tiết…',true);
 try{
-var r=await gs('getItem',[code]);
+var r=await gs('getItem',[code,siteCur]);
 if(!r.ok)throw new Error(r.error);
 state.detail=cacheDetail_(code,r.data.item,r.data.history,r.data.item&&r.data.item.slots);
 paintDetail(code,'');
@@ -1378,7 +1402,7 @@ return;
 msg('msgDetail','Đang tải…',true);
 var loadErr='';
 try{
-var r=await gs('getItem',[code]);
+var r=await gs('getItem',[code,siteCur]);
 if(!r.ok)throw new Error(r.error);
 state.detail=cacheDetail_(code,r.data.item,r.data.history,r.data.item&&r.data.item.slots);
 }catch(e){
@@ -1615,7 +1639,7 @@ applyLocalItem(code,function(x){x.description=desc;x.note=noteV;});
 msg('msgEdit','Đã lưu thay đổi.',true);
 document.getElementById('editModal').classList.remove('open');
 try{
-var rs=await gs('editItem',[{code:code,description:desc,note:noteV}]);
+var rs=await gs('editItem',[{code:code,description:desc,note:noteV},siteCur]);
 if(!rs||!rs.ok)throw new Error((rs&&rs.error)||'Lỗi lưu');
 sentries.forEach(function(e){dropPending(code,e);});renderTimeline();
 await refreshDetail(code);
@@ -1671,7 +1695,7 @@ x.slots=slots;
 msg('msgEdit','Đã lưu thay đổi.',true);
 document.getElementById('editModal').classList.remove('open');
 try{
-var r=await gs('adminEditItem',[{code:code,description:desc,note:noteV,deleteSlots:editDel,addPhotos:editAdd,toStatus:editStatusSel?EDIT_ST[editStatusSel]:'',bill:bill,reason:reason}]);
+var r=await gs('adminEditItem',[{code:code,description:desc,note:noteV,deleteSlots:editDel,addPhotos:editAdd,toStatus:editStatusSel?EDIT_ST[editStatusSel]:'',bill:bill,reason:reason},siteCur]);
 if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi lưu');
 entries.forEach(function(e){dropPending(code,e);});renderTimeline();
 await refreshDetail(code);
@@ -1691,7 +1715,7 @@ pushPending(code,entry);
 applyLocalStatus(code,'da_tim_bill');
 msg('msgDetail','Đã chuyển '+code+' sang Resolve.',true);
 try{
-var r=await gs('resolveItem',[code,bill]);
+var r=await gs('resolveItem',[code,bill,siteCur]);
 if(!r.ok)throw new Error(r.error);
 rsDraft={code:null,bill:''};
 await refreshDetail(code);
@@ -1727,8 +1751,8 @@ function isStation_(){try{if(!window.matchMedia||!window.matchMedia('(min-width:
 function stationId_(){try{var k='spx_station_id';var v=null;try{v=localStorage.getItem(k);}catch(e0){}if(!v){v='st-'+Math.random().toString(36).slice(2,10);try{localStorage.setItem(k,v);}catch(e1){}}return v;}catch(e){return 'st-mem';}}
 function viewPrintVisible_(){try{var v=document.getElementById('viewPrint');return !!(v&&v.style.display!=='none');}catch(e){return false;}}
 function waitAfterPrint_(){return new Promise(function(res){var done=false;function fin(){if(done)return;done=true;try{window.removeEventListener('afterprint',fin);}catch(e){}res();}try{window.addEventListener('afterprint',fin);}catch(e){}setTimeout(fin,60000);});}
-function enqueueRemotePrint_(codes){return gs('enqueuePrintJob',[codes]).then(function(r){if(!r||!r.ok)throw new Error((r&&r.error)||'Không gửi được lệnh in.');return r;});}
-async function stationPollOnce_(){try{if(!isStation_())return;if(document.hidden)return;if(!viewPrintVisible_())return;if(stationPrinting_)return;if(Date.now()<stationNextAllowed_)return;var r=await gs('pollPrintJobs',[]);if(!r||!r.ok||!r.data||!r.data.jobs||!r.data.jobs.length)return;var job=null;for(var i=0;i<r.data.jobs.length;i++){if(!stationPrinted_[r.data.jobs[i].job_id]){job=r.data.jobs[i];break;}}if(!job)return;var cl=null;try{cl=await gs('claimPrintJob',[job.job_id,stationId_()]);}catch(e){return;}if(!cl||!cl.ok)return;var codes=(cl.data&&cl.data.codes)||job.codes||[];if(!codes.length)return;stationPrinting_=true;try{document.getElementById('bulkList').innerHTML='';printHint('Nhận lệnh từ điện thoại — đang in '+codes.length+' mã…',true);document.getElementById('lastPrint').innerHTML='Trạm in: <b>'+esc(codes[0])+(codes.length>1?' → '+esc(codes[codes.length-1]):'')+'</b> ('+codes.length+' mã).';doPrintMany(codes);await waitAfterPrint_();try{await gs('ackPrintJob',[job.job_id,true,'station printed']);}catch(e){}stationPrinted_[job.job_id]=1;document.getElementById('lastPrint').innerHTML='Trạm đã in xong: <b>'+esc(codes[0])+(codes.length>1?' → '+esc(codes[codes.length-1]):'')+'</b>.';}finally{stationPrinting_=false;stationNextAllowed_=Date.now()+STATION_COOLDOWN_MS;}}catch(e){}}
+function enqueueRemotePrint_(codes){return gs('enqueuePrintJob',[codes,siteCur]).then(function(r){if(!r||!r.ok)throw new Error((r&&r.error)||'Không gửi được lệnh in.');return r;});}
+async function stationPollOnce_(){try{if(!isStation_())return;if(document.hidden)return;if(!viewPrintVisible_())return;if(stationPrinting_)return;if(Date.now()<stationNextAllowed_)return;var r=await gs('pollPrintJobs',[siteCur]);if(!r||!r.ok||!r.data||!r.data.jobs||!r.data.jobs.length)return;var job=null;for(var i=0;i<r.data.jobs.length;i++){if(!stationPrinted_[r.data.jobs[i].job_id]){job=r.data.jobs[i];break;}}if(!job)return;var cl=null;try{cl=await gs('claimPrintJob',[job.job_id,stationId_(),siteCur]);}catch(e){return;}if(!cl||!cl.ok)return;var codes=(cl.data&&cl.data.codes)||job.codes||[];if(!codes.length)return;stationPrinting_=true;try{document.getElementById('bulkList').innerHTML='';printHint('Nhận lệnh từ điện thoại — đang in '+codes.length+' mã…',true);document.getElementById('lastPrint').innerHTML='Trạm in: <b>'+esc(codes[0])+(codes.length>1?' → '+esc(codes[codes.length-1]):'')+'</b> ('+codes.length+' mã).';doPrintMany(codes);await waitAfterPrint_();try{await gs('ackPrintJob',[job.job_id,true,'station printed',siteCur]);}catch(e){}stationPrinted_[job.job_id]=1;document.getElementById('lastPrint').innerHTML='Trạm đã in xong: <b>'+esc(codes[0])+(codes.length>1?' → '+esc(codes[codes.length-1]):'')+'</b>.';}finally{stationPrinting_=false;stationNextAllowed_=Date.now()+STATION_COOLDOWN_MS;}}catch(e){}}
 function startStationPoller_(){try{if(stationTimer_)return;stationTimer_=setInterval(function(){stationPollOnce_();},STATION_POLL_MS);}catch(e){}}
 
 var boxPhotos=[],itemPhotos=[];
@@ -1805,9 +1829,9 @@ async function refreshPreview(){
 var dp=todayPart();
 try{
 state.codeEdit.Box=false;state.codeEdit.Item=false;paintCodeEdit_('Box');paintCodeEdit_('Item');
-var r=await gs('previewCode',['Box']);
+var r=await gs('previewCode',['Box',siteCur]);
 if(!state.codeEdit.Box)document.getElementById('boxCode').value=r.ok?r.data.code:('Box.'+dp+'.(tự sinh)');
-var r2=await gs('previewCode',['Item']);
+var r2=await gs('previewCode',['Item',siteCur]);
 if(!state.codeEdit.Item)document.getElementById('itemCode').value=r2.ok?r2.data.code:('Item.'+dp+'.(tự sinh)');
 }catch(e){
 if(!state.codeEdit.Box)document.getElementById('boxCode').value='Box.'+dp+'.(tự sinh)';
@@ -1830,7 +1854,7 @@ var customCode=state.codeEdit[kindKey]?String(document.getElementById(isBox?'box
 if(state.codeEdit[kindKey]&&!codeValid_(kindKey,customCode)){msg('msgCreate','Mã chưa đúng định dạng — kiểm tra rồi ấn Ok trước khi Confirm.');return;}
 msg('msgCreate','Đang tạo…',true);
 try{
-var r=await gs(isBox?'createBox':'createItem',[{description:desc,note:note,outer:outer,product:product,extras:extras,customCode:customCode}]);
+var r=await gs(isBox?'createBox':'createItem',[{description:desc,note:note,outer:outer,product:product,extras:extras,customCode:customCode},siteCur]);
 if(!r.ok)throw new Error(r.error);
 state.lastCreated=r.data.code;
 var codeInput=document.getElementById(isBox?'boxCode':'itemCode');
@@ -1932,7 +1956,7 @@ printHint('Nhập/scan mã Box.… hoặc Item.… đúng định dạng sẽ t�
 document.getElementById('lastPrint').innerHTML='';
 ul.innerHTML='';h.textContent='Server đang sinh 10 mã '+k+'…';h.className='phint';
 try{
-var r=await gs('previewBulkCodes',[k,10]);
+var r=await gs('previewBulkCodes',[k,10,siteCur]);
 if(!r.ok)throw new Error(r.error);
 var codes=r.data.codes||[];
 ul.innerHTML='';
@@ -1985,7 +2009,7 @@ async function liqAdd(code){
 code=String(code||'').trim();if(!code)return;
 var found=findCached(code)||state.items.filter(function(x){return x.code===code;})[0]||null;
 if(!found){
-try{var r=await gs('getItem',[code]);if(r&&r.ok){found=r.data.item;upsertItem(found);}}catch(e){}
+try{var r=await gs('getItem',[code,siteCur]);if(r&&r.ok){found=r.data.item;upsertItem(found);}}catch(e){}
 }
 if(!found){msg('msgLiq','Không Có: '+code);return;}
 var st=found.status||'chua_xu_ly';
@@ -2011,7 +2035,7 @@ applyLocalStatus(cd,'thanh_ly');
 });
 msg('msgLiq','Đã thanh lý '+codes.length+' mã ('+liqCode+').',true);
 try{
-var r=await gs('liquidateBatch',[codes,liqCode]);
+var r=await gs('liquidateBatch',[codes,liqCode,siteCur]);
 if(!r.ok)throw new Error(r.error);
 state.liq=[];
 document.getElementById('liqCode').value='';
@@ -2025,7 +2049,7 @@ msg('msgLiq',e.message||'Lỗi thanh lý');
 }
 
 async function loadMe(){
-try{var r=await gs('me',[]);if(r.ok){state.me=r.data;renderWho();return;}}catch(e){}
+try{var r=await gs('me',[siteCur]);if(r.ok){state.me=r.data;renderWho();return;}}catch(e){}
 state.me={email:'',role:'STAFF',perms:{}};renderWho();
 }
 function renderWho(){
@@ -2087,7 +2111,7 @@ return h+'</table></div>';}
 async function loadUsers(){
 msg('msgAccess','Đang tải…',true);
 try{
-var r=await gs('listUsers',[]);
+var r=await gs('listUsers',[siteCur]);
 if(!r.ok)throw new Error(r.error);
 permUsers_=r.data||[];
 var mutable=can('roleManage');
@@ -2112,7 +2136,7 @@ permSaveT_=setTimeout(function(){var p=permPending_;permPending_=null;savePerms_
 async function savePerms_(email,role,keys){
 msg('msgAccess','Đang lưu…',true);
 try{
-var r=await gs('setUserPerms',[email,role,keys]);
+var r=await gs('setUserPerms',[email,role,keys,siteCur]);
 if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi lưu');
 msg('msgAccess','Đã lưu '+email+'.',true);
 await loadUsers();
@@ -2128,7 +2152,7 @@ msg('msgAccess',(to?'Đang bật ':'Đang tắt ')+(PERM_LABELS[k]||k)+' cho '+s
 for(var i=0;i<st.length;i++){
 var u=st[i];
 var keys=PERM_KEYS.filter(function(k2){return k2===k?to:!!(u.perms&&u.perms[k2]);});
-try{var r=await gs('setUserPerms',[u.email,u.role,keys]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi');}catch(e){msg('msgAccess','Lỗi '+u.email+': '+(e.message||e));return;}
+try{var r=await gs('setUserPerms',[u.email,u.role,keys,siteCur]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi');}catch(e){msg('msgAccess','Lỗi '+u.email+': '+(e.message||e));return;}
 }
 msg('msgAccess','Đã '+(to?'bật ':'tắt ')+(PERM_LABELS[k]||k)+' cho '+st.length+' STAFF.',true);
 await loadUsers();
@@ -2136,7 +2160,7 @@ await loadUsers();
 async function diagId(){
 msg('msgAccess','Đang chẩn đoán…',true);
 try{
-var r=await gs('diagIdentity',[]);
+var r=await gs('diagIdentity',[siteCur]);
 if(!r.ok)throw new Error(r.error);
 var d=r.data||{};
 msg('msgAccess','active='+(d.active||'?')+' · effective='+(d.effective||'?')+' · chủ file đầu: '+(d.owner||d.readErr||d.note||'?')+' · share hiện tại: '+(d.sharing||'?'),true);
@@ -2147,7 +2171,7 @@ msg('msgAccess','Đang sửa share ảnh…',true);
 try{
 var r=null,guard=0;
 do{
-r=await gs('fixPhotoSharing',[guard>0]);
+r=await gs('fixPhotoSharing',[guard>0,siteCur]);
 if(!r.ok)throw new Error(r.error);
 guard++;
 if(!r.data.done)msg('msgAccess','Đang hạ share '+(r.data.processed||0)+'/'+r.data.total+' ảnh…',true);
@@ -2164,7 +2188,7 @@ msg('msgAccess','Đang kiểm file ngoài folder…',true);
 try{
 var found=[],next=0,guard=0,done=false,total=0,miss=0;
 do{
-var r=await gs('auditPhotosOutsideFolder',[next]);
+var r=await gs('auditPhotosOutsideFolder',[next,siteCur]);
 if(!r.ok)throw new Error(r.error);
 guard++;total=r.data.total;next=r.data.next;done=r.data.done;
 miss+=(r.data.outsideCount||0);if(found.length<200)found=found.concat(r.data.outside||[]);
@@ -2175,7 +2199,7 @@ msg('msgAccess',miss?('File ngoài folder: '+miss+'/'+total+' (mẫu: '+found.sl
 }
 async function delUser(email){
 msg('msgAccess','Đang xóa…',true);
-try{var r=await gs('deleteUser',[email]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi xóa');msg('msgAccess','Đã xóa '+email+'.',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi xóa');}
+try{var r=await gs('deleteUser',[email,siteCur]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi xóa');msg('msgAccess','Đã xóa '+email+'.',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi xóa');}
 }
 var RANGE_MAXD=60;
 var RG_MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -2523,11 +2547,11 @@ renderRail();
 document.getElementById('btnAddUser').onclick=function(){var em=document.getElementById('newEmail').value.trim();if(!em){msg('msgAccess','Nhập email cần thêm.');return;}var rl=document.getElementById('newRole');addUser(em,rl?rl.value:'STAFF');document.getElementById('newEmail').value='';};
 async function addAdmin(email){
 msg('msgAccess','Đang thêm…',true);
-try{var r=await gs('addAdmin',[email]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi thêm');msg('msgAccess','Đã thêm '+email+' (ADMIN).',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi thêm');}
+try{var r=await gs('addAdmin',[email,siteCur]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi thêm');msg('msgAccess','Đã thêm '+email+' (ADMIN).',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi thêm');}
 }
 async function addUser(email,role){
 msg('msgAccess','Đang thêm…',true);
-try{var r=await gs('addUser',[email,role||'STAFF']);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi thêm');msg('msgAccess','Đã thêm '+email+' ('+((r.data&&r.data.role)||role||'STAFF')+').',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi thêm');}
+try{var r=await gs('addUser',[email,role||'STAFF',siteCur]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi thêm');msg('msgAccess','Đã thêm '+email+' ('+((r.data&&r.data.role)||role||'STAFF')+').',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi thêm');}
 }
 document.getElementById('btnEditDetail').onclick=openEdit;
 document.getElementById('btnConfirmEdit').onclick=confirmEdit;
@@ -2597,7 +2621,7 @@ async function blLoad(){
 var ld=document.getElementById('blLoading'),tb=document.getElementById('blTbl'),pg=document.getElementById('blPager'),em=document.getElementById('blEmpty');
 ld.style.display='';tb.style.display='none';pg.style.display='none';em.style.display='none';msg('blMsg','');
 try{
-var r=await gs('listBacklog');
+var r=await gs('listBacklog',[siteCur]);
 if(!r||!r.ok)throw new Error((r&&r.error)||'Không tải được Backlog.');
 var d=r.data||{};
 blCache=d.rows||[];blTitles=d.titles||[];blKeys=d.keys||[];
@@ -2716,7 +2740,7 @@ async function openFeedback(){
   msg('msgFb','Đang tải…',true);
   fbOpening=true;
   try{
-    var r=await gs('listFeedback',[]);
+    var r=await gs('listFeedback',[siteCur]);
     if(!r||!r.ok)throw new Error((r&&r.error)||'Không tải được feedback');
     fbMsgs=r.data||[];renderFbList();msg('msgFb','',true);
   }catch(e){msg('msgFb',e.message||'Lỗi tải feedback');}
@@ -2728,7 +2752,7 @@ async function sendFeedback(){
   if(!v){msg('msgFb','Nhập góp ý trước.');return;}
   msg('msgFb','Đang gửi…',true);
   try{
-    var r=await gs('addFeedback',[v]);
+    var r=await gs('addFeedback',[v,siteCur]);
     if(!r||!r.ok)throw new Error((r&&r.error)||'Gửi thất bại');
     fbMsgs.push(r.data);inp.value='';renderFbList();msg('msgFb','Đã gửi góp ý.',true);
   }catch(e){msg('msgFb',e.message||'Lỗi gửi góp ý');}
@@ -2738,14 +2762,18 @@ async function submitFbReply(id){
   if(!v){msg('msgFb','Nhập nội dung trả lời.');return;}
   msg('msgFb','Đang gửi…',true);
   try{
-    var r=await gs('replyFeedback',[id,v]);
+    var r=await gs('replyFeedback',[id,v,siteCur]);
     if(!r||!r.ok)throw new Error((r&&r.error)||'Gửi thất bại');
     var m=fbMsgs.find(function(x){return x.id===id;});
     if(m){(m.replies=m.replies||[]).push(r.data);}
     fbReplyId=null;renderFbList();msg('msgFb','Đã trả lời.',true);
   }catch(e){msg('msgFb',e.message||'Lỗi gửi trả lời');}
 }
-document.getElementById('btnFeedback').onclick=function(){if(!fbOpening)openFeedback();};/* PC: icons o header canh chip; mobile: icons o Range canh Edit (1 node, giu handler). */function placeHdrIcons_(){try{var mob=window.matchMedia&&matchMedia('(max-width:899px)').matches;var bi=document.getElementById('btnIntro'),bf=document.getElementById('btnFeedback'),hd=document.getElementById('hdrAct'),rg=document.getElementById('rgIcons'),chip=document.getElementById('whoChip');if(!bi||!bf||!hd||!rg)return;if(mob){rg.appendChild(bi);rg.appendChild(bf);}else{hd.insertBefore(bi,chip);hd.insertBefore(bf,chip);}}catch(e){}}try{placeHdrIcons_();}catch(e){}try{if(window.matchMedia){var mq_=matchMedia('(max-width:899px)');if(mq_.addEventListener)mq_.addEventListener('change',placeHdrIcons_);else if(mq_.addListener)mq_.addListener(placeHdrIcons_);}window.addEventListener('resize',function(){try{placeHdrIcons_();}catch(e){}});}catch(e){}
+document.getElementById('btnFeedback').onclick=function(){if(!fbOpening)openFeedback();};try{document.getElementById('siteBtnHead').onclick=function(){toggleSiteMenu_();};}catch(e0){}
+try{document.getElementById('siteBtnSide').onclick=function(){toggleSiteMenu_();};}catch(e1){}
+try{document.addEventListener('click',function(e){try{var t=e.target;var b=t&&t.closest?t.closest('[data-site]'):null;if(b){setSite_(b.getAttribute('data-site'));return;}if(!t.closest('#siteBtnHead')&&!t.closest('#siteMenuHead')&&!t.closest('#siteBtnSide')&&!t.closest('#siteMenuSide'))toggleSiteMenu_(false);}catch(x){}});}catch(x0){}
+try{document.addEventListener('keydown',function(e){if(e&&e.key==='Escape')toggleSiteMenu_(false);});}catch(x1){}
+try{paintSite_();}catch(e2){}/* PC: icons o header canh chip; mobile: icons o Range canh Edit (1 node, giu handler). */function placeHdrIcons_(){try{var mob=window.matchMedia&&matchMedia('(max-width:899px)').matches;var bi=document.getElementById('btnIntro'),bf=document.getElementById('btnFeedback'),hd=document.getElementById('hdrAct'),rg=document.getElementById('rgIcons'),chip=document.getElementById('whoChip');if(!bi||!bf||!hd||!rg)return;if(mob){rg.appendChild(bi);rg.appendChild(bf);}else{hd.insertBefore(bi,chip);hd.insertBefore(bf,chip);}}catch(e){}}try{placeHdrIcons_();}catch(e){}try{if(window.matchMedia){var mq_=matchMedia('(max-width:899px)');if(mq_.addEventListener)mq_.addEventListener('change',placeHdrIcons_);else if(mq_.addListener)mq_.addListener(placeHdrIcons_);}window.addEventListener('resize',function(){try{placeHdrIcons_();}catch(e){}});}catch(e){}
 document.getElementById('btnCloseFb').onclick=function(){document.getElementById('fbModal').classList.remove('open');};
 document.getElementById('fbModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 document.getElementById('btnFbSend').onclick=sendFeedback;
@@ -2760,5 +2788,6 @@ document.getElementById('fbList').addEventListener('click',function(e){
   if(s){submitFbReply(s.getAttribute('data-fbsendreply'));return;}
 });
 </script>
+<div id="siteToast" role="status"></div>
 </body>
 </html>
