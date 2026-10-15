@@ -220,20 +220,28 @@ table.gt{width:100%;border-collapse:separate;border-spacing:0;font-size:11.5px}
 .rrow{display:flex;gap:7px}
 .rrow .inp{padding:9px 14px;font-size:12px}
 
-/* ===== Role — bảng người dùng + công tắc (đã duyệt, giữ nguyên) ===== */
+/* ===== Role — bảng người dùng + tài liệu quyền đọc được (không thêm nút) ===== */
 .utbl{width:100%;border-collapse:separate;border-spacing:0;font-size:11.5px}
 .utbl th{text-align:left}
 .utbl th:last-child{text-align:center}
 .utbl td{text-align:left}
 .utbl td:last-child{text-align:center}
-.pgroup{margin-top:12px}
-.phead{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;color:var(--brand);border-bottom:1px solid var(--line);padding-bottom:5px;margin-bottom:2px}
-.phead i{font-style:normal}
-.prow2{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
-.prow2:last-child{border-bottom:none}
-.prow2 span{flex:1;min-width:0}
-.prow2 b{display:block;font-size:11px}
-.prow2 small{color:var(--mut);font-size:9px;font-weight:600}
+.utbl td:first-child,.utbl .sub2{overflow-wrap:anywhere;min-width:0}
+.stage[data-device=mobile] .utbl{table-layout:fixed}
+.stage[data-device=mobile] .utbl td,.stage[data-device=mobile] .utbl th{padding:9px 8px}
+.rolestack{display:flex;flex-direction:column;gap:14px}
+.who{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--mut)}
+.who b{color:var(--brand);font-weight:800}
+.gt.static tbody tr{cursor:default}
+.gt.static tbody tr:hover td{background:rgba(255,255,255,.5)}
+.gt .cap{font-weight:800;white-space:nowrap}
+.gt .cap.y{color:var(--stL)}
+.gt .cap.n{color:var(--stO);background:var(--stOb);border-radius:8px;padding:3px 8px;font-size:10px;
+ font-family:ui-monospace,'JetBrains Mono',monospace;display:inline-block}
+.gt .src{font-family:ui-monospace,'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;color:var(--mut)}
+.gt .src em{font-style:normal;color:var(--brand)}
+.sub2{font-size:9px;font-weight:700;color:var(--mut);margin-top:3px;font-family:ui-monospace,monospace}
+.rulebox{padding:4px 14px 10px;position:relative;z-index:1}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;font-weight:700;color:var(--mut);align-items:center}
 
 /* ===== thanh lý / in mã ===== */
@@ -530,11 +538,11 @@ var BACKLOG=[
 
 /* Role — khớp app thật: chỉ 2 vai trò ADMIN / STAFF, server requireAdmin_() */
 var USERS=[
- {email:'admin.mock@spxexpress.com',role:'ADMIN'},
- {email:'duc.nguyenvan05@spxexpress.com',role:'ADMIN'},
- {email:'son.nguyenngoc@spxexpress.com',role:'STAFF'},
- {email:'lan.tran@spxexpress.com',role:'STAFF'},
- {email:'tuan.pham@spxexpress.com',role:'STAFF'}
+ {email:'admin.mock@spxexpress.com',role:'ADMIN',at:'01/09/2026 08:14',by:'seed ADMIN'},
+ {email:'duc.nguyenvan05@spxexpress.com',role:'ADMIN',at:'01/09/2026 08:14',by:'seed ADMIN'},
+ {email:'son.nguyenngoc@spxexpress.com',role:'STAFF',at:'14/09/2026 16:02',by:'duc.nguyenvan05@spxexpress.com'},
+ {email:'lan.tran@spxexpress.com',role:'STAFF',at:'22/09/2026 09:47',by:'admin.mock@spxexpress.com'},
+ {email:'tuan.pham@spxexpress.com',role:'STAFF',at:'06/10/2026 11:20',by:'duc.nguyenvan05@spxexpress.com'}
 ];
 var FEEDBACK=[{id:1,t:'08/10 19:19',who:'lan.tran@spxexpress.com',me:false,txt:'Nên thêm xuất Excel kiểm kê cuối tháng.',rp:null},
  {id:2,t:'09/10 08:20',who:'tuan.pham@spxexpress.com',me:false,txt:'Thêm cột trọng lượng vào form create.',rp:null},
@@ -890,22 +898,72 @@ function rPrint(){var p=S.pn,done=p.last||p.codes.length,h='<div class="mtxWrap 
    :'Điện thoại không in trực tiếp — mã được đẩy cho laptop đang mở tab In Mã (không cần bật chế độ nào).')+'</div>';
  return h+'</div>'}
 
-/* ================= ROLE — khớp #viewAccess: chỉ ADMIN/STAFF, thêm/xóa email ================= */
+/* ================= ROLE — #viewAccess thật + tài liệu quyền đọc từ Code.gs ================= */
+/* mỗi dòng = một thao tác thật: [nhãn UI, hàm server, ADMIN?, STAFF?, ghi chú] */
+var RCAP=[
+ ['Tạo mới Box / Item','createBox · createItem',1,1,'mở cho mọi người dùng trong danh sách'],
+ ['Resolve — quét/nhập bill, Confirm','resolveItem',1,1,'ghi ActivityLog người sửa (currentEmail_())'],
+ ['Thanh lý cả lô','liquidateBatch',1,1,'mỗi mã xuống sheet Thanh lý + log'],
+ ['Quét & In Mã (đẩy lệnh in)','enqueuePrintJob',1,1,'điện thoại đẩy lệnh cho trạm in'],
+ ['Backlog — đọc, lọc, tìm','listBacklog',1,1,'sheet vận hành, chỉ đọc'],
+ ['Sửa Mô tả + Ghi chú','editItem',1,1,'không đổi được trạng thái/ảnh'],
+ ['Gửi Góp ý','addFeedback',1,1,'gửi được, không trả lời hộ người khác'],
+ ['Edit — đổi Trạng thái · Lý do · xóa/thêm ảnh','adminEditItem',1,0,'<em>requireAdmin_()</em> Code.gs:1195'],
+ ['Trả lời Góp ý (nhãn “Admin”)','replyFeedback',1,0,'<em>requireAdmin_()</em> Code.gs:1516'],
+ ['Trang Role — xem danh sách người dùng','listUsers',1,0,'<em>requireAdmin_()</em> Code.gs:1412'],
+ ['Trang Role — Thêm ADMIN','addAdmin',1,0,'<em>requireAdmin_()</em> Code.gs:1429'],
+ ['Trang Role — Xóa người dùng','deleteUser',1,0,'<em>requireAdmin_()</em> Code.gs:1445']
+];
+var RRULE=[
+ ['Quyền lấy từ đâu','Khớp email đang đăng nhập với sheet <b>Users</b> → dùng quyền đó; không có trong danh sách → <b>STAFF</b> (getRole_(), Code.gs:1386).'],
+ ['Sheet Users có 4 cột','email · role · added_at · added_by — bảng phía trên hiển thị đúng cả 4 trường.'],
+ ['Thêm người dùng luôn là ADMIN','addAdmin appendRow với role cố định ADMIN; không có ô chọn quyền.'],
+ ['Email trùng','Server báo “Email đã có trong danh sách.” — không thêm lần hai.'],
+ ['Tự xóa mình','deleteUser chặn: “Không tự xóa chính mình.”'],
+ ['ADMIN cuối cùng','Còn đúng 1 ADMIN → “Không thể xóa ADMIN cuối cùng.”'],
+ ['Client chỉ ẩn tab','navAccess display:none với STAFF — nhưng chặn thật là requireAdmin_() phía server (Code.gs:1397): “Cần quyền ADMIN.”'],
+ ['RPC ADMIN-only chưa gắn nút','fixPhotoSharing (1026) · auditPhotosOutsideFolder (1109) · diagIdentity (1146) — server đã requireAdmin_(), bản đang chạy chưa có nút trong UI.']
+];
 function rRole(){
- var h='<div class="mtxWrap gtw" style="--gth:none"><div class="gtbar"><span class="lab">Người dùng được phép truy cập</span></div>';
- if(!isAdm())return h+'<div style="padding:12px"><div class="msg er">Chỉ ADMIN mới xem được trang này.</div></div></div>';
- h+='<div style="padding:12px 12px 0;display:flex;gap:8px;position:relative;z-index:1">'+
+ if(!isAdm())return '<div class="mtxWrap gtw" style="--gth:none"><div class="gtbar"><span class="lab">Người dùng được phép truy cập</span></div>'+
+  '<div style="padding:12px"><div class="msg">Chỉ ADMIN mới xem được trang này.</div></div></div>';
+ var h='<div class="rolestack">';
+ /* --- khối 1: phiên đăng nhập + danh sách Users (đúng #viewAccess) --- */
+ h+='<div class="gtw" style="--gth:none"><div class="gtbar"><span class="lab">Người dùng được phép truy cập</span>'+
+  '<span class="who">Đăng nhập: <b>'+esc(ME())+'</b> · <b>'+S.meRole.toUpperCase()+'</b></span></div>'+
+ '<div style="padding:12px 12px 0;display:flex;gap:8px;position:relative;z-index:1">'+
   '<input class="inp" id="newEmail" placeholder="email shopee" inputmode="email" style="flex:2">'+
   '<button class="btn pri" data-act="addUser">Thêm</button></div>'+
- '<div style="padding:8px 12px 0"><div class="msg">Thêm người dùng luôn gán quyền ADMIN. Staff không tự thêm / không xóa được ai.</div></div>'+
- '<div class="gtw" style="margin-top:10px"><div class="gtb"><table class="gt utbl"><thead><tr>'+
- '<th style="text-align:left">Email</th><th style="text-align:center;width:120px">Quyền</th><th style="text-align:center;width:90px"></th></tr></thead><tbody>'+
- USERS.map(function(u,i){return '<tr><td class="sid" style="text-align:left;white-space:normal">'+esc(u.email)+'</td>'+
-  '<td style="text-align:center"><span class="chip '+(u.role==='ADMIN'?'sO':'sL')+'">'+u.role+'</span></td>'+
-  '<td style="text-align:center"><button class="btn mini" data-act="delUser" data-id="'+i+'">Xóa</button></td></tr>'}).join('')+
- '</tbody></table></div>'+
- '<div class="gtfoot"><span>'+USERS.length+' người dùng</span><span class="legend">App chỉ có 2 vai trò · mọi thao tác nhạy cảm (Edit trạng thái/ảnh, Backlog write, Role, trả lời Feedback nhãn “Admin”) do server requireAdmin_() chặn</span></div></div></div>';
- return h}
+ '<div style="padding:8px 12px 0"><div class="msg">Thêm người dùng luôn gán quyền ADMIN — không có ô chọn quyền.</div></div>'+
+ '<div class="gtb" style="margin-top:10px"><table class="gt utbl"><thead><tr>'+
+  '<th style="text-align:left">Email</th><th style="text-align:center;width:110px">Quyền</th>'+
+  '<th style="text-align:center;width:84px"></th></tr></thead><tbody>'+
+  USERS.map(function(u,i){return '<tr><td style="text-align:left;white-space:normal">'+
+   '<span class="sid" style="font-size:11.5px">'+esc(u.email)+'</span>'+
+   '<div class="sub2">thêm '+u.at+' · bởi '+esc(u.by)+'</div></td>'+
+   '<td style="text-align:center"><span class="chip '+(u.role==='ADMIN'?'sO':'sL')+'">'+u.role+'</span></td>'+
+   '<td style="text-align:center"><button class="btn mini" data-act="delUser" data-id="'+i+'">Xóa</button></td></tr>'}).join('')+
+  '</tbody></table></div>'+
+ '<div class="gtfoot"><span>'+USERS.length+' người dùng · '+USERS.filter(function(u){return u.role==='ADMIN'}).length+
+  ' ADMIN</span><span class="sp">Sheet Users — 4 cột email / role / added_at / added_by</span></div></div>';
+ /* --- khối 2: bảng quyền đọc theo thao tác thật --- */
+ h+='<div class="gtw" style="--gth:none"><div class="gtbar"><span class="lab">Ai làm được gì — theo code đang chạy</span>'+
+  '<span class="who">Chỉ để đọc · không có công tắc</span></div>'+
+ '<div class="gtb"><table class="gt static"><thead><tr>'+
+  '<th style="text-align:left">Thao tác</th><th style="text-align:center;width:110px">ADMIN</th>'+
+  '<th style="text-align:center;width:150px">STAFF</th><th style="text-align:left;width:210px">Ghi chú server</th></tr></thead><tbody>'+
+  RCAP.map(function(r){return '<tr><td style="white-space:normal"><b style="font-weight:800;color:var(--brand)">'+esc(r[0])+'</b>'+
+   '<div class="src">'+esc(r[1])+'()</div></td>'+
+   '<td style="text-align:center"><span class="cap y">'+(r[2]?'✓ Được':'—')+'</span></td>'+
+   '<td style="text-align:center">'+(r[3]?'<span class="cap y">✓ Được</span>':'<span class="cap n">Cần quyền ADMIN.</span>')+'</td>'+
+   '<td class="src" style="white-space:normal">'+r[4]+'</td></tr>'}).join('')+
+  '</tbody></table></div>'+
+ '<div class="gtfoot"><span>✓ = gọi được RPC</span><span class="sp">“Cần quyền ADMIN.” là thông báo thật của requireAdmin_() — Code.gs:1397</span></div></div>';
+ /* --- khối 3: quy tắc server đang áp dụng --- */
+ h+='<div class="gtw" style="--gth:none"><div class="gtbar"><span class="lab">Quy tắc server đang áp dụng</span></div>'+
+ '<div class="rulebox">'+RRULE.map(function(r){return '<div class="kv"><b>'+esc(r[0])+'</b><span>'+r[1]+'</span></div>'}).join('')+'</div>'+
+ '<div class="gtfoot"><span class="sp">Tab Role ẩn với STAFF; mọi thao tác nhạy cảm vẫn do server chặn — ẩn nút chỉ là giao diện.</span></div></div>';
+ return h+'</div>'}
 
 /* ================= RANGE / CAM / FEEDBACK / INTRO / LIGHTBOX ================= */
 var MON=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
@@ -1173,7 +1231,7 @@ var A={
   if(!isAdm()){toast('Cần quyền ADMIN.');return}
   if(!v){toast('Nhập email cần thêm.');return}
   if(USERS.filter(function(u){return u.email===v}).length){toast('Email đã có trong danh sách.');return}
-  USERS.push({email:v,role:'ADMIN'});if(i)i.value='';
+  USERS.push({email:v,role:'ADMIN',at:nowT().slice(0,16),by:ME()});if(i)i.value='';
   render();toast('Đã thêm '+v+' (ADMIN).')},
  delUser:function(el){var u=USERS[+el.dataset.id];if(!u)return;
   if(u.email===ME()){toast('Không tự xóa chính mình.');return}
@@ -1211,7 +1269,7 @@ if(t.id==='billIn'){A.resolveConfirm();return}
 $('lb').addEventListener('wheel',function(e){e.preventDefault();lbZoom(e.deltaY<0?1.15:1/1.15)});
 
 /* ================= INIT ================= */
-$('mockNote').innerHTML='<b>Mẫu 5 · Liquid Glass</b> — nút, logic và dữ liệu lấy theo app đang chạy: 5 tab, drawer hồ sơ, Create 3 bước, Edit (ADMIN đổi trạng thái + ảnh, Staff chỉ Mô tả + Ghi chú), Display Range, camera, Backlog 16 cột đúng dữ liệu sheet, lô thanh lý 2 bước, In Mã (trạm in chạy ngầm — không có bảng hàng đợi), Role chỉ ADMIN/STAFF, sidebar thu gọn kiểu rail. Không thêm nút nào ngoài app thật.';
+$('mockNote').innerHTML='<b>Mẫu 5 · Liquid Glass</b> — nút, logic và dữ liệu lấy theo app đang chạy: 5 tab, drawer hồ sơ, Create 3 bước, Edit (ADMIN đổi trạng thái + ảnh, Staff chỉ Mô tả + Ghi chú), Display Range, camera, Backlog 16 cột đúng dữ liệu sheet, lô thanh lý 2 bước, In Mã (trạm in chạy ngầm — không có bảng hàng đợi), Role hiển thị đúng 4 cột sheet Users (email · role · added_at · added_by) + bảng quyền đọc theo từng RPC thật + quy tắc requireAdmin_(), sidebar thu gọn kiểu rail. Không thêm nút nào ngoài app thật.';
 document.addEventListener('pointermove',function(e){
  var t=e.target&&e.target.closest?e.target.closest('.gcard,.pcard,.pick'):null;if(!t)return;
  var r=t.getBoundingClientRect();
