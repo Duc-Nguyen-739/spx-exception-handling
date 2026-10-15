@@ -1,0 +1,109 @@
+const { test } = require('node:test');
+const assert = require('node:assert');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const path = require('node:path');
+
+function extractKeys(src) {
+  const m = src.match(/PERM_KEYS\s*=\s*\[([\s\S]*?)\]/);
+  if (!m) return null;
+  return m[1].split(',').map((s) => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
+}
+
+function loadParse() {
+  const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
+  const mK = gs.match(/var PERM_KEYS\s*=\s*(\[[\s\S]*?\]);/);
+  const mD = gs.match(/var PERM_DEFAULT\s*=\s*(\{[\s\S]*?\});/);
+  assert.ok(mK, 'missing PERM_KEYS in Code.gs');
+  assert.ok(mD, 'missing PERM_DEFAULT in Code.gs');
+  const start = gs.indexOf('function parsePerms_(');
+  assert.ok(start >= 0, 'missing parsePerms_');
+  let depth = 0, end = start;
+  for (let i = start; i < gs.length; i++) {
+    if (gs[i] === '{') depth++;
+    if (gs[i] === '}') { depth--; if (!depth) { end = i + 1; break; } }
+  }
+  const fnSrc = gs.slice(start, end);
+  const sandbox = {
+    PERM_KEYS: null, PERM_DEFAULT: null,
+    Logger: { log: () => {} },
+  };
+  vm.createContext(sandbox);
+  vm.runInContext(mK[0] + '\n' + mD[0], sandbox);
+  vm.runInContext(fnSrc + '\nthis.__parse = parsePerms_;', sandbox);
+  return sandbox.__parse;
+}
+
+const parse = loadParse();
+
+test('perm-model: PERM_KEYS Code.gs khop api/logic.py cung thu tu', () => {
+  const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
+  const py = fs.readFileSync(path.join(__dirname, '..', 'api', 'logic.py'), 'utf8');
+  const a = extractKeys(gs);
+  const b = extractKeys(py);
+  assert.ok(a && a.length === 12, 'Code.gs PERM_KEYS phai 12 key, got ' + JSON.stringify(a));
+  assert.deepStrictEqual(b, a, 'api/logic.py PERM_KEYS phai giong Code.gs cung thu tu');
+});
+
+test('perm-model: parsePerms_ trong -> mac dinh STAFF 7 bat 5 tat', () => {
+  const o = parse('', 'STAFF');
+  const on = Object.keys(o).filter((k) => o[k]);
+  assert.strictEqual(on.length, 7);
+  for (const k of ['create', 'resolve', 'liq', 'print', 'backlog', 'note', 'feedback']) assert.strictEqual(o[k], 1, k);
+  for (const k of ['editStatus', 'editPhotos', 'adminReply', 'roleView', 'roleManage']) assert.strictEqual(o[k], 0, k);
+});
+
+test('perm-model: danh sach key rieng chi bat dung key', () => {
+  const o = parse('create,liq', 'STAFF');
+  assert.strictEqual(o.create, 1);
+  assert.strictEqual(o.liq, 1);
+  assert.strictEqual(o.resolve, 0);
+  assert.strictEqual(Object.values(o).reduce((s, v) => s + v, 0), 2);
+});
+
+test('perm-model: NONE tat toan bo', () => {
+  const o = parse('NONE', 'STAFF');
+  assert.strictEqual(Object.values(o).reduce((s, v) => s + v, 0), 0);
+});
+
+test('perm-model: ADMIN luon 12/12', () => {
+  const o = parse('', 'ADMIN');
+  assert.strictEqual(Object.values(o).reduce((s, v) => s + v, 0), 12);
+});
+
+test('perm-model: key la bi bo qua', () => {
+  const o = parse('create,bogus', 'STAFF');
+  assert.strictEqual(o.create, 1);
+  assert.strictEqual(Object.values(o).reduce((s, v) => s + v, 0), 1);
+});
+
+test('perm-model: chap nhan hoa + khoang trang', () => {
+  const o = parse(' CREATE , liq ', 'STAFF');
+  assert.strictEqual(o.create, 1);
+  assert.strictEqual(o.liq, 1);
+});
+
+test('perm-model: USERS_HEADER 5 cot, perms cuoi', () => {
+  const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
+  const m = gs.match(/var USERS_HEADER\s*=\s*(\[[^\]]+\])/);
+  assert.ok(m, 'missing USERS_HEADER');
+  const arr = eval(m[1]);
+  assert.strictEqual(arr.length, 5);
+  assert.strictEqual(arr[4], 'perms');
+});
+
+test('perm-model: gate du 12 key checkPerm_', () => {
+  const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
+  const keys = extractKeys(gs);
+  for (const k of keys) {
+    assert.ok(gs.includes("checkPerm_('" + k + "')"), 'thieu gate ' + k);
+  }
+});
+
+test('perm-model: readUsers_ dung ensureUsersHeader_', () => {
+  const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
+  assert.ok(gs.includes('function ensureUsersHeader_()'), 'missing ensureUsersHeader_');
+  const i = gs.indexOf('function readUsers_()');
+  const block = gs.slice(i, i + 600);
+  assert.ok(block.includes('ensureUsersHeader_()'), 'readUsers_ phai goi ensureUsersHeader_');
+});

@@ -9,6 +9,7 @@ from api.logic import (
     BACKLOG_DEFAULT,
     check_create_photos, can_delete_user, extract_drive_id, can_edit, CODE_RE, TZ,
     valid_custom_code, custom_code_exists, can_edit_basic, staff_edit_notes,
+    PERM_KEYS, PERM_DEFAULT, parse_perms, check_perm,
 )
 
 
@@ -277,6 +278,41 @@ class TestBacklog(unittest.TestCase):
         self.assertEqual(fmt_cogs("28890000000000004"), "28,890,000")
         self.assertEqual(fmt_cogs(""), "")
         self.assertIsNone(fmt_cogs(None) or None)
+
+
+class TestPerms(unittest.TestCase):
+    def test_default_staff(self):
+        p = parse_perms("", "STAFF")
+        self.assertEqual(sum(p.values()), 7)
+        for k in ("create", "resolve", "liq", "print", "backlog", "note", "feedback"):
+            self.assertEqual(p[k], 1)
+        for k in ("editStatus", "editPhotos", "adminReply", "roleView", "roleManage"):
+            self.assertEqual(p[k], 0)
+
+    def test_explicit_list(self):
+        p = parse_perms("create,liq", "STAFF")
+        self.assertEqual(p["create"], 1)
+        self.assertEqual(p["liq"], 1)
+        self.assertEqual(p["resolve"], 0)
+
+    def test_none(self):
+        self.assertEqual(sum(parse_perms("NONE", "STAFF").values()), 0)
+
+    def test_admin_all(self):
+        self.assertEqual(sum(parse_perms("", "ADMIN").values()), 12)
+
+    def test_bad_key_ignored(self):
+        p = parse_perms("create,bogus", "STAFF")
+        self.assertEqual(p["create"], 1)
+        self.assertEqual(sum(p.values()), 1)
+
+    def test_case_space(self):
+        p = parse_perms(" CREATE , liq ", "STAFF")
+        self.assertEqual((p["create"], p["liq"]), (1, 1))
+
+    def test_check_perm(self):
+        self.assertEqual(check_perm({"create": 1}, "create"), (True, ""))
+        self.assertEqual(check_perm({"create": 0}, "create")[0], False)
 
 
 if __name__ == "__main__":

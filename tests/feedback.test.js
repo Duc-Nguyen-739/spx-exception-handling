@@ -62,12 +62,12 @@ test('feedback: modal title chi la “Feedback”', () => {
   assert.ok(html.includes('<h2>Feedback</h2>'), 'title must be exactly Feedback');
 });
 
-test('feedback: Code.gs — 3 endpoint + requireAdmin_ trong reply', () => {
+test('feedback: Code.gs — 3 endpoint + checkPerm_ adminReply trong reply', () => {
   assert.ok(/function listFeedback/.test(gs), 'missing listFeedback');
   assert.ok(/function addFeedback/.test(gs), 'missing addFeedback');
   assert.ok(/function replyFeedback/.test(gs), 'missing replyFeedback');
   var rep = gs.split('function replyFeedback')[1].split('function')[0];
-  assert.ok(rep.indexOf('requireAdmin_') >= 0, 'replyFeedback must gate ADMIN');
+  assert.ok(rep.indexOf("checkPerm_('adminReply')") >= 0, 'replyFeedback must gate adminReply');
   assert.ok(/Function addFeedback/.test(gs) || /function addFeedback/.test(gs), 'missing addFeedback');
 });
 

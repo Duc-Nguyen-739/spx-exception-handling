@@ -233,6 +233,44 @@ def check_create_photos(kind, outer, product, n_extras=0):
     return (True, "")
 
 
+# KHOP server: Code.gs parsePerms_ / checkPerm_ — SSOT PERM_KEYS guard tests/perm-model.test.js
+PERM_KEYS = ["create", "resolve", "liq", "print", "note", "editStatus",
+    "editPhotos", "backlog", "feedback", "adminReply", "roleView", "roleManage"]
+PERM_DEFAULT = {"create": 1, "resolve": 1, "liq": 1, "print": 1, "backlog": 1,
+    "note": 1, "feedback": 1, "editStatus": 0, "editPhotos": 0,
+    "adminReply": 0, "roleView": 0, "roleManage": 0}
+PERM_LABELS = {"create": "Tạo mới", "resolve": "Resolve", "liq": "Thanh lý",
+    "print": "In mã", "note": "Mô tả", "editStatus": "Đổi TT",
+    "editPhotos": "Ảnh", "backlog": "Backlog", "feedback": "Góp ý",
+    "adminReply": "Reply", "roleView": "Xem Role", "roleManage": "User"}
+
+
+def parse_perms(raw, role):
+    if role == "ADMIN":
+        return {k: 1 for k in PERM_KEYS}
+    s = "" if raw is None else str(raw).strip()
+    if not s:
+        return {k: (1 if PERM_DEFAULT.get(k) else 0) for k in PERM_KEYS}
+    if s.lower() == "none":
+        return {k: 0 for k in PERM_KEYS}
+    seen = set()
+    for part in s.split(","):
+        k = str(part).strip().lower()
+        if not k:
+            continue
+        if k not in PERM_KEYS:
+            continue
+        seen.add(k)
+    return {k: (1 if k in seen else 0) for k in PERM_KEYS}
+
+
+def check_perm(perms, key):
+    if not (perms or {}).get(key):
+        label = PERM_LABELS.get(key, key)
+        return (False, "Bạn không có quyền: " + label + ". Liên hệ ADMIN.")
+    return (True, "")
+
+
 def can_delete_user(user_rows, target_email, me_email):
     # KHỚP Code.gs deleteUser: không tự xóa, không xóa ADMIN cuối.
     target = (target_email or "").strip().lower()

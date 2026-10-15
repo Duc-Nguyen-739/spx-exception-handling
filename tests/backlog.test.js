@@ -63,13 +63,14 @@ test('backlog: index.html — nav + view + wiring', () => {
   assert.ok(html.includes('BigInt(blCogsDigits'), 'total must sum normalized COGS with BigInt');
 });
 
-test('backlog: Code.gs — listBacklog read-only từ hàng 4, không gate', () => {
+test('backlog: Code.gs — listBacklog read-only tu hang 4, gate backlog', () => {
   assert.ok(/function listBacklog/.test(gs), 'missing listBacklog');
   assert.ok(/var BACKLOG_KEYS/.test(gs), 'missing BACKLOG_KEYS');
   assert.ok(/var BACKLOG_DEFAULT/.test(gs), 'missing BACKLOG_DEFAULT');
   var body = gs.split('function listBacklog')[1].split(/^function /m)[0];
   assert.ok(body.indexOf('getSheetByName(\'Backlog\')') >= 0, 'must read Backlog sheet');
   assert.ok(body.indexOf('requireAdmin_') < 0, 'listBacklog must not gate ADMIN');
+  assert.ok(body.indexOf("checkPerm_('backlog')") >= 0, 'listBacklog must gate backlog');
   assert.ok(body.indexOf('LockService') < 0, 'listBacklog must not lock (read-only)');
   assert.ok(/defaults:\s*BACKLOG_DEFAULT/.test(body), 'must return defaults');
 });

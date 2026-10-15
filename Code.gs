@@ -8,7 +8,14 @@ var TZ = 'Asia/Ho_Chi_Minh';
 var PROP_SHEET = 'SPREADSHEET_ID';
 var PROP_FOLDER = 'FOLDER_ID';
 var PROP_ADMINS = 'ADMIN_EMAILS';
-var USERS_HEADER = ['email', 'role', 'added_at', 'added_by'];
+var USERS_HEADER = ['email', 'role', 'added_at', 'added_by', 'perms'];
+var PERM_KEYS = ['create','resolve','liq','print','note','editStatus','editPhotos','backlog','feedback','adminReply','roleView','roleManage'];
+var PERM_DEFAULT = { create:1, resolve:1, liq:1, print:1, backlog:1, note:1, feedback:1,
+  editStatus:0, editPhotos:0, adminReply:0, roleView:0, roleManage:0 };
+// KHOP index.html PERM_KEYS + api/logic.py PERM_KEYS — guard: tests/perm-model.test.js
+var PERM_LABELS = { create:'Tạo mới', resolve:'Resolve', liq:'Thanh lý', print:'In mã',
+  note:'Mô tả', editStatus:'Đổi TT', editPhotos:'Ảnh', backlog:'Backlog',
+  feedback:'Góp ý', adminReply:'Reply', roleView:'Xem Role', roleManage:'User' };
 var LIST_LIMIT = 150; // listItems/listFull chỉ đọc tối đa 150 dòng đầu (đơn mới insert ở dòng 2)
 var TAIL_ROWS = 3000; // list paths chỉ đọc tail Photos/Log (anh/log cua head-150 nam o cuoi do append)
 
@@ -694,6 +701,7 @@ function validPrintCode_(code) {
 
 function enqueuePrintJob(codes) {
   try {
+    checkPerm_('print');
     var seen = {}, list = [];
     (codes || []).forEach(function (raw) {
       var s = String(raw || '').trim();
@@ -728,6 +736,7 @@ function printQueueTail_(maxRows) {
 
 function pollPrintJobs() {
   try {
+    checkPerm_('print');
     var t = printQueueTail_(500);
     var out = [];
     for (var i = 0; i < t.rows.length && out.length < 20; i++) {
@@ -749,6 +758,7 @@ function pollPrintJobs() {
 
 function claimPrintJob(jobId, stationId) {
   try {
+    checkPerm_('print');
     var id = String(jobId || '').trim();
     var st = String(stationId || '').trim().slice(0, 60) || 'station';
     if (!id) return fail('Thiếu việc in.');
@@ -776,6 +786,7 @@ function claimPrintJob(jobId, stationId) {
 
 function ackPrintJob(jobId, okFlag, note) {
   try {
+    checkPerm_('print');
     var id = String(jobId || '').trim();
     if (!id) return fail('Thiếu việc in.');
     var msg = String(note || '').slice(0, 200);
@@ -952,17 +963,18 @@ function create_(kind, p) {
 }
 
 function createBox(p) {
-  try { return ok(create_('Box', p)); }
+  try { checkPerm_('create'); return ok(create_('Box', p)); }
   catch (e) { Logger.log(e); return fail(e.message); }
 }
 
 function createItem(p) {
-  try { return ok(create_('Item', p)); }
+  try { checkPerm_('create'); return ok(create_('Item', p)); }
   catch (e) { Logger.log(e); return fail(e.message); }
 }
 
 function resolveItem(code, bill) {
   try {
+    checkPerm_('resolve');
     code = String(code || '').trim();
     bill = String(bill || '').trim();
     if (!code) return fail('Thiếu mã đơn.');
@@ -988,6 +1000,7 @@ function resolveItem(code, bill) {
 
 function liquidateBatch(codes, liqCode) {
   try {
+    checkPerm_('liq');
     liqCode = String(liqCode || '').trim().toUpperCase();
     codes = (codes || []).map(function (c) { return String(c).trim(); }).filter(Boolean);
     if (!codes.length) return fail('Chưa scan mã nào.');
@@ -1192,7 +1205,6 @@ function readPhotosAll_() {
 
 function adminEditItem(p) {
   try {
-    requireAdmin_();
     p = p || {};
     var code = String(p.code || '').trim();
     if (!code) return fail('Thiếu mã đơn.');
@@ -1214,6 +1226,11 @@ function adminEditItem(p) {
       if (f.row < 0) throw new Error('Không Có');
       var it0 = rowsToItems_(f.sh.getRange(f.row, 1, 1, ITEMS_HEADER.length).getValues())[0];
       var cur = it0.status || 'chua_xu_ly';
+      var changingStatus = !!(toStatus && toStatus !== cur);
+      var changingPhotos = (delSlots.length > 0 || adds.length > 0);
+      if (changingStatus) checkPerm_('editStatus');
+      if (changingPhotos) checkPerm_('editPhotos');
+      if (!changingStatus && !changingPhotos) checkPerm_('note');
       var photoChanged = (delSlots.length > 0 || adds.length > 0);
       var keep = [], placed = [];
       var kind = it0.kind === 'Item' ? 'Item' : 'Box';
@@ -1335,6 +1352,7 @@ function adminEditItem(p) {
 
 function editItem(p) {
   try {
+    checkPerm_('note');
     p = p || {};
     var code = String(p.code || '').trim();
     if (!code) return fail('Thiếu mã đơn.');
@@ -1375,8 +1393,16 @@ function seedAdmins_() {
   return raw.split(',').map(normEmail_).filter(Boolean);
 }
 
-function readUsers_() {
+function ensureUsersHeader_() {
   var sh = getSheet_('Users', USERS_HEADER);
+  if (sh.getLastColumn() < USERS_HEADER.length) {
+    sh.getRange(1, 1, 1, USERS_HEADER.length).setValues([USERS_HEADER]);
+  }
+  return sh;
+}
+
+function readUsers_() {
+  var sh = ensureUsersHeader_();
   var last = sh.getLastRow();
   if (last < 2) return { sh: sh, rows: [] };
   var vals = sh.getRange(2, 1, last - 1, USERS_HEADER.length).getValues();
@@ -1394,6 +1420,48 @@ function getRole_() {
   return 'STAFF';
 }
 
+function parsePerms_(raw, role) {
+  var o = {};
+  if (role === 'ADMIN') { PERM_KEYS.forEach(function (k) { o[k] = 1; }); return o; }
+  var s = String(raw == null ? '' : raw).trim();
+  if (!s) { PERM_KEYS.forEach(function (k) { o[k] = PERM_DEFAULT[k] ? 1 : 0; }); return o; }
+  if (/^none$/i.test(s)) { PERM_KEYS.forEach(function (k) { o[k] = 0; }); return o; }
+  var seen = {};
+  s.split(',').forEach(function (kRaw) {
+    var k = String(kRaw).trim().toLowerCase();
+    if (!k) return;
+    if (PERM_KEYS.indexOf(k) < 0) { Logger.log('perm key la: ' + k); return; }
+    seen[k] = 1;
+  });
+  PERM_KEYS.forEach(function (k) { o[k] = seen[k] ? 1 : 0; });
+  return o;
+}
+
+function permsOf_(email) {
+  var me = normEmail_(email || currentEmail_());
+  if (!me) return parsePerms_('', 'STAFF');
+  var u = readUsers_();
+  for (var i = 0; i < u.rows.length; i++) {
+    if (normEmail_(u.rows[i][0]) === me) return parsePerms_(cellText_(u.rows[i][4]), cellText_(u.rows[i][1]));
+  }
+  if (seedAdmins_().indexOf(me) >= 0) return parsePerms_('', 'ADMIN');
+  return parsePerms_('', 'STAFF');
+}
+
+// Moi GAS request la runtime moi nen memo theo execution la an toan.
+var PERMS_MEMO_ = null;
+function currentPerms_() {
+  if (PERMS_MEMO_) return PERMS_MEMO_;
+  PERMS_MEMO_ = permsOf_(currentEmail_());
+  return PERMS_MEMO_;
+}
+
+function checkPerm_(key) {
+  if (getRole_() === 'ADMIN') return;
+  var p = currentPerms_();
+  if (!p[key]) throw new Error('Bạn không có quyền: ' + (PERM_LABELS[key] || key) + '. Liên hệ ADMIN.');
+}
+
 function requireAdmin_() {
   if (getRole_() !== 'ADMIN') throw new Error('Cần quyền ADMIN.');
 }
@@ -1403,30 +1471,33 @@ function deployerEmail_() {
 }
 
 function me() {
-  try { return ok({ email: currentEmail_(), role: getRole_(), deployer: deployerEmail_() }); }
+  try {
+    var em = currentEmail_(), ro = getRole_();
+    return ok({ email: em, role: ro, deployer: deployerEmail_(), perms: permsOf_(em) });
+  }
   catch (e) { Logger.log(e); return fail(e.message); }
 }
 
 function listUsers() {
   try {
-    requireAdmin_();
+    checkPerm_('roleView');
     var u = readUsers_();
     if (!u.rows.length) {
       var seeds = seedAdmins_();
       var at = nowStr_(), by = currentEmail_();
       for (var i = 0; i < seeds.length; i++) {
-        u.sh.appendRow([seeds[i], 'ADMIN', "'" + at, by]);
-        u.rows.push([seeds[i], 'ADMIN', at, by]);
+        u.sh.appendRow([seeds[i], 'ADMIN', "'" + at, by, '']);
+        u.rows.push([seeds[i], 'ADMIN', at, by, '']);
       }
     }
-    var out = u.rows.map(function (r) { return { email: cellText_(r[0]), role: cellText_(r[1]), addedAt: cellText_(r[2]), addedBy: cellText_(r[3]) }; });
+    var out = u.rows.map(function (r) { return { email: cellText_(r[0]), role: cellText_(r[1]), addedAt: cellText_(r[2]), addedBy: cellText_(r[3]), perms: parsePerms_(cellText_(r[4]), cellText_(r[1])) }; });
     return ok(out);
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
 function addAdmin(email) {
   try {
-    requireAdmin_();
+    checkPerm_('roleManage');
     email = normEmail_(email);
     if (!email || email.indexOf('@') < 0) throw new Error('Nhập email cần thêm.');
     return ok(withLock_(function () {
@@ -1434,15 +1505,62 @@ function addAdmin(email) {
       for (var i = 0; i < u.rows.length; i++) {
         if (normEmail_(u.rows[i][0]) === email) throw new Error('Email đã có trong danh sách.');
       }
-      u.sh.appendRow([email, 'ADMIN', "'" + nowStr_(), currentEmail_()]);
+      u.sh.appendRow([email, 'ADMIN', "'" + nowStr_(), currentEmail_(), '']);
       return { email: email, role: 'ADMIN' };
+    }));
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function addUser(email, role) {
+  try {
+    checkPerm_('roleManage');
+    email = normEmail_(email);
+    role = (role === 'ADMIN' ? 'ADMIN' : 'STAFF');
+    if (!email || email.indexOf('@') < 0) throw new Error('Nhập email cần thêm.');
+    return ok(withLock_(function () {
+      var u = readUsers_();
+      for (var i = 0; i < u.rows.length; i++) {
+        if (normEmail_(u.rows[i][0]) === email) throw new Error('Email đã có trong danh sách.');
+      }
+      u.sh.appendRow([email, role, "'" + nowStr_(), currentEmail_(), '']);
+      return { email: email, role: role };
+    }));
+  } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+function setUserPerms(email, role, keys) {
+  try {
+    checkPerm_('roleManage');
+    email = normEmail_(email);
+    role = (role === 'ADMIN' ? 'ADMIN' : 'STAFF');
+    if (!email) throw new Error('Thiếu email.');
+    var clean = [];
+    (keys || []).forEach(function (kRaw) {
+      var k = String(kRaw).trim();
+      if (PERM_KEYS.indexOf(k) >= 0 && clean.indexOf(k) < 0) clean.push(k);
+    });
+    return ok(withLock_(function () {
+      var u = readUsers_();
+      var idx = -1, admins = 0;
+      for (var i = 0; i < u.rows.length; i++) {
+        if (String(u.rows[i][1]) === 'ADMIN') admins++;
+        if (normEmail_(u.rows[i][0]) === email) idx = i;
+      }
+      if (idx < 0) throw new Error('Email không có trong danh sách.');
+      var self = (normEmail_(currentEmail_()) === email);
+      if (self && role === 'STAFF' && clean.indexOf('roleView') < 0) throw new Error('Không tự tắt quyền xem trang Role của chính mình.');
+      if (self && role === 'STAFF' && admins <= 1 && String(u.rows[idx][1]) === 'ADMIN') throw new Error('Không thể hạ ADMIN cuối cùng.');
+      var str = (role === 'ADMIN' ? '' : (clean.length ? clean.join(',') : 'NONE'));
+      u.sh.getRange(idx + 2, 2, 1, 1).setValues([[role]]);
+      u.sh.getRange(idx + 2, 5, 1, 1).setValues([[str]]);
+      return { email: email, role: role, perms: parsePerms_(str, role) };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
 
 function deleteUser(email) {
   try {
-    requireAdmin_();
+    checkPerm_('roleManage');
     email = normEmail_(email);
     if (!email) throw new Error('Thiếu email.');
     if (normEmail_(currentEmail_()) === email) throw new Error('Không tự xóa chính mình.');
@@ -1497,6 +1615,7 @@ function listFeedback() {
 
 function addFeedback(text) {
   try {
+    checkPerm_('feedback');
     var t = String(text || '').trim();
     if (!t) throw new Error('Vui lòng nhập nội dung.');
     if (t.length > 2000) throw new Error('Tối đa 2000 ký tự.');
@@ -1513,7 +1632,7 @@ function addFeedback(text) {
 
 function replyFeedback(id, text) {
   try {
-    requireAdmin_();
+    checkPerm_('adminReply');
     var t = String(text || '').trim();
     if (!t) throw new Error('Vui lòng nhập nội dung.');
     if (t.length > 2000) throw new Error('Tối đa 2000 ký tự.');
@@ -1547,6 +1666,7 @@ var BACKLOG_DEFAULT = ['shipment_id', 'status_desc', 'pickup_station_name', 'cre
 
 function listBacklog() {
   try {
+    checkPerm_('backlog');
     var sh = ss_().getSheetByName('Backlog');
     if (!sh) throw new Error('Chua co sheet Backlog.');
     var last = sh.getLastRow();
