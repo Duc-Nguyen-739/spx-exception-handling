@@ -53,6 +53,11 @@ test('css-guard: drawer mo thi header co phai theo (khong che range + pills)', (
   assert.ok(wideHdr > shortHdr && shortHdr >= 0, 'rule co header phai dat SAU shorthand padding');
 });
 
+test('css-guard: search desktop ghim hang 1 giua header (khong rot xuong pills)', () => {
+  assert.ok(html.includes('header .scanbar{grid-row:1}'), 'scanbar desktop phai co grid-row:1');
+  assert.ok(html.includes('header .scanbar{grid-column:2;width:100%}'), 'giu cot giua 720px');
+});
+
 test('css-guard: sidebar mo thi header chua le trai 262px (khong che range + pills)', () => {
   assert.ok(html.includes('header{padding:12px 22px 12px 262px;grid-template-columns:1fr minmax(0,720px) 1fr}'), 'header desktop phai chua le trai 262px theo sidebar');
   assert.ok(!html.includes('header{padding:12px 22px;grid-template-columns'), 'cam shorthand reset le trai ve 22px');
