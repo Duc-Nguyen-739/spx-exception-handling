@@ -14,6 +14,20 @@
   });
 
   var ME = 'admin.mock@spxexpress.com';
+  // KHOP server Code.gs PERM_KEYS — guard tests/perm-model.test.js
+  var PERM_KEYS = ['create','resolve','liq','print','note','editStatus','editPhotos','backlog','feedback','adminReply','roleView','roleManage'];
+  var PERM_DEFAULT = { create:1, resolve:1, liq:1, print:1, backlog:1, note:1, feedback:1,
+    editStatus:0, editPhotos:0, adminReply:0, roleView:0, roleManage:0 };
+  function mkPerms(all){ var o={}; PERM_KEYS.forEach(function(k){ o[k]=all?1:(PERM_DEFAULT[k]?1:0); }); return o; }
+  var USERS = [
+    { email: 'admin.mock@spxexpress.com', role: 'ADMIN', addedAt: '01/09/2026 08:14:00', addedBy: 'seed ADMIN', perms: mkPerms(1) },
+    { email: 'duc.nguyenvan05@spxexpress.com', role: 'ADMIN', addedAt: '01/09/2026 08:14:00', addedBy: 'seed ADMIN', perms: mkPerms(1) },
+    { email: 'son.nguyenngoc@spxexpress.com', role: 'STAFF', addedAt: '14/09/2026 16:02:00', addedBy: 'duc.nguyenvan05@spxexpress.com', perms: mkPerms(0) },
+    { email: 'tuan.pham@spxexpress.com', role: 'STAFF', addedAt: '06/10/2026 11:20:00', addedBy: 'duc.nguyenvan05@spxexpress.com', perms: mkPerms(0) },
+    { email: 'lan.tran@spxexpress.com', role: 'STAFF', addedAt: '06/10/2026 11:20:00', addedBy: 'duc.nguyenvan05@spxexpress.com', perms: mkPerms(0) }
+  ];
+  function meU(){ for (var i=0;i<USERS.length;i++) if (USERS[i].email===ME) return USERS[i]; return { email: ME, role:'STAFF', perms: mkPerms(0) }; }
+  window.__setMockEmail = function(e){ ME = String(e||''); };
 
   var ITEMS = [
     {
@@ -117,7 +131,7 @@
   }
 
   var API = {
-    me: function () { return { ok: true, data: { email: ME, role: 'ADMIN', deployer: ME } }; },
+    me: function () { var u = meU(); return { ok: true, data: { email: u.email, role: u.role, deployer: ME, perms: clone(u.perms) } }; },
     listItems: function (limit) {
       var out = ITEMS.slice().sort(function (a, b) { return b.code < a.code ? -1 : 1; });
       return { ok: true, data: clone(out.slice(0, limit || 150)) };
@@ -247,8 +261,39 @@
       }
       return { ok: true, data: { code: p.code } };
     },
-    listUsers: function () { return { ok: true, data: [{ email: ME, role: 'ADMIN' }] }; },
-    addAdmin: function (email) { return { ok: true, data: { email: email, role: 'ADMIN' } }; },
+    listUsers: function () {
+      var u = meU();
+      if (u.role !== 'ADMIN' && !u.perms.roleView) return { ok: false, error: 'Bạn không có quyền xem trang Role.' };
+      return { ok: true, data: clone(USERS.map(function(x){ return { email: x.email, role: x.role, addedAt: x.addedAt, addedBy: x.addedBy, perms: clone(x.perms) }; })) };
+    },
+    addAdmin: function (email) {
+      var u = meU();
+      if (u.role !== 'ADMIN' && !u.perms.roleManage) return { ok: false, error: 'Bạn không có quyền.' };
+      return { ok: true, data: { email: email, role: 'ADMIN' } };
+    },
+    addUser: function (email, role) {
+      var u = meU();
+      if (u.role !== 'ADMIN' && !u.perms.roleManage) return { ok: false, error: 'Bạn không có quyền.' };
+      var r = (role === 'ADMIN' ? 'ADMIN' : 'STAFF');
+      USERS.push({ email: email, role: r, addedAt: '15/10/2026 08:00:00', addedBy: ME, perms: mkPerms(r === 'ADMIN' ? 1 : 0) });
+      return { ok: true, data: { email: email, role: r } };
+    },
+    setUserPerms: function (email, role, keys) {
+      var u = meU();
+      if (u.role !== 'ADMIN' && !u.perms.roleManage) return { ok: false, error: 'Bạn không có quyền.' };
+      var t = null;
+      for (var i = 0; i < USERS.length; i++) if (USERS[i].email === email) t = USERS[i];
+      if (!t) return { ok: false, error: 'Email không có trong danh sách.' };
+      var nr = (role === 'ADMIN' ? 'ADMIN' : 'STAFF');
+      var clean = (keys || []).filter(function(k){ return PERM_KEYS.indexOf(k) >= 0; });
+      if (email === ME && nr === 'STAFF' && clean.indexOf('roleView') < 0) return { ok: false, error: 'Không tự tắt quyền xem trang Role của chính mình.' };
+      var admins = USERS.filter(function(x){ return x.role === 'ADMIN'; }).length;
+      if (email === ME && nr === 'STAFF' && admins <= 1 && t.role === 'ADMIN') return { ok: false, error: 'Không thể hạ ADMIN cuối cùng.' };
+      t.role = nr;
+      if (nr === 'ADMIN') t.perms = mkPerms(1);
+      else { t.perms = mkPerms(0); t.perms = (function(){ var o={}; PERM_KEYS.forEach(function(k){ o[k]=0; }); clean.forEach(function(k){ o[k]=1; }); return o; })(); }
+      return { ok: true, data: { email: email, role: nr, perms: clone(t.perms) } };
+    },
     deleteUser: function (email) { return { ok: true, data: { email: email } }; },
     fixPhotoSharing: function () { return { ok: true, data: { total: 0, shared: 0, failed: [], domainOnly: false } }; },
     getPhoto: function (fileId) {

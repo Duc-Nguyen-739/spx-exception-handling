@@ -357,7 +357,7 @@ async function main() {
     check('Mốc Resolve nút thường vẫn hiện email', !!(D && /@/.test(D.resolveEntry)), D && D.resolveEntry.replace(/\n/g, ' | ').slice(0, 120));
 
     // STAFF: nút Edit vẫn hiện, chỉ sửa Mô tả + Ghi chú qua editItem
-    await evalIn(ws, `state.me={email:'son.nguyenngoc@spxexpress.com',role:'STAFF'};openDetail('Box.06-10-2026.1')`);
+    await evalIn(ws, `state.me={email:'son.nguyenngoc@spxexpress.com',role:'STAFF',perms:{create:1,resolve:1,liq:1,print:1,backlog:1,note:1,feedback:1}};openDetail('Box.06-10-2026.1')`);
     await waitUntil(ws, "document.getElementById('detailTitle').textContent.includes('Box.06-10-2026.1')", 5000);
     await evalIn(ws, `document.getElementById('btnEditDetail').click()`);
     await waitUntil(ws, "document.getElementById('editModal').classList.contains('open')", 5000);
@@ -377,7 +377,7 @@ async function main() {
     })`);
     const S2 = st2.err ? null : JSON.parse(st2.value);
     check('STAFF: Confirm ghi mốc email + Edit cũ => mới', !!(stOk && S2 && /son\.nguyenngoc@spxexpress\.com/.test(S2.hist) && S2.editCalls >= 1), S2 && ('editItem x' + S2.editCalls));
-    await evalIn(ws, `state.me={email:'admin.mock@spxexpress.com',role:'ADMIN'}`);
+    await evalIn(ws, `state.me={email:'admin.mock@spxexpress.com',role:'ADMIN',perms:{}}`);
 
     await evalIn(ws, `openLightbox('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','Demo')`);
     const lbOk = await waitUntil(ws, "document.getElementById('lightbox').classList.contains('open')", 3000);
@@ -551,6 +551,32 @@ async function main() {
     await sleep(400);
     const rlCtx = await evalIn(ws, `JSON.stringify({d: document.getElementById('ctxBar').style.display, t: document.getElementById('ctxBar').textContent, dl: document.getElementById('msgDeploy').textContent, home: !!document.getElementById('btnBackLiq')})`);
     check('Tab Role: an ctx duoi search, giu dong dang nhap trong noi dung + bo nut Man hinh chinh', !!(rlCtx.value && rlCtx.value.indexOf('"d":"none"') >= 0 && rlCtx.value.indexOf('admin.mock@spxexpress.com') >= 0 && rlCtx.value.indexOf('ADMIN') >= 0 && rlCtx.value.indexOf('"home":false') >= 0), rlCtx.value);
+    const roleTblOk = await waitUntil(ws, "document.querySelectorAll('#usersTable table.uptbl tbody tr').length === 5 && document.querySelectorAll('#usersTable .ck').length === 60", 8000);
+    const roleCnt = await evalIn(ws, `JSON.stringify({rows: document.querySelectorAll('#usersTable table.uptbl tbody tr').length, ck: document.querySelectorAll('#usersTable .ck').length, btn: document.querySelectorAll('#usersTable button.ck').length, lk: document.querySelectorAll('#usersTable span.ck.lk').length})`);
+    check('Role M6: 5 dong x 12 cot tich (36 nut + 24 o khoa)', !!(roleTblOk && JSON.parse(roleCnt.value).btn === 36 && JSON.parse(roleCnt.value).lk === 24), roleCnt.value);
+    await evalIn(ws, `window.__MOCK_CALLS__.length = 0`);
+    await evalIn(ws, `document.querySelector('#usersTable button.ck[data-pk]').click()`);
+    const tickOk = await waitUntil(ws, "(window.__MOCK_CALLS__||[]).some(function(c){return c[0]==='setUserPerms';})", 5000);
+    const tickCall = await evalIn(ws, `JSON.stringify((window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='setUserPerms';}).pop()||null)`);
+    check('Role M6: tich 1 o -> goi setUserPerms dung key', !!(tickOk && tickCall.value && tickCall.value.indexOf('setUserPerms') >= 0), tickCall.value);
+    await waitUntil(ws, "document.querySelectorAll('#usersTable table.uptbl tbody tr').length === 5", 8000);
+    await evalIn(ws, `window.__MOCK_CALLS__.length = 0`);
+    await evalIn(ws, `document.querySelector('#usersTable .hpk[data-ck]').click()`);
+    const colOk = await waitUntil(ws, "(window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='setUserPerms';}).length >= 3", 8000);
+    const colN = await evalIn(ws, `(window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='setUserPerms';}).length`);
+    check('Role M6: bam nhan cot -> bat/tat ca cot cho STAFF (3 RPC)', !!colOk, String(colN.value));
+    await waitUntil(ws, "document.querySelectorAll('#usersTable table.uptbl tbody tr').length === 5", 8000);
+    const lkOk = await evalIn(ws, `JSON.stringify((function(){var rows=document.querySelectorAll('#usersTable table.uptbl tbody tr');for(var i=0;i<rows.length;i++){var em=rows[i].querySelector('.mono').textContent;if(em.indexOf('admin.mock')>=0){return {btn: rows[i].querySelectorAll('button.ck').length, lk: rows[i].querySelectorAll('span.ck.lk').length};}}return null;})())`);
+    check('Role M6: dong ADMIN khoa o tich', !!(lkOk.value && JSON.parse(lkOk.value).btn === 0 && JSON.parse(lkOk.value).lk === 12), lkOk.value);
+    await evalIn(ws, `(async () => { window.__setMockEmail('son.nguyenngoc@spxexpress.com'); await loadMe(); await loadUsers(); })()`);
+    await sleep(500);
+    const noRole = await evalIn(ws, `document.getElementById('navAccess').style.display`);
+    check('Role M6: STAFF khong roleView -> an tab Role', noRole.value === 'none', String(noRole.value));
+    await evalIn(ws, `(async () => { window.__setMockEmail('admin.mock@spxexpress.com'); await loadMe(); await loadUsers(); })()`);
+    await waitUntil(ws, "document.querySelectorAll('#usersTable table.uptbl tbody tr').length === 5", 8000);
+    const selfLock = await evalIn(ws, `gs('setUserPerms',[state.me.email,'STAFF',['create']]).then(function(r){return JSON.stringify(r);})`);
+    const selfRows = await evalIn(ws, `document.querySelectorAll('#usersTable table.uptbl tbody tr').length`);
+    check('Role M6: tu tat roleView cua minh -> server bao loi, UI khong doi', !!(selfLock.value && selfLock.value.indexOf('xem trang Role') >= 0 && selfRows.value === 5), selfLock.value + ' rows=' + selfRows.value);
     await evalIn(ws, `document.getElementById('navMain').click()`);
 
     await evalIn(ws, `document.getElementById('btnCreateMain').click()`);
@@ -606,10 +632,10 @@ async function main() {
     const pt = (fbRepProbe && fbRepProbe.value) ? String(fbRepProbe.value) : '';
     check('Feedback: Admin reply chi hien Admin, khong email', !!(fbRep && pt.indexOf('Admin')>=0 && pt.indexOf('@')<0), 'len='+(pt.length||0)+' admin='+(pt.indexOf('Admin')>=0)+' at='+(pt.indexOf('@')));
     // USER an nut Reply
-    await evalIn(ws, `state.me={email:'son.nguyenngoc@spxexpress.com',role:'STAFF'}; renderFbList();`);
+    await evalIn(ws, `state.me={email:'son.nguyenngoc@spxexpress.com',role:'STAFF',perms:{create:1,resolve:1,liq:1,print:1,backlog:1,note:1,feedback:1}}; renderFbList();`);
     const fbStaff = await evalIn(ws, `document.querySelectorAll('#fbList .fbReplyBtn').length === 0`);
     check('Feedback: USER khong thay nut Reply', fbStaff.value === true, String(fbStaff.value));
-    await evalIn(ws, `state.me={email:'admin.mock@spxexpress.com',role:'ADMIN'}; document.getElementById('btnCloseFb').click()`);
+    await evalIn(ws, `state.me={email:'admin.mock@spxexpress.com',role:'ADMIN',perms:{}}; document.getElementById('btnCloseFb').click()`);
     // Backlog tab (Sheet Backlog read-only, mock 8 dong)
     // Dong modal chi tiet man hinh chinh con sot tu buoc truoc (mobile overlay che bang)
     await evalIn(ws, `document.getElementById('detailModal').classList.remove('open');document.body.classList.remove('has-drawer');`);

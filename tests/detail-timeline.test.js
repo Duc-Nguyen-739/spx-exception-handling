@@ -347,7 +347,7 @@ test('edit: STAFF không thấy ô trạng thái/ảnh, chỉ sửa Mô tả + G
   const { sandbox, registry, calls, listeners } = makeEnv(ITEM, HIST);
   await listeners.DOMContentLoaded();
   await sandbox.openDetail('Box.05-10-2026.1');
-  sandbox.state.me = { email: 'son.nguyenngoc@spxexpress.com', role: 'STAFF' };
+  sandbox.state.me = { email: 'son.nguyenngoc@spxexpress.com', role: 'STAFF', perms: { note: 1 } };
   sandbox.openEdit();
   assert.ok(registry.editModal._has('open'));
   assert.strictEqual(registry.editStatusWrap.style.display, 'none');

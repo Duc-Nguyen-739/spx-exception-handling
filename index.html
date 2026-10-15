@@ -283,6 +283,35 @@ tr:last-child td{border-bottom:none}
 td .st{background:var(--bg);color:var(--mut)}
 td .st.adm{background:var(--tint);color:var(--o)}
 #usersTable .roleBtn{font-size:10px;padding:6px 11px;border-radius:8px}
+#usersTable .uptblWrap{overflow-x:auto}
+#usersTable table.uptbl{min-width:1180px}
+#usersTable .uptbl th.cP,#usersTable .uptbl td.cP{width:64px;text-align:center;padding-left:3px;padding-right:3px}
+#usersTable .uptbl th.pin,#usersTable .uptbl td.pin{position:sticky;left:0;background:var(--card);z-index:2;min-width:210px}
+#usersTable .uptbl thead th{position:sticky;top:0;z-index:3}
+#usersTable .ugr th{text-align:center;font-size:9px;color:var(--navy)}
+#usersTable .hpk{border:none;background:transparent;font-family:inherit;cursor:pointer;display:inline-flex;flex-direction:column;gap:2px;align-items:center;padding:2px 0;color:var(--navy);font-size:10px;font-weight:800;line-height:1.25}
+#usersTable .hpk .colcnt{font-size:9px;font-weight:800;color:var(--mut);background:var(--bg);border-radius:99px;padding:1px 6px}
+#usersTable .ck{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--line);background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+#usersTable .ck span{font-size:13px;font-weight:900;color:transparent;line-height:1}
+#usersTable .ck.on{background:var(--navy);border-color:var(--navy)}
+#usersTable .ck.on span{color:#fff}
+#usersTable .ck.lk{cursor:default;background:var(--green);border-color:var(--green);opacity:.75}
+#usersTable .ck.lk span{color:#fff}
+#usersTable .cRole{width:104px;text-align:center}
+#usersTable .cCnt{width:78px;text-align:center}
+#usersTable .cDel{width:62px;text-align:center}
+#usersTable .seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;background:#fff}
+#usersTable .seg button{border:none;background:transparent;font-family:inherit;font-size:9px;font-weight:800;padding:5px 8px;cursor:pointer;color:var(--mut)}
+#usersTable .seg button.on.a{background:var(--o);color:#fff}
+#usersTable .seg button.on.s{background:var(--blue);color:#fff}
+#usersTable .cCnt .bar{display:block;width:44px;height:4px;border-radius:99px;background:var(--line);overflow:hidden;margin:4px auto 0}
+#usersTable .cCnt .bar i{display:block;height:100%;background:var(--blue)}
+#usersTable .selftag{font-size:9px;font-weight:800;color:var(--o);background:var(--tint);border-radius:99px;padding:2px 6px;margin-left:5px}
+#usersTable .mini2{font-size:10px;color:var(--mut);font-weight:700}
+#usersTable .sub2{font-size:10px;color:var(--mut);margin-top:3px}
+#newRole{border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-family:inherit;font-size:12px;background:#fff}
+#usersTable .plegend{margin-top:10px;font-size:11px;color:var(--ink)}
+#usersTable .plegend table{font-size:11px}
 
 @media (max-width:899px){
 #detailModal{display:none}
@@ -685,6 +714,7 @@ header{flex-wrap:wrap}
 <div id="accessAdmin" style="display:none">
 <div class="row">
 <input id="newEmail" placeholder="email shopee" inputmode="email" style="flex:2">
+<select id="newRole"><option value="STAFF">STAFF — bộ mặc định</option><option value="ADMIN">ADMIN — bật toàn bộ</option></select>
 <button id="btnAddUser" class="primary">Thêm</button>
 </div>
 </div>
@@ -818,6 +848,13 @@ var DEMO=[
 {code:'Item.01-10-2026.3',kind:'Item',createdAt:'01/10/2026 10:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo item',note:'',status:'da_tim_bill',statusLabel:'Resolve',bill:'SPXVN1',days:5}
 ];
 var state={items:[],itemMap:{},detailCache:{},detailAt:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{},codeEdit:{Box:false,Item:false},range:{f:null,t:null},page:1,noMore:false,uiPage:1};
+var PERM_KEYS=['create','resolve','liq','print','note','editStatus','editPhotos','backlog','feedback','adminReply','roleView','roleManage'];
+// KHOP server Code.gs:PERM_KEYS — guard tests/perm-model.test.js
+var PERM_LABELS={create:'Tạo mới',resolve:'Resolve',liq:'Thanh lý',print:'In mã',note:'Mô tả',editStatus:'Đổi TT',editPhotos:'Ảnh',backlog:'Backlog',feedback:'Góp ý',adminReply:'Reply',roleView:'Xem Role',roleManage:'User'};
+function can(k){var m=state.me||{};if(m.role==='ADMIN')return true;return !!(m.perms&&m.perms[k]);}
+var PERM_GROUPS=[{g:'Đơn & thao tác chính',keys:['create','resolve','liq','print']},{g:'Sửa hồ sơ đơn',keys:['note','editStatus','editPhotos']},{g:'Backlog & Góp ý',keys:['backlog','feedback','adminReply']},{g:'Quản trị',keys:['roleView','roleManage']}];
+var PERM_SHORT={create:'Tạo mới',resolve:'Resolve',liq:'Thanh lý',print:'In mã',note:'Mô tả',editStatus:'Đổi TT',editPhotos:'Ảnh',backlog:'Backlog',feedback:'Góp ý',adminReply:'Reply',roleView:'Xem Role',roleManage:'User'};
+var PERM_INFO={create:{rpc:'createBox/createItem',off:'An Tao moi'},resolve:{rpc:'resolveItem',off:'An nut Resolve'},liq:{rpc:'liquidateBatch',off:'An tab Thanh ly'},print:{rpc:'enqueuePrintJob/pollPrintJobs',off:'An nut In Ma'},note:{rpc:'editItem',off:'An Mo ta/Ghi chu'},editStatus:{rpc:'adminEditItem (nhanh trang thai)',off:'An khoi Trang thai'},editPhotos:{rpc:'adminEditItem (nhanh anh)',off:'An khoi Anh'},backlog:{rpc:'listBacklog',off:'An tab Backlog'},feedback:{rpc:'addFeedback',off:'An nut Gop y'},adminReply:{rpc:'replyFeedback',off:'An nut Reply'},roleView:{rpc:'listUsers',off:'An tab Role'},roleManage:{rpc:'addUser/setUserPerms/deleteUser',off:'An o Them + cot Xoa'}};
 var PAGE=150;
 var preWarmed={};
 function hasGs(){return typeof google!=='undefined'&&google.script&&google.script.run;}
@@ -1042,8 +1079,9 @@ function syncRailFly(){var f=document.getElementById('railFlyout');if(f)f.classL
 var curNav='navMain';
 function renderRail(){
 var r=document.getElementById('railbox');if(!r)return;r.innerHTML='';
+var NAVPERM={navMain:null,navLiq:'liq',navBacklog:'backlog',navPrint:'print',navAccess:'roleView'};
 RAILNAV.forEach(function(o){
-if(o[0]==='navAccess'&&document.getElementById('navAccess').style.display==='none')return;
+if(NAVPERM[o[0]]&&!can(NAVPERM[o[0]]))return;
 var b=document.createElement('button');b.type='button';b.innerHTML=o[1];b.title=o[2];
 if(curNav===o[0])b.className='on';
 b.onclick=(function(v){return function(){document.getElementById(v).click();};})(o[0]);
@@ -1319,11 +1357,11 @@ var rbEl=document.getElementById('resolveBill');
 var curBill=rbEl.value;
 rbEl.value='';
 document.getElementById('rsStep2').style.display='none';
-document.getElementById('btnEditDetail').style.display='';
+document.getElementById('btnEditDetail').style.display=(can('note')||can('editStatus')||can('editPhotos'))?'':'none';
 document.getElementById('editModal').classList.remove('open');
 try{if(!state.me)await loadMe();}catch(e){}
 var done=it.status&&it.status!=='chua_xu_ly';
-document.getElementById('btnGoResolve').style.display=done?'none':'';
+document.getElementById('btnGoResolve').style.display=(done||!can('resolve'))?'none':'';
 document.getElementById('btnPrintDetail').style.display=done?'none':'';
 document.getElementById('resolveCard').style.display=done?'none':'';
 if(!done&&rsDraft.code===it.code){
@@ -1465,7 +1503,7 @@ sw.appendChild(b);sw.appendChild(inp);
 function openEdit(){
 var it=state.detail&&state.detail.item;
 if(!it)return;
-var adm=(state.me&&state.me.role)==='ADMIN';
+var canA=can('editStatus'),canP=can('editPhotos'),canN=can('note');
 document.getElementById('editTitle').textContent='Edit — '+(it.code||'');
 document.getElementById('editCode').value=it.code||'';
 document.getElementById('editDesc').value=it.description||'';
@@ -1481,10 +1519,8 @@ var sw=document.getElementById('editStatusWrap');
 var pw=document.getElementById('editPhotosWrap');
 var aw=document.getElementById('editAddWrap');
 var hint=document.getElementById('editStaffHint');
-if(adm){
+if(canA){
 sw.style.display='block';
-if(pw)pw.style.display='block';
-if(hint)hint.style.display='none';
 var g=document.getElementById('editStatGrid');g.innerHTML='';
 ['Lưu kho','Resolve','Thanh Lý'].forEach(function(label){
 var b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('data-st',label);
@@ -1496,20 +1532,34 @@ document.getElementById('editReasonWrap').style.display=editStatusSel?'block':'n
 g.appendChild(b);});
 }else{
 sw.style.display='none';
+}
+if(canP){
+if(pw)pw.style.display='block';
+}else{
 if(pw)pw.style.display='none';
 if(aw)aw.style.display='none';
-if(hint)hint.style.display='block';
 }
+var dEl=document.getElementById('editDesc'),nEl=document.getElementById('editNote');
+if(dEl)dEl.disabled=!canN;
+if(nEl)nEl.disabled=!canN;
+if(hint)hint.style.display=(canA&&canP&&canN)?'none':'block';
 msg('msgEdit','');
 document.getElementById('editModal').classList.add('open');
 }
 async function confirmEdit(){
-var adm=(state.me&&state.me.role)==='ADMIN';
 var code=state.detail&&state.detail.item&&state.detail.item.code;
 var desc=document.getElementById('editDesc').value.trim();
 if(!desc){msg('msgEdit','Vui lòng nhập mô tả sản phẩm.');return;}
 var noteV=document.getElementById('editNote').value.trim();
-if(!adm){
+var needStatus=!!editStatusSel;
+var needPhotos=(editDel.length||editAdd.length)>0;
+var needNote=(desc!==editOrig.desc||noteV!==editOrig.note);
+if(!needStatus&&!needPhotos&&!needNote){msg('msgEdit','Không có gì thay đổi.');return;}
+if(needStatus&&!can('editStatus')){msg('msgEdit','Bạn không có quyền đổi trạng thái. Liên hệ ADMIN.');return;}
+if(needPhotos&&!can('editPhotos')){msg('msgEdit','Bạn không có quyền sửa ảnh. Liên hệ ADMIN.');return;}
+if(needNote&&!can('note')){msg('msgEdit','Bạn không có quyền sửa mô tả. Liên hệ ADMIN.');return;}
+var isAdmin_=(state.me&&state.me.role)==='ADMIN';
+if(!needStatus&&!needPhotos&&!isAdmin_){
 var staffNotes=[];
 if(desc!==editOrig.desc)staffNotes.push('Edit Mô tả: '+editOrig.desc+' => '+desc);
 if(noteV!==editOrig.note)staffNotes.push('Edit Ghi chú: '+editOrig.note+' => '+noteV);
@@ -1934,39 +1984,112 @@ msg('msgLiq',e.message||'Lỗi thanh lý');
 
 async function loadMe(){
 try{var r=await gs('me',[]);if(r.ok){state.me=r.data;renderWho();return;}}catch(e){}
-state.me={email:'',role:'STAFF'};renderWho();
+state.me={email:'',role:'STAFF',perms:{}};renderWho();
 }
 function renderWho(){
 var chip=document.getElementById('whoChip');if(!chip)return;
 var e=state.me||{};
 if(!e.email){chip.style.display='none';return;}
 chip.style.display='';
-document.getElementById('navAccess').style.display=(e.role==='ADMIN')?'':'none';
+document.getElementById('navAccess').style.display=can('roleView')?'':'none';
+try{
+var nb=document.getElementById('navBacklog');if(nb)nb.style.display=can('backlog')?'':'none';
+var nl=document.getElementById('navLiq');if(nl)nl.style.display=can('liq')?'':'none';
+var np=document.getElementById('navPrint');if(np)np.style.display=can('print')?'':'none';
+var nc=document.getElementById('navCreate');if(nc)nc.style.display=can('create')?'':'none';
+var bcm=document.getElementById('btnCreateMain');if(bcm)bcm.style.display=can('create')?'':'none';
+var bct=document.getElementById('btnCreateTop');if(bct)bct.style.display=can('create')?'':'none';
+var bpm=document.getElementById('btnPrintMain');if(bpm)bpm.style.display=can('print')?'':'none';
+var bpt=document.getElementById('btnPrintTop');if(bpt)bpt.style.display=can('print')?'':'none';
+var bf=document.getElementById('btnFeedback');if(bf)bf.style.display=can('feedback')?'':'none';
+}catch(e1){}
 try{renderRail();}catch(err){}
 document.getElementById('whoIni').textContent=String(e.email).charAt(0).toUpperCase();
 document.getElementById('whoTxt').textContent=String(e.email).split('@')[0];
 try{renderSummary();}catch(err){}
 }
+var permUsers_=[],permSaveT_=null,permPending_=null;
+function permCount_(u){var n=0;PERM_KEYS.forEach(function(k){if(u.perms&&u.perms[k])n++;});return n;}
+function colStat_(k){var st=permUsers_.filter(function(u){return u.role!=='ADMIN';});var on=st.filter(function(u){return u.perms&&u.perms[k];}).length;return {on:on,total:st.length};}
+function ckCell_(u,i,k,mutable){
+var on=!!(u.perms&&u.perms[k]);
+var title=(PERM_LABELS[k]||k)+' — '+(u.role==='ADMIN'?'ADMIN luôn bật':(on?'Đang bật — bấm để tắt':'Đang tắt — bấm để bật'));
+if(u.role==='ADMIN')return '<span class="ck on lk" title="'+esc(title)+'"><span>✓</span></span>';
+if(!mutable)return on?'<span class="ck on" title="'+esc(title)+' (chỉ đọc)"><span>✓</span></span>':'<span class="ck" title="'+esc(title)+' (chỉ đọc)"><span>·</span></span>';
+return '<button class="ck'+(on?' on':'')+'" data-pk="'+esc(k)+'" data-pi="'+i+'" title="'+esc(title)+' cho '+esc(u.email)+'"><span>✓</span></button>';}
+function roleSeg_(u,i,mutable){
+if(!mutable)return '<span class="mini2">'+esc(u.role)+'</span>';
+var a=u.role==='ADMIN',s=u.role==='STAFF';
+return '<span class="seg"><button class="'+(a?'on a':'')+'" data-rk="ADMIN" data-ri="'+i+'">ADMIN</button><button class="'+(s?'on s':'')+'" data-rk="STAFF" data-ri="'+i+'">STAFF</button></span>';}
+function cntCell_(u){var t=PERM_KEYS.length,n=(u.role==='ADMIN'?t:permCount_(u));return '<span class="mini2">'+n+'/'+t+'</span><span class="bar"><i style="width:'+Math.round(n/t*100)+'%"></i></span>';}
+function permTableHtml_(mutable){
+var me=(state.me&&state.me.email)||'';
+var h='<div class="uptblWrap"><table class="uptbl"><thead><tr class="ugr"><th rowspan="2" class="pin" style="text-align:left">Email người dùng</th><th rowspan="2" class="cRole">Vai trò</th>';
+PERM_GROUPS.forEach(function(g){h+='<th colspan="'+g.keys.length+'">'+esc(g.g)+'</th>';});
+h+='<th rowspan="2" class="cCnt">Đã mở</th><th rowspan="2" class="cDel">Xóa</th></tr><tr>';
+PERM_KEYS.forEach(function(k){var st=colStat_(k);var cls=st.total&&st.on===st.total?'all':(st.on?'':' none');var dis=mutable?'':' disabled';
+h+='<th class="cP"><button class="hpk" data-ck="'+esc(k)+'"'+dis+' title="'+esc(PERM_LABELS[k]||k)+' — '+(mutable?'bấm để bật/tắt cho toàn bộ STAFF':'chi doc')+'"><span>'+esc(PERM_SHORT[k]||k)+'</span><span class="colcnt'+cls+'">'+st.on+'/'+st.total+'</span></button></th>';});
+h+='</tr></thead><tbody>';
+permUsers_.forEach(function(u,i){
+var isMe=u.email===me;
+h+='<tr class="'+(isMe?'me':'')+'"><td class="pin"><span class="mono" style="font-size:11px">'+esc(u.email)+'</span>'+(isMe?'<span class="selftag">BAN</span>':'')+'<div class="sub2">them '+esc(u.addedAt||'')+' · boi '+esc(u.addedBy||'')+'</div></td>';
+h+='<td class="cRole">'+roleSeg_(u,i,mutable)+'</td>';
+PERM_KEYS.forEach(function(k){h+='<td class="cP">'+ckCell_(u,i,k,mutable)+'</td>';});
+h+='<td class="cCnt">'+cntCell_(u)+'</td>';
+h+='<td class="cDel">'+(mutable&&!isMe?'<button class="roleBtn" data-del="'+esc(u.email)+'">Xóa</button>':'<span class="mini2">—</span>')+'</td></tr>';});
+return h+'</tbody></table></div>';}
+function permLegendHtml_(){
+var h='<div class="plegend"><table><tr><th>Quyền</th><th>Tên đầy đủ · hàm server</th><th>Tắt thì ẩn gì</th></tr>';
+PERM_KEYS.forEach(function(k){var inf=PERM_INFO[k]||{};h+='<tr><td><b>'+esc(PERM_SHORT[k]||k)+'</b></td><td>'+esc(PERM_LABELS[k]||k)+' · <span class="mono">'+esc(inf.rpc||'')+'</span></td><td>'+esc(inf.off||'')+'</td></tr>';});
+return h+'</table></div>';}
 async function loadUsers(){
 msg('msgAccess','Đang tải…',true);
 try{
 var r=await gs('listUsers',[]);
 if(!r.ok)throw new Error(r.error);
-var h='<table><tr><th>Email</th><th>Quyền</th><th></th></tr>';
-r.data.forEach(function(u){
-h+='<tr><td class="mono">'+esc(u.email)+'</td><td><span class="st adm">'+esc(u.role)+'</span></td><td><button data-email="'+esc(u.email)+'" class="roleBtn">Xóa</button></td></tr>';
-});
-h+='</table>';
-document.getElementById('usersTable').innerHTML=h;
-document.getElementById('accessAdmin').style.display='block';
-var btns=document.querySelectorAll('.roleBtn');
-btns.forEach(function(b){b.onclick=function(){delUser(b.getAttribute('data-email'));};});
+permUsers_=r.data||[];
+var mutable=can('roleManage');
+document.getElementById('usersTable').innerHTML=permTableHtml_(mutable)+permLegendHtml_();
+document.getElementById('accessAdmin').style.display=mutable?'block':'none';
+var tbl=document.getElementById('usersTable');
+tbl.querySelectorAll('.ck[data-pi]').forEach(function(b){b.onclick=function(){var i=+b.getAttribute('data-pi'),k=b.getAttribute('data-pk'),u=permUsers_[i];if(!u||u.role==='ADMIN')return;var keys=PERM_KEYS.filter(function(k2){return k2===k?!u.perms[k2]:!!u.perms[k2];});queueSavePerms_(u.email,u.role,keys);};});
+tbl.querySelectorAll('.hpk[data-ck]').forEach(function(b){if(b.disabled)return;b.onclick=function(){togglePermCol_(b.getAttribute('data-ck'));};});
+tbl.querySelectorAll('[data-rk]').forEach(function(b){b.onclick=function(){var i=+b.getAttribute('data-ri'),rk=b.getAttribute('data-rk'),u=permUsers_[i];if(!u)return;var keys=PERM_KEYS.filter(function(k){return !!(u.perms&&u.perms[k]);});queueSavePerms_(u.email,rk,rk==='ADMIN'?keys:keys);};});
+tbl.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){delUser(b.getAttribute('data-del'));};});
 msg('msgAccess','',true);
 }catch(e){
 document.getElementById('accessAdmin').style.display='none';
 document.getElementById('usersTable').innerHTML='';
 msg('msgAccess',e.message||'Lỗi tải danh sách');
 }
+}
+function queueSavePerms_(email,role,keys){
+permPending_={email:email,role:role,keys:keys};
+clearTimeout(permSaveT_);
+permSaveT_=setTimeout(function(){var p=permPending_;permPending_=null;savePerms_(p.email,p.role,p.keys);},600);}
+async function savePerms_(email,role,keys){
+msg('msgAccess','Đang lưu…',true);
+try{
+var r=await gs('setUserPerms',[email,role,keys]);
+if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi lưu');
+msg('msgAccess','Đã lưu '+email+'.',true);
+await loadUsers();
+if(state.me&&state.me.email===email)await loadMe();
+}catch(e){msg('msgAccess',e.message||'Lỗi lưu');}
+}
+async function togglePermCol_(k){
+var st=permUsers_.filter(function(u){return u.role!=='ADMIN';});
+if(!st.length)return;
+var on=st.filter(function(u){return u.perms&&u.perms[k];}).length;
+var to=on<st.length;
+msg('msgAccess',(to?'Đang bật ':'Đang tắt ')+(PERM_LABELS[k]||k)+' cho '+st.length+' STAFF…',true);
+for(var i=0;i<st.length;i++){
+var u=st[i];
+var keys=PERM_KEYS.filter(function(k2){return k2===k?to:!!(u.perms&&u.perms[k2]);});
+try{var r=await gs('setUserPerms',[u.email,u.role,keys]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi');}catch(e){msg('msgAccess','Lỗi '+u.email+': '+(e.message||e));return;}
+}
+msg('msgAccess','Đã '+(to?'bật ':'tắt ')+(PERM_LABELS[k]||k)+' cho '+st.length+' STAFF.',true);
+await loadUsers();
 }
 async function diagId(){
 msg('msgAccess','Đang chẩn đoán…',true);
@@ -2351,10 +2474,14 @@ document.getElementById('ctxBar').onclick=function(){var b=this.getAttribute('da
 document.getElementById('btnLeaveOk').onclick=function(){state.liq=[];renderLiq();document.getElementById('leaveModal').classList.remove('open');showLiq(false);};
 document.getElementById('btnLeaveCancel').onclick=function(){document.getElementById('leaveModal').classList.remove('open');};
 renderRail();
-document.getElementById('btnAddUser').onclick=function(){var em=document.getElementById('newEmail').value.trim();if(!em){msg('msgAccess','Nhập email cần thêm.');return;}addAdmin(em);document.getElementById('newEmail').value='';};
+document.getElementById('btnAddUser').onclick=function(){var em=document.getElementById('newEmail').value.trim();if(!em){msg('msgAccess','Nhập email cần thêm.');return;}var rl=document.getElementById('newRole');addUser(em,rl?rl.value:'STAFF');document.getElementById('newEmail').value='';};
 async function addAdmin(email){
 msg('msgAccess','Đang thêm…',true);
 try{var r=await gs('addAdmin',[email]);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi thêm');msg('msgAccess','Đã thêm '+email+' (ADMIN).',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi thêm');}
+}
+async function addUser(email,role){
+msg('msgAccess','Đang thêm…',true);
+try{var r=await gs('addUser',[email,role||'STAFF']);if(!r||!r.ok)throw new Error((r&&r.error)||'Lỗi thêm');msg('msgAccess','Đã thêm '+email+' ('+((r.data&&r.data.role)||role||'STAFF')+').',true);await loadUsers();}catch(e){msg('msgAccess',e.message||'Lỗi thêm');}
 }
 document.getElementById('btnEditDetail').onclick=openEdit;
 document.getElementById('btnConfirmEdit').onclick=confirmEdit;
@@ -2384,7 +2511,7 @@ async function showAccess(){document.getElementById('viewAccess').style.display=
 var e=state.me||{};
 var dl=document.getElementById('msgDeploy');
 if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?');
-if((state.me&&state.me.role)!=='ADMIN'){msg('msgAccess','Chỉ ADMIN mới xem được trang này.');return;}
+if(!can('roleView')){msg('msgAccess','Bạn không có quyền xem trang Role. Liên hệ ADMIN.');return;}
 loadUsers();}
 });
 /* ===== Backlog tab (Sheet Backlog, read-only; KHỚP mockup v11 duyệt) ===== */
@@ -2487,7 +2614,7 @@ document.getElementById('blWrap').addEventListener('scroll',function(){blTipOut(
 if(document.addEventListener){document.addEventListener('keydown',function(e){if(e.key==='Escape'){blCloseDrop();blCloseDetail();}});
 document.addEventListener('click',function(e){var hd=document.getElementById('blHdrop');if(hd.style.display==='block'&&!hd.contains(e.target))blCloseDrop();});}
 var fbMsgs=[],fbOpening=false,fbReplyId=null;
-function fbIsAdmin(){return (state.me&&state.me.role)==='ADMIN';}
+function fbIsAdmin(){return can('adminReply');}
 function fbNameHtml(m){
   if(m.role==='ADMIN'||!m.email)return '<span class="fbadmBadge">ADMIN</span>';
   return esc(m.email);

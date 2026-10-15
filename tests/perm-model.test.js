@@ -36,13 +36,16 @@ function loadParse() {
 
 const parse = loadParse();
 
-test('perm-model: PERM_KEYS Code.gs khop api/logic.py cung thu tu', () => {
+test('perm-model: PERM_KEYS 4 noi giong het cung thu tu', () => {
   const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
   const py = fs.readFileSync(path.join(__dirname, '..', 'api', 'logic.py'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const mock = fs.readFileSync(path.join(__dirname, '..', 'mock', 'mock-google.js'), 'utf8');
   const a = extractKeys(gs);
-  const b = extractKeys(py);
   assert.ok(a && a.length === 12, 'Code.gs PERM_KEYS phai 12 key, got ' + JSON.stringify(a));
-  assert.deepStrictEqual(b, a, 'api/logic.py PERM_KEYS phai giong Code.gs cung thu tu');
+  assert.deepStrictEqual(extractKeys(py), a, 'api/logic.py phai giong Code.gs');
+  assert.deepStrictEqual(extractKeys(html), a, 'index.html phai giong Code.gs');
+  assert.deepStrictEqual(extractKeys(mock), a, 'mock/mock-google.js phai giong Code.gs');
 });
 
 test('perm-model: parsePerms_ trong -> mac dinh STAFF 7 bat 5 tat', () => {
