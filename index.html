@@ -338,7 +338,7 @@ td .st.adm{background:var(--tint);color:var(--o)}
 .bottom-row .side-toggle{width:22px;height:22px;flex:none;margin:0;border:none;background:transparent;color:#8b98ab;padding:0;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px}.side-toggle svg,.railbox .expand svg{display:block}.side-toggle .chevR,.railbox .expand .chevR{display:none}body.rail .side-toggle .chevL,body.rail .railbox .expand .chevL{display:none}body.rail .side-toggle .chevR,body.rail .railbox .expand .chevR{display:block}
 body.rail .bnav{width:64px;padding:10px 0 12px;align-items:center}
 body.rail .bnav .side-brand span,body.rail .bnav .nlab,body.rail .bnav .sfilter,body.rail .bnav .stitle{display:none}
-body.rail .bnav #navMain,body.rail .bnav #navBacklog,body.rail .bnav #navLiq,body.rail .bnav #navPrint,body.rail .bnav #navAccess{display:none}
+body.rail .bnav #navMain,body.rail .bnav #navDash,body.rail .bnav #navBacklog,body.rail .bnav #navLiq,body.rail .bnav #navPrint,body.rail .bnav #navAccess{display:none}
 body.rail .bnav .side-brand{justify-content:center}
 body.rail .bnav .side-brand svg{width:44px;height:auto}
 body.rail .bnav button{justify-content:center;padding:11px 0}
@@ -510,6 +510,38 @@ header{flex-wrap:wrap}
 #printArea{width:4in}
 @media print{body>*{display:none!important}#printArea{display:block!important;margin:0;padding:0}#printArea .plabel{width:4in;height:6in;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:center;page-break-after:always}#printArea .plabel:last-child{page-break-after:auto}#printArea .plabel .pslip{width:4in;height:2in;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4mm;box-sizing:border-box}#printArea .pq img,#printArea .pq canvas,#printArea .pq table{width:1.35in!important;height:1.35in!important}#printArea .pcode{font-size:30px;font-weight:800;margin-top:6px;white-space:nowrap;padding:0 4px}}
 /* ===== Backlog tab (KHỚP mockup v11 duyệt) ===== */
+/* ===== Dashboard tab M1 SPX Ops Light (KHOP mockup 07) ===== */
+#viewDash .dash-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+#viewDash .dash-filters select{width:auto;flex:1;min-width:150px;font-weight:700}
+#viewDash .dash-filters button{flex:none}
+#viewDash .dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+#viewDash .dkpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px}
+#viewDash .dkpi small{font-size:11px;color:var(--mut);font-weight:700}
+#viewDash .dkpi b{display:block;font-size:26px;color:var(--navy);margin:4px 0}
+#viewDash .dkpi .dd{font-size:11px;font-weight:700;color:var(--mut)}
+#viewDash .dash-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+#viewDash .dcard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px}
+#viewDash .dcard h3{margin:0 0 8px;font-size:13.5px;color:var(--navy)}
+#viewDash .ddonut{width:150px;height:150px;border-radius:50%;margin:6px auto;position:relative;background:#eef0f3}
+#viewDash .dlegend{display:flex;gap:10px;justify-content:center;font-size:11.5px;font-weight:700;margin-top:8px;flex-wrap:wrap}
+#viewDash .dlegend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px}
+#viewDash .bar{height:9px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:6px}
+#viewDash .bar i{display:block;height:100%;background:#11c964}
+#viewDash .drate{font-size:28px;font-weight:800;color:var(--navy)}
+#viewDash .drate small{font-size:12px;color:var(--mut);font-weight:600}
+#viewDash .ddesc{font-size:12px;margin-top:8px}
+#viewDash .dtrend{display:flex;align-items:flex-end;gap:8px;min-height:96px;margin-top:10px}
+#viewDash .dtrend .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+#viewDash .dtrend .bars{display:flex;gap:3px;align-items:flex-end;height:64px}
+#viewDash .dtrend .b{width:13px;border-radius:6px 6px 3px 3px;background:#ffb59f}
+#viewDash .dtrend .b.alt{background:#11c964}
+#viewDash .dtrend small{font-size:10px;color:var(--mut);font-weight:700}
+#viewDash .dtblwrap{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;overflow-x:auto}
+#viewDash .dtable{width:100%;border-collapse:collapse;font-size:12px;min-width:560px;border:none;border-radius:0}
+#viewDash .dtable th{background:var(--bg);text-align:left;padding:9px 14px;font-size:10.5px;color:var(--mut);border-top:none;border-bottom:1px solid var(--line);white-space:nowrap}
+#viewDash .dtable td{padding:9px 14px;border-bottom:1px solid var(--bg)}
+#viewDash .dtable tr:last-child td{border-bottom:none}
+@media(max-width:899px){#viewDash .dash-grid{grid-template-columns:repeat(2,1fr)}#viewDash .dash-cols{grid-template-columns:1fr}}
 #viewBacklog .bl-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:6px 10px;margin-bottom:4px;font-size:12px}
 #viewBacklog .bl-meta .upd{font-weight:800;color:var(--navy)}
 #viewBacklog .bl-meta .upd b{color:var(--o)}
@@ -627,6 +659,7 @@ header{flex-wrap:wrap}
     <path d="M6.91737 30L10.1751 25.8334H18.9126L15.6549 30H6.91737Z" fill="#EE4D2D"/>
     </svg><span>Exception Handling</span></span>
 <button id="navMain" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="nlab">Danh sách</span></button>
+<button id="navDash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="nlab">Dashboard</span></button>
 <button id="navBacklog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span class="nlab">Backlog</span></button>
 <button id="navLiq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg><span class="nlab">Thanh lý</span></button>
 <button id="navCreate"><span class="dot">+</span><span class="nlab">Tạo mới</span></button>
@@ -656,6 +689,14 @@ header{flex-wrap:wrap}
 <div class="msg" id="msgMain"></div>
 <div id="gridPager" style="display:none"><span class="pg-info">Trang <b id="pgCur">1</b> · <b id="pgSize">50</b> đơn</span><span class="pg-btns" id="pgBtns"></span></div>
 <div id="grid"></div><div id="gridMore" style="height:2px"></div>
+</main>
+
+<main id="viewDash" style="display:none">
+<div class="dash-filters"><select id="dashMonth" aria-label="Lọc theo tháng"></select><select id="dashKind" aria-label="Lọc loại hàng"><option value="ALL">Tất cả (Item + Box)</option><option value="Box">Box</option><option value="Item">Item</option></select><button id="dashReload" type="button" title="Tải đơn mới từ server (giữ cache cũ)">↻ Mới</button></div>
+<div class="msg" id="msgDash"></div>
+<div class="dash-grid"><div class="dkpi"><small>Tổng đơn <span class="dcap"></span></small><b id="dashTotal">0</b><div class="dd" id="dashMom"></div></div><div class="dkpi"><small>Lưu kho</small><b id="dashStock" style="color:var(--o)">0</b><div class="dd" id="dashStockP"></div></div><div class="dkpi"><small>Resolve</small><b id="dashResolve" style="color:#0d9a50">0</b><div class="dd" id="dashResolveP"></div></div><div class="dkpi"><small>Thanh lý</small><b id="dashLiq" style="color:var(--blue)">0</b><div class="dd" id="dashLiqP"></div></div></div>
+<div class="dash-cols"><div class="dcard"><h3>Cơ cấu xử lý — <span class="dcap"></span></h3><div class="ddonut" id="dashDonut"></div><div class="dlegend"><span><i class="dot" style="background:var(--o)"></i>Lưu kho <b id="dashStockP2"></b></span><span><i class="dot" style="background:#11c964"></i>Resolve <b id="dashResolveP2"></b></span><span><i class="dot" style="background:var(--blue)"></i>Thanh lý <b id="dashLiqP2"></b></span></div></div><div class="dcard"><h3>Hiệu suất tháng — Resolve / Nhập</h3><div class="drate"><span id="dashRate">—</span> <small>resolve trong kỳ</small></div><div class="bar"><i id="dashRateBar" style="width:0%"></i></div><div class="ddesc" id="dashRateDesc"></div><h3 style="margin-top:12px">Xu hướng 6 tháng (nhập → resolve)</h3><div class="dtrend" id="dashTrend"></div></div></div>
+<div class="dcard" style="margin-top:10px"><h3>Chi tiết email xử lý — <span class="dcap"></span></h3><div class="dtblwrap"><table class="dtable"><thead><tr><th>Email</th><th>Tạo</th><th>Resolve</th><th>Thanh lý</th><th>Tỉ lệ resolve</th></tr></thead><tbody id="dashEmails"></tbody></table></div></div>
 </main>
 
 <main id="viewLiq" style="display:none">
@@ -1069,8 +1110,9 @@ p.appendChild(b);});
 var rf=document.createElement('button');rf.type='button';rf.className='pill';rf.title='Tải đơn mới từ server (giữ cache cũ)';rf.innerHTML='↻';rf.onclick=function(){loadGrid({reset:true});};p.appendChild(rf);
 renderSideFilters();
 }
+try{renderDash();}catch(e){}
 }
-var RAILNAV=[['navMain','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>','Danh sách'],['navLiq','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>','Thanh lý'],['navBacklog','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>','Backlog'],['navPrint','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>','In Mã'],['navAccess','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>','Role']];
+var RAILNAV=[['navMain','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>','Danh sách'],['navDash','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>','Dashboard'],['navLiq','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>','Thanh lý'],['navBacklog','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>','Backlog'],['navPrint','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>','In Mã'],['navAccess','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>','Role']];
 var railFlyOpen=false,railFlyT=null;
 function openRailFly(){clearTimeout(railFlyT);railFlyOpen=true;syncRailFly();}
 function schedRailFly(){clearTimeout(railFlyT);railFlyT=setTimeout(function(){railFlyOpen=false;syncRailFly();},140);}
@@ -1079,7 +1121,7 @@ function syncRailFly(){var f=document.getElementById('railFlyout');if(f)f.classL
 var curNav='navMain';
 function renderRail(){
 var r=document.getElementById('railbox');if(!r)return;r.innerHTML='';
-var NAVPERM={navMain:null,navLiq:'liq',navBacklog:'backlog',navPrint:'print',navAccess:'roleView'};
+var NAVPERM={navMain:null,navDash:null,navLiq:'liq',navBacklog:'backlog',navPrint:'print',navAccess:'roleView'};
 RAILNAV.forEach(function(o){
 if(NAVPERM[o[0]]&&!can(NAVPERM[o[0]]))return;
 var b=document.createElement('button');b.type='button';b.innerHTML=o[1];b.title=o[2];
@@ -1822,7 +1864,7 @@ setCreateDoneUI(false);
 await refreshPreview();
 }
 
-function setActive(id){['navMain','navBacklog','navLiq','navPrint','navAccess'].forEach(function(n){document.getElementById(n).classList.toggle('on',n===id);});curNav=id;renderRail();}
+function setActive(id){['navMain','navDash','navBacklog','navLiq','navPrint','navAccess'].forEach(function(n){document.getElementById(n).classList.toggle('on',n===id);});curNav=id;renderRail();}
 var PRINT_RE=/^(Box|Item)\.\d{2}-\d{2}-\d{4}\.\d+$/;
 var lastAutoPrint='';
 function syncTabHeader(tab){
@@ -1831,13 +1873,13 @@ var sb=document.querySelector('header .scanbar');
 var isList=(tab==='list');
 if(rb)rb.style.display=isList?'':'none';
 if(pl)pl.style.display=isList?'':'none';
-if(sb)sb.style.display=(tab==='backlog')?'none':'';
+if(sb)sb.style.display=(tab==='backlog'||tab==='dash')?'none':'';
 if(!cx)return;
 cx.classList.remove('back');cx.removeAttribute('data-back');
 if(isList){cx.style.display='none';cx.textContent='';return;}
 cx.style.display='block';
 if(tab==='liq'||tab==='print'){cx.textContent='‹ Quay lại';cx.classList.add('back');cx.setAttribute('data-back',tab);cx.style.display='';}
-else if(tab==='role'||tab==='backlog'){cx.style.display='none';cx.textContent='';}
+else if(tab==='role'||tab==='backlog'||tab==='dash'){cx.style.display='none';cx.textContent='';}
 }
 function showPrint(on){
 document.getElementById('viewPrint').style.display=on?'block':'none';
@@ -1845,7 +1887,7 @@ document.getElementById('viewMain').style.display=on?'none':'block';
 document.getElementById('viewLiq').style.display='none';
 document.getElementById('viewAccess').style.display='none';
 document.getElementById('viewBacklog').style.display='none';
-if(on){setActive('navPrint');}
+document.getElementById('viewDash').style.display='none';if(on){setActive('navPrint');}
 else{setActive('navMain');}
 syncTabHeader(on?'print':'list');
 if(on&&isStation_()){try{var sp=document.getElementById('scanPrint');if(sp&&document.getElementById('singleZone').style.display!=='none')sp.focus();}catch(e){}}
@@ -2460,7 +2502,11 @@ document.getElementById('btnPrintDetail').onclick=function(){if(!state.detail||!
 document.getElementById('navMain').onclick=function(){showLiq(false);};
 document.getElementById('navLiq').onclick=function(){showLiq(true);};
 document.getElementById('navPrint').onclick=function(){showPrint(true);};
+document.getElementById('navDash').onclick=function(){showDash(true);};
 document.getElementById('navBacklog').onclick=function(){showBacklog(true);};
+document.getElementById('dashMonth').onchange=renderDash;
+document.getElementById('dashKind').onchange=renderDash;
+document.getElementById('dashReload').onclick=function(){loadGrid({reset:true}).then(function(){renderDash();});};
 document.getElementById('navAccess').onclick=function(){showAccess();};
 document.getElementById('navToggle').onclick=function(){document.body.classList.toggle('rail');};
 document.getElementById('sideFilterToggle').onclick=function(){var p=document.getElementById('sideFilterPanel');var open=p.classList.toggle('open');this.setAttribute('aria-expanded',open?'true':'false');};
@@ -2506,14 +2552,21 @@ document.getElementById('cardSingle').onclick=function(){selectPrintCard('single
 document.getElementById('cardBulk').onclick=function(){selectPrintCard('bulk');document.getElementById('printKindModal').classList.add('open');};
 document.getElementById('scanPrint').addEventListener('input',function(){clearTimeout(autoT);autoT=setTimeout(autoPrintSingle,600);});
 document.getElementById('scanPrint').addEventListener('keydown',function(e){if(e.key==='Enter'){clearTimeout(autoT);autoPrintSingle();}});
-function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';document.getElementById('viewPrint').style.display='none';document.getElementById('viewBacklog').style.display='none';setActive(on?'navLiq':'navMain');syncTabHeader(on?'liq':'list');if(on&&isStation_()){try{if(liqStep2()){document.getElementById('liqCode').focus();}else{document.getElementById('scanLiq').focus();}}catch(e){}}}
-async function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';document.getElementById('viewPrint').style.display='none';document.getElementById('viewBacklog').style.display='none';setActive('navAccess');syncTabHeader('role');try{await loadMe();}catch(e){}
+function showLiq(on){document.getElementById('viewLiq').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewAccess').style.display='none';document.getElementById('viewPrint').style.display='none';document.getElementById('viewBacklog').style.display='none';document.getElementById('viewDash').style.display='none';setActive(on?'navLiq':'navMain');syncTabHeader(on?'liq':'list');if(on&&isStation_()){try{if(liqStep2()){document.getElementById('liqCode').focus();}else{document.getElementById('scanLiq').focus();}}catch(e){}}}
+async function showAccess(){document.getElementById('viewAccess').style.display='block';document.getElementById('viewMain').style.display='none';document.getElementById('viewLiq').style.display='none';document.getElementById('viewPrint').style.display='none';document.getElementById('viewBacklog').style.display='none';document.getElementById('viewDash').style.display='none';setActive('navAccess');syncTabHeader('role');try{await loadMe();}catch(e){}
 var e=state.me||{};
 var dl=document.getElementById('msgDeploy');
 if(dl)dl.textContent='Đăng nhập: '+(e.email||'?')+' · '+(e.role||'?');
 if(!can('roleView')){msg('msgAccess','Bạn không có quyền xem trang Role. Liên hệ ADMIN.');return;}
 loadUsers();}
 });
+/* ===== Dashboard tab M1 SPX Ops Light (KHOP mockup 07) ===== */
+function dashMonthKey_(createdAt){var m=String(createdAt||'').match(/(\d{2})\/(\d{2})\/(\d{4})/);return m?(m[2]+'/'+m[3]):'';}
+function dashResolver_(by){var b=String(by||'').trim();if(/^ADMIN/i.test(b))return 'ADMIN';return b||'—';}
+function dashFiltered_(){var mk=(document.getElementById('dashMonth')||{}).value||'ALL';var kd=(document.getElementById('dashKind')||{}).value||'ALL';return state.items.filter(function(it){if(kd!=='ALL'&&it.kind!==kd)return false;if(mk!=='ALL'&&dashMonthKey_(it.createdAt)!==mk)return false;return true;});}
+function dashMonthOptions_(){var sel=document.getElementById('dashMonth');if(!sel)return;var keep=sel.value||'ALL';var seen={},keys=[];state.items.forEach(function(it){var k=dashMonthKey_(it.createdAt);if(k&&!seen[k]){seen[k]=true;keys.push(k);}});keys.sort(function(a,b){var pa=a.split('/'),pb=b.split('/');return(pb[1]+pb[0])-(pa[1]+pa[0]);});sel.innerHTML='';var all=document.createElement('option');all.value='ALL';all.textContent='Tất cả các tháng';sel.appendChild(all);keys.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent='Tháng '+k;sel.appendChild(o);});var has=keep==='ALL'||seen[keep];sel.value=has?keep:'ALL';}
+function renderDash(){var mt=document.getElementById('dashTotal');if(!mt)return;dashMonthOptions_();var mk=(document.getElementById('dashMonth')||{}).value||'ALL';var kd=(document.getElementById('dashKind')||{}).value||'ALL';var cap=(mk==='ALL'?'Tất cả':'T.'+mk)+(kd==='ALL'?' · All':' · '+kd);Array.prototype.forEach.call(document.querySelectorAll('#viewDash .dcap'),function(e){e.textContent=cap;});var rows=dashFiltered_();var n=rows.length||1;var ns=rows.filter(function(it){return it.status==='chua_xu_ly';}).length;var nr=rows.filter(function(it){return it.status==='da_tim_bill';}).length;var nl=rows.filter(function(it){return it.status==='thanh_ly';}).length;function pc(x){return Math.round(x/n*1000)/10;}var ps=pc(ns),pr=pc(nr),pl=pc(nl);mt.textContent=rows.length;document.getElementById('dashStock').textContent=ns;document.getElementById('dashResolve').textContent=nr;document.getElementById('dashLiq').textContent=nl;document.getElementById('dashStockP').textContent=ps+'% tổng';document.getElementById('dashResolveP').textContent=pr+'% tổng';document.getElementById('dashLiqP').textContent=pl+'% tổng';document.getElementById('dashStockP2').textContent=ps+'%';document.getElementById('dashResolveP2').textContent=pr+'%';document.getElementById('dashLiqP2').textContent=pl+'%';document.getElementById('dashDonut').style.background='conic-gradient(var(--o) 0 '+ps+'%, #11c964 '+ps+'% '+(ps+pr)+'%, var(--blue) '+(ps+pr)+'% 100%)';var rate=rows.length?Math.round(nr/rows.length*1000)/10:0;document.getElementById('dashRate').textContent=rate+'%';document.getElementById('dashRateBar').style.width=rate+'%';document.getElementById('dashRateDesc').textContent=nr+' / '+rows.length+' đơn trong kỳ được resolve';var mom=document.getElementById('dashMom');if(mk!=='ALL'){var parts=mk.split('/');var py=+parts[1],pm=+parts[0]-1;if(pm<1){pm=12;py--;}var pk=(pm<10?'0'+pm:''+pm)+'/'+py;var prev=state.items.filter(function(it){return dashMonthKey_(it.createdAt)===pk&&(kd==='ALL'||it.kind===kd);}).length;mom.textContent=prev?(((rows.length-prev)>=0?'+':'')+Math.round((rows.length-prev)/prev*1000)/10+'% vs T.'+pk):'tháng đầu có dữ liệu';}else{mom.textContent='kỳ hiện tại';}var byKind=state.items.filter(function(it){return kd==='ALL'||it.kind===kd;});var gm={};byKind.forEach(function(it){var k=dashMonthKey_(it.createdAt);if(!k)return;(gm[k]=gm[k]||{t:0,r:0}).t++;if(it.status==='da_tim_bill')gm[k].r++;});var gk=Object.keys(gm).sort().slice(-6);var mx=1;gk.forEach(function(k){mx=Math.max(mx,gm[k].t);});var th=document.getElementById('dashTrend');th.innerHTML='';if(!gk.length){th.innerHTML='<div class="ddesc">Chưa có dữ liệu theo tháng.</div>';}else{gk.forEach(function(k){var a=Math.max(4,Math.round(gm[k].t/mx*64)),b=Math.max(4,Math.round(gm[k].r/mx*64));var c=document.createElement('div');c.className='col';c.innerHTML='<div class="bars"><div class="b" style="height:'+a+'px"></div><div class="b alt" style="height:'+b+'px"></div></div><small>T.'+k+'</small>';th.appendChild(c);});}var want={};rows.forEach(function(it){want[it.code]=true;});var per={};rows.forEach(function(it){var e=String(it.createdBy||'').trim()||'—';(per[e]=per[e]||{c:0,r:0,l:0}).c++;});Object.keys(state.detailCache||{}).forEach(function(code){if(!want[code])return;var h=(state.detailCache[code]||{}).history||[];h.forEach(function(e){if(e.to==='da_tim_bill'&&e.from!=='da_tim_bill'){var k=dashResolver_(e.by);(per[k]=per[k]||{c:0,r:0,l:0}).r++;}else if(e.to==='thanh_ly'&&e.from!=='thanh_ly'){var k2=dashResolver_(e.by);(per[k2]=per[k2]||{c:0,r:0,l:0}).l++;}});});var keys=Object.keys(per).sort(function(a,b){return per[b].c-per[a].c;});var tb=document.getElementById('dashEmails');tb.innerHTML='';if(!keys.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--mut)">Chưa có dữ liệu.</td></tr>';}else{keys.forEach(function(e){var p=per[e].c?Math.round(per[e].r/per[e].c*1000)/10:0;var tr=document.createElement('tr');tr.innerHTML='<td style="font-weight:700;word-break:break-all">'+esc(e)+'</td><td>'+per[e].c+'</td><td style="color:#0d9a50;font-weight:800">'+per[e].r+'</td><td style="color:var(--blue)">'+per[e].l+'</td><td><b>'+p+'%</b></td>';tb.appendChild(tr);});}}
+function showDash(on){document.getElementById('viewDash').style.display=on?'block':'none';document.getElementById('viewMain').style.display=on?'none':'block';document.getElementById('viewLiq').style.display='none';document.getElementById('viewPrint').style.display='none';document.getElementById('viewAccess').style.display='none';document.getElementById('viewBacklog').style.display='none';setActive(on?'navDash':'navMain');syncTabHeader(on?'dash':'list');if(on)renderDash();}
 /* ===== Backlog tab (Sheet Backlog, read-only; KHỚP mockup v11 duyệt) ===== */
 var blCache=null,blTitles=[],blKeys=[],blVis=[],blDefaults=[],blPage=1,blKeyword='',blSelId=null,blColOpen=false,blSortKey=null,blSortDir=0;
 var blSel={status_desc:null,aging_leadtime:null},blQ={product_name:'',return_sort_code:'',buyer_sort_code:''};
@@ -2536,7 +2589,7 @@ document.getElementById('viewMain').style.display=on?'none':'block';
 document.getElementById('viewLiq').style.display='none';
 document.getElementById('viewPrint').style.display='none';
 document.getElementById('viewAccess').style.display='none';
-setActive(on?'navBacklog':'navMain');
+document.getElementById('viewDash').style.display='none';setActive(on?'navBacklog':'navMain');
 syncTabHeader(on?'backlog':'list');
 if(on){blSetColOpen(false);blCloseDrop();blLoad();}
 }

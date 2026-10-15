@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard — Gallery 5 mẫu hot (07)</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Fira+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,Arial;background:#eef1f6;color:#303844}
+a{color:inherit}
+.topbar{position:sticky;top:0;z-index:50;background:#172b48;color:#fff;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.topbar b{font-size:14px}
+.topbar .sub{font-size:11.5px;color:#a7b0bd}
+.topbar .filters{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.topbar select{background:#fff;border:1px solid #dfe5ee;border-radius:9px;padding:8px 10px;font-size:12.5px;font-weight:700;color:#172b48}
+.navchips{display:flex;gap:8px;padding:10px 16px;flex-wrap:wrap;background:#fff;border-bottom:1px solid #e5e9f0;position:sticky;top:57px;z-index:40}
+.navchips a{text-decoration:none;font-size:12px;font-weight:800;padding:8px 14px;border-radius:99px;background:#f1f4f9;color:#172b48;border:1px solid #e2e8f1}
+.navchips a:hover{background:#172b48;color:#fff}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 60px;display:flex;flex-direction:column;gap:28px}
+.vlabel{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+.vlabel .tag{font-size:11px;font-weight:800;background:#172b48;color:#fff;border-radius:8px;padding:4px 10px}
+.vlabel h2{margin:0;font-size:17px;color:#172b48}
+.vlabel p{margin:0;font-size:12px;color:#677182}
+section.variant{border-radius:20px;overflow:hidden;border:1px solid #e2e8f1}
+/* ===== M1 SPX light ===== */
+#m1{background:#f5f6f9;padding:18px}
+#m1 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+#m1 .kpi{background:#fff;border:1px solid #eef0f3;border-radius:14px;padding:14px}
+#m1 .kpi small{font-size:11px;color:#97a0ad;font-weight:700}
+#m1 .kpi b{display:block;font-size:26px;color:#172b48;margin:4px 0}
+#m1 .kpi .d{font-size:11px;font-weight:700}
+#m1 .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+#m1 .card{background:#fff;border:1px solid #eef0f3;border-radius:14px;padding:14px}
+#m1 h3{margin:0 0 8px;font-size:13.5px;color:#172b48}
+#m1 .donut{width:150px;height:150px;border-radius:50%;margin:6px auto;position:relative}
+#m1 .donut::after{content:'';position:absolute;inset:26px;background:#fff;border-radius:50%}
+#m1 .legend{display:flex;gap:8px;justify-content:center;font-size:11.5px;font-weight:700;margin-top:8px;flex-wrap:wrap}
+#m1 .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px}
+#m1 .bar{height:9px;background:#eef0f3;border-radius:99px;overflow:hidden;margin-top:6px}
+#m1 .bar i{display:block;height:100%}
+#m1 table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+#m1 th{font-size:10px;color:#97a0ad;text-align:left;padding:6px 8px;background:#f8fafc}
+#m1 td{padding:8px;border-top:1px solid #f1f3f7}
+/* ===== M2 dark ===== */
+#m2{background:#0f172a;color:#e2e8f0;padding:18px}
+#m2 h3{color:#fff;margin:0 0 8px;font-size:13.5px}
+#m2 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+#m2 .kpi{background:linear-gradient(180deg,#1e293b,#111c33);border:1px solid #2b3a55;border-radius:14px;padding:14px}
+#m2 .kpi small{color:#8b98ab;font-size:11px;font-weight:700}
+#m2 .kpi b{display:block;font-size:26px;margin:4px 0}
+#m2 .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+#m2 .card{background:#16213a;border:1px solid #2b3a55;border-radius:14px;padding:14px}
+#m2 table{width:100%;border-collapse:collapse;font-size:12px}
+#m2 th{color:#8b98ab;font-size:10px;text-align:left;padding:6px 8px}
+#m2 td{padding:8px;border-top:1px solid #243352}
+#m2 .bar{height:9px;background:#243352;border-radius:99px;overflow:hidden;margin-top:6px}
+#m2 .bar i{display:block;height:100%}
+/* ===== M3 bento minimal ===== */
+#m3{background:#fff;padding:18px;font-family:Inter,'Be Vietnam Pro',sans-serif}
+#m3 .bento{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px}
+#m3 .cell{border:1px solid #e9edf3;border-radius:16px;padding:16px;background:#fff}
+#m3 .cell.hero{background:#172b48;color:#fff;border-color:#172b48}
+#m3 .cell.hero b{font-size:34px;display:block}
+#m3 h3{margin:0 0 8px;font-size:13px}
+#m3 table{width:100%;border-collapse:collapse;font-size:12px}
+#m3 td,#m3 th{padding:7px 6px;border-top:1px solid #f0f2f7;text-align:left}
+#m3 th{border:none;color:#8a94a6;font-size:10.5px}
+/* ===== M4 glass ===== */
+#m4{background:linear-gradient(135deg,#ff9a62,#ee4d2d 35%,#7c3aed 100%);padding:18px}
+#m4 .glass{background:rgba(255,255,255,.82);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.7);border-radius:18px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+#m4 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+#m4 .kpi{background:rgba(255,255,255,.85);border-radius:14px;padding:12px;border:1px solid rgba(255,255,255,.8)}
+#m4 .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+#m4 table{width:100%;border-collapse:collapse;font-size:12px}
+#m4 td,#m4 th{padding:7px 8px;text-align:left}
+#m4 th{font-size:10px;color:#6b7280}
+/* ===== M5 enterprise ===== */
+#m5{background:#f8fafc;padding:18px;font-family:'Fira Sans','Be Vietnam Pro',sans-serif}
+#m5 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+#m5 .kpi{background:#fff;border:1px solid #dbeafe;border-top:3px solid #1e40af;border-radius:12px;padding:12px}
+#m5 .cols{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;margin-top:12px}
+#m5 .card{background:#fff;border:1px solid #dbeafe;border-radius:12px;padding:14px}
+#m5 table{width:100%;border-collapse:collapse;font-size:12px}
+#m5 th{background:#eff6ff;color:#475569;font-size:10px;padding:7px 8px;text-align:left}
+#m5 td{padding:8px;border-top:1px solid #eef2ff}
+.pill{display:inline-block;font-size:10.5px;font-weight:800;border-radius:99px;padding:3px 10px}
+.p-orange{background:#fff5f0;color:#ee4d2d}.p-green{background:#e9faf0;color:#0d9a50}.p-blue{background:#eef4ff;color:#3274f7}
+.meter{height:8px;background:#eef0f3;border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,#11c964,#0d9a50)}
+.trend{display:flex;align-items:flex-end;gap:8px;height:110px;margin-top:10px}
+.trend .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.trend .b{width:100%;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,#ee4d2d,#ff9a62)}
+.trend .b.alt{background:linear-gradient(180deg,#11c964,#7ce3a8)}
+.trend small{font-size:10px;color:#677182;font-weight:700}
+@media(max-width:860px){#m1 .grid,#m2 .grid,#m4 .grid,#m5 .grid{grid-template-columns:repeat(2,1fr)}#m1 .cols,#m2 .cols,#m4 .cols,#m5 .cols,#m3 .bento{grid-template-columns:1fr}.navchips{top:112px}}
+.note{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:10px 14px;font-size:12.5px;color:#92400e}
+</style>
+</head>
+<body>
+<div class="topbar">
+<div><b>Dashboard — Gallery 5 mẫu hot</b><div class="sub">Tab Dashboard · filter tháng + loại hàng Item/Box · áp dụng chung cho cả 5 mẫu</div></div>
+<div class="filters">
+<select id="fMonth"><option value="10/2026">Tháng 10/2026</option><option value="09/2026">Tháng 09/2026</option><option value="ALL">Tất cả</option></select>
+<select id="fKind"><option value="ALL">Tất cả (Item + Box)</option><option value="Box">Box</option><option value="Item">Item</option></select>
+</div>
+</div>
+<div class="navchips">
+<a href="#m1">M1 · SPX Ops Light</a><a href="#m2">M2 · Dark Ops</a><a href="#m3">M3 · Bento Minimal</a><a href="#m4">M4 · Frost Glass</a><a href="#m5">M5 · Enterprise Data</a>
+</div>
+<div class="wrap">
+<div class="note">Demo dùng chung 1 dataset. Đổi filter trên cùng → cả 5 mẫu cập nhật KPI + biểu đồ tròn + tỉ lệ xử lý + bảng email. Biểu đồ vẽ bằng CSS/SVG thuần (không CDN) để port thẳng vào <b>index.html</b> GAS.</div>
+
+<div class="vlabel"><span class="tag">M1</span><h2>SPX Ops Light — khớp app hiện tại, port nhanh nhất</h2></div>
+<section class="variant" id="m1"><div style="padding:4px">
+<div class="grid">
+<div class="kpi"><small>Tổng đơn <span class="fcap"></span></small><b data-k="total">–</b><div class="d" data-k="mom"></div></div>
+<div class="kpi"><small>Lưu kho</small><b style="color:#ee4d2d" data-k="stock">–</b><div class="d" data-k="stockP"></div></div>
+<div class="kpi"><small>Resolve</small><b style="color:#0d9a50" data-k="resolve">–</b><div class="d" data-k="resolveP"></div></div>
+<div class="kpi"><small>Thanh lý</small><b style="color:#3274f7" data-k="liq">–</b><div class="d" data-k="liqP"></div></div>
+</div>
+<div class="cols">
+<div class="card"><h3>Cơ cấu xử lý — <span class="fcap"></span></h3><div class="donut" data-k="donut"></div>
+<div class="legend"><span><i class="dot" style="background:#ee4d2d"></i>Lưu kho <b data-k="stockP2"></b></span><span><i class="dot" style="background:#11c964"></i>Resolve <b data-k="resolveP2"></b></span><span><i class="dot" style="background:#3274f7"></i>Thanh lý <b data-k="liqP2"></b></span></div></div>
+<div class="card"><h3>Hiệu suất tháng — Resolve / Nhập</h3><div style="font-size:28px;font-weight:800;color:#172b48"><span data-k="rate">–</span><small style="font-size:12px;color:#97a0ad"> resolve trong tháng</small></div>
+<div class="bar"><i data-k="ratebar" style="background:#11c964"></i></div>
+<div style="font-size:12px;margin-top:8px" data-k="ratedesc"></div>
+<h3 style="margin-top:12px">Xu hướng 6 tháng (nhập → resolve)</h3><div class="trend" data-k="trend"></div></div>
+</div>
+<div class="card" style="margin-top:12px"><h3>Chi tiết email xử lý — <span class="fcap"></span></h3><div style="overflow-x:auto"><table><thead><tr><th>Email</th><th>Tạo</th><th>Resolve</th><th>Thanh lý</th><th>Tỉ lệ resolve</th></tr></thead><tbody data-k="emails"></tbody></table></div></div>
+</div></section>
+
+<div class="vlabel"><span class="tag">M2</span><h2>Dark Ops — trực đêm, tương phản cao</h2></div>
+<section class="variant" id="m2"><div>
+<div class="grid">
+<div class="kpi"><small>TỔNG ĐƠN · <span class="fcap"></span></small><b data-k="total">–</b><div style="font-size:11px;color:#7ce3a8" data-k="mom"></div></div>
+<div class="kpi"><small>LƯU KHO</small><b style="color:#ff8a5c" data-k="stock">–</b><div style="font-size:11px;color:#8b98ab" data-k="stockP"></div></div>
+<div class="kpi"><small>RESOLVE</small><b style="color:#34d399" data-k="resolve">–</b><div style="font-size:11px;color:#8b98ab" data-k="resolveP"></div></div>
+<div class="kpi"><small>THANH LÝ</small><b style="color:#60a5fa" data-k="liq">–</b><div style="font-size:11px;color:#8b98ab" data-k="liqP"></div></div>
+</div>
+<div class="cols">
+<div class="card"><h3>Donut · <span class="fcap"></span></h3><div class="donut" data-k="donut" style="width:150px;height:150px;border-radius:50%;margin:6px auto"></div><div style="font-size:12px;text-align:center" data-k="ratedesc"></div></div>
+<div class="card"><h3>Tỉ lệ resolve / nhập</h3><div style="font-size:30px;font-weight:800" data-k="rate"></div><div class="bar"><i data-k="ratebar" style="background:#34d399"></i></div><div class="trend" data-k="trend"></div></div>
+</div>
+<div class="card" style="margin-top:12px"><h3>Bảng email</h3><div style="overflow-x:auto"><table><thead><tr><th>Email</th><th>Tạo</th><th>Resolve</th><th>Thanh lý</th><th>Tỉ lệ</th></tr></thead><tbody data-k="emails"></tbody></table></div></div>
+</div></section>
+
+<div class="vlabel"><span class="tag">M3</span><h2>Bento Minimal — Linear/Vercel, hot 2025–2026</h2></div>
+<section class="variant" id="m3"><div>
+<div class="bento">
+<div class="cell hero"><small style="opacity:.7;font-weight:700">TỔNG ĐƠN · <span class="fcap"></span></small><b data-k="total">–</b><div style="font-size:12px;opacity:.8" data-k="mom"></div><div class="meter" style="background:rgba(255,255,255,.2);margin-top:10px"><i data-k="ratebar"></i></div><div style="font-size:12px;margin-top:6px">Resolve rate <b data-k="rate"></b></div></div>
+<div class="cell"><h3>Lưu kho / Resolve / Thanh lý</h3><div style="font-size:22px;font-weight:800"><span data-k="stock"></span> <small style="font-size:11px;color:#8a94a6">kho</small> · <span data-k="resolve"></span> <small style="font-size:11px;color:#8a94a6">done</small> · <span data-k="liq"></span></div><div style="font-size:12px;color:#555;margin-top:6px" data-k="ratedesc"></div><div class="trend" data-k="trend"></div></div>
+<div class="cell"><h3>Email top</h3><table><tbody data-k="emails"></tbody></table></div>
+</div>
+</div></section>
+
+<div class="vlabel"><span class="tag">M4</span><h2>Frost Glass — gradient + blur, GenZ hot</h2></div>
+<section class="variant" id="m4"><div class="glass">
+<div class="grid">
+<div class="kpi"><div style="font-size:11px;font-weight:800;color:#6b7280">TỔNG <span class="fcap"></span></div><div style="font-size:26px;font-weight:800" data-k="total"></div><div style="font-size:11px" data-k="mom"></div></div>
+<div class="kpi"><div style="font-size:11px;font-weight:800;color:#6b7280">LƯU KHO</div><div style="font-size:26px;font-weight:800;color:#ee4d2d" data-k="stock"></div><div style="font-size:11px" data-k="stockP"></div></div>
+<div class="kpi"><div style="font-size:11px;font-weight:800;color:#6b7280">RESOLVE</div><div style="font-size:26px;font-weight:800;color:#0d9a50" data-k="resolve"></div><div style="font-size:11px" data-k="resolveP"></div></div>
+<div class="kpi"><div style="font-size:11px;font-weight:800;color:#6b7280">THANH LÝ</div><div style="font-size:26px;font-weight:800;color:#3274f7" data-k="liq"></div><div style="font-size:11px" data-k="liqP"></div></div>
+</div>
+<div class="cols">
+<div class="kpi"><b>Cơ cấu</b><div class="donut" data-k="donut" style="width:140px;height:140px;border-radius:50%;margin:8px auto"></div><div style="font-size:12px;text-align:center" data-k="ratedesc"></div></div>
+<div class="kpi"><b>Hiệu suất <span data-k="rate"></span></b><div class="meter" style="margin-top:8px"><i data-k="ratebar"></i></div><div class="trend" data-k="trend"></div></div>
+</div>
+<div class="kpi" style="margin-top:12px"><b>Email xử lý</b><div style="overflow-x:auto"><table><thead><tr><th>Email</th><th>Tạo</th><th>Resolve</th><th>Thanh lý</th><th>%</th></tr></thead><tbody data-k="emails"></tbody></table></div></div>
+</div></section>
+
+<div class="vlabel"><span class="tag">M5</span><h2>Enterprise Data — bảng dày, audit-ready</h2><p>Khớp gợi ý ui-ux-pro-max Data-Dense</p></div>
+<section class="variant" id="m5"><div>
+<div class="grid">
+<div class="kpi"><small>TỔNG ĐƠN</small><div style="font-size:24px;font-weight:800" data-k="total"></div><div style="font-size:11px" data-k="mom"></div></div>
+<div class="kpi"><small>LƯU KHO</small><div style="font-size:24px;font-weight:800;color:#c2410c" data-k="stock"></div><div style="font-size:11px" data-k="stockP"></div></div>
+<div class="kpi"><small>RESOLVE</small><div style="font-size:24px;font-weight:800;color:#15803d" data-k="resolve"></div><div style="font-size:11px" data-k="resolveP"></div></div>
+<div class="kpi"><small>THANH LÝ</small><div style="font-size:24px;font-weight:800;color:#1d4ed8" data-k="liq"></div><div style="font-size:11px" data-k="liqP"></div></div>
+</div>
+<div class="cols">
+<div class="card"><h3>Cơ cấu · <span class="fcap"></span> · Resolve rate <b data-k="rate"></b></h3><div class="meter"><i data-k="ratebar"></i></div><div style="font-size:12px;margin-top:6px" data-k="ratedesc"></div><div class="trend" data-k="trend"></div></div>
+<div class="card"><h3>Donut</h3><div data-k="donut" style="width:130px;height:130px;border-radius:50%;margin:4px auto"></div></div>
+</div>
+<div class="card" style="margin-top:12px"><h3>Chi tiết email — sortable, audit-ready</h3><div style="overflow-x:auto"><table><thead><tr><th>Email</th><th>Tạo</th><th>Resolve</th><th>Thanh lý</th><th>Tồn (kho)</th><th>Tỉ lệ resolve</th><th>Đánh giá</th></tr></thead><tbody data-k="emailsFull"></tbody></table></div></div>
+</div></section>
+</div>
+<script>
+var DB={
+"10/2026":{total:248,box:142,item:106,stock:96,resolve:118,liq:34,stockBox:58,stockItem:38,resolveBox:64,resolveItem:54,liqBox:20,liqItem:14,inMonth:210,trend:[["05",180,120],["06",205,140],["07",190,150],["08",230,170],["09",260,202],["10",210,118]],
+emails:[["duc.nguyenvan05@spxexpress.com",84,62,12],["son.nguyenngoc@spxexpress.com",71,55,8],["lan.tran@spxexpress.com",43,28,6],["tuan.pham@spxexpress.com",32,18,5],["admin.mock@spxexpress.com",18,12,3]]},
+"09/2026":{total:312,box:180,item:132,stock:58,resolve:202,liq:52,stockBox:34,stockItem:24,resolveBox:118,resolveItem:84,liqBox:28,liqItem:24,inMonth:260,trend:[["04",170,110],["05",180,120],["06",205,140],["07",190,150],["08",230,170],["09",260,202]],
+emails:[["duc.nguyenvan05@spxexpress.com",102,80,14],["son.nguyenngoc@spxexpress.com",88,70,10],["lan.tran@spxexpress.com",55,40,8],["tuan.pham@spxexpress.com",40,25,6],["admin.mock@spxexpress.com",27,18,4]]},
+"ALL":{total:560,box:322,item:238,stock:154,resolve:320,liq:86,stockBox:92,stockItem:62,resolveBox:182,resolveItem:138,liqBox:48,liqItem:38,inMonth:470,trend:[["05",180,120],["06",205,140],["07",190,150],["08",230,170],["09",260,202],["10",210,118]],
+emails:[["duc.nguyenvan05@spxexpress.com",186,142,26],["son.nguyenngoc@spxexpress.com",159,125,18],["lan.tran@spxexpress.com",98,68,14],["tuan.pham@spxexpress.com",72,43,11],["admin.mock@spxexpress.com",45,30,7]]}
+};
+function cur(){
+var m=document.getElementById('fMonth').value,k=document.getElementById('fKind').value;
+var d=DB[m];var f=(m==="ALL"?"Tất cả":("T."+m));
+if(k==="Box")return{cap:f+" · Box",total:d.box,stock:d.stockBox,resolve:d.resolveBox,liq:d.liqBox,inMonth:Math.round(d.inMonth*d.box/d.total),trend:d.trend,emails:d.emails.map(function(r){return[r[0],Math.round(r[1]*d.box/d.total),Math.round(r[2]*d.box/d.total),Math.round(r[3]*d.box/d.total)]})};
+if(k==="Item")return{cap:f+" · Item",total:d.item,stock:d.stockItem,resolve:d.resolveItem,liq:d.liqItem,inMonth:Math.round(d.inMonth*d.item/d.total),trend:d.trend,emails:d.emails.map(function(r){return[r[0],r[1]-Math.round(r[1]*d.box/d.total),r[2]-Math.round(r[2]*d.box/d.total),r[3]-Math.round(r[3]*d.box/d.total)]})};
+return{cap:f+" · All",total:d.total,stock:d.stock,resolve:d.resolve,liq:d.liq,inMonth:d.inMonth,trend:d.trend,emails:d.emails};
+}
+function pct(a,b){return b?Math.round(a/b*1000)/10:0}
+function render(){
+var c=cur();var rate=pct(c.resolve,c.inMonth);
+document.querySelectorAll('.fcap').forEach(function(e){e.textContent=c.cap});
+document.querySelectorAll('[data-k="total"]').forEach(function(e){e.textContent=c.total});
+document.querySelectorAll('[data-k="stock"]').forEach(function(e){e.textContent=c.stock});
+document.querySelectorAll('[data-k="resolve"]').forEach(function(e){e.textContent=c.resolve});
+document.querySelectorAll('[data-k="liq"]').forEach(function(e){e.textContent=c.liq});
+var sp=pct(c.stock,c.total),rp=pct(c.resolve,c.total),lp=pct(c.liq,c.total);
+document.querySelectorAll('[data-k="stockP"]').forEach(function(e){e.textContent=sp+"% tổng"});
+document.querySelectorAll('[data-k="resolveP"]').forEach(function(e){e.textContent=rp+"% tổng"});
+document.querySelectorAll('[data-k="liqP"]').forEach(function(e){e.textContent=lp+"% tổng"});
+document.querySelectorAll('[data-k="stockP2"]').forEach(function(e){e.textContent=sp+"%"});
+document.querySelectorAll('[data-k="resolveP2"]').forEach(function(e){e.textContent=rp+"%"});
+document.querySelectorAll('[data-k="liqP2"]').forEach(function(e){e.textContent=lp+"%"});
+document.querySelectorAll('[data-k="rate"]').forEach(function(e){e.textContent=rate+"%"});
+document.querySelectorAll('[data-k="ratebar"]').forEach(function(e){e.style.width=rate+"%"});
+document.querySelectorAll('[data-k="ratedesc"]').forEach(function(e){e.textContent=c.resolve+" / "+c.inMonth+" đơn nhập trong kỳ được resolve"});
+document.querySelectorAll('[data-k="mom"]').forEach(function(e){e.textContent=(c.cap.indexOf("10")>=0?"-20.5% vs T.09":"kỳ hiện tại")});
+var donut="conic-gradient(#ee4d2d 0 "+sp+"%, #11c964 "+sp+"% "+(sp+rp)+"%, #3274f7 "+(sp+rp)+"% 100%)";
+document.querySelectorAll('[data-k="donut"]').forEach(function(e){e.style.background=donut});
+document.querySelectorAll('[data-k="trend"]').forEach(function(box){
+var mx=280;var h="";
+c.trend.forEach(function(t){var a=Math.round(t[1]/mx*100),b=Math.round(t[2]/mx*100);
+h+='<div class="col"><div style="display:flex;gap:3px;align-items:flex-end;height:80px"><div class="b" style="width:14px;height:'+a+'px;opacity:.45"></div><div class="b alt" style="width:14px;height:'+b+'px"></div></div><small>T.'+t[0]+'</small></div>'});
+box.innerHTML=h});
+document.querySelectorAll('[data-k="emails"]').forEach(function(tb){
+var h="";c.emails.forEach(function(r){var p=pct(r[2],r[1]);
+h+="<tr><td style='font-weight:700'>"+r[0]+"</td><td>"+r[1]+"</td><td style='color:#0d9a50;font-weight:800'>"+r[2]+"</td><td style='color:#3274f7'>"+r[3]+"</td><td>"+p+"%</td></tr>"});
+tb.innerHTML=h});
+document.querySelectorAll('[data-k="emailsFull"]').forEach(function(tb){
+var h="";c.emails.forEach(function(r){var p=pct(r[2],r[1]);var left=r[1]-r[2]-r[3];
+var tag=p>=70?'<span class="pill p-green">Tốt</span>':(p>=45?'<span class="pill p-orange">Trung bình</span>':'<span class="pill p-blue">Cần hỗ trợ</span>');
+h+="<tr><td style='font-weight:700'>"+r[0]+"</td><td>"+r[1]+"</td><td style='color:#15803d;font-weight:800'>"+r[2]+"</td><td>"+r[3]+"</td><td>"+left+"</td><td><b>"+p+"%</b><div class='meter' style='margin-top:4px'><i style='width:"+p+"%'></i></div></td><td>"+tag+"</td></tr>"});
+tb.innerHTML=h});
+}
+document.getElementById('fMonth').addEventListener('change',render);
+document.getElementById('fKind').addEventListener('change',render);
+render();
+</script>
+</body>
+</html>
