@@ -171,6 +171,8 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 @media(max-width:899px){.pills{flex-wrap:nowrap;gap:5px;overflow:hidden}.pill{flex:1 1 0;min-width:0;justify-content:center;padding:5px 4px;font-size:10px;gap:4px;overflow:hidden}.pill .n{font-size:9px;padding:1px 6px;flex:none}.pill:last-child{flex:0 0 auto;padding:5px 10px}}
 /* ===== mobile: nut Tao moi giua nav + pager 50/trang + cuon an/hien muot (KHOP mockup v15 duyet) ===== */
 #navCreate,#gridPager,#fabCreate{display:none}
+#chatFab{position:fixed;right:12px;bottom:210px;z-index:16;width:56px;height:56px;border-radius:50%;background:var(--o);color:#fff;font-size:24px;line-height:1;border:3px solid #fff;box-shadow:0 8px 22px rgba(238,77,45,.5);padding:0}
+#chatFab:active{transform:scale(.93)}
 @media(max-width:899px){#btnCreateMain{display:none!important}#btnPrintMain{display:none!important}#navCreate{display:none!important}#fabCreate{display:grid;place-items:center;position:fixed;right:12px;bottom:140px;z-index:16;width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;font-size:30px;line-height:1;border:3px solid #fff;box-shadow:0 8px 22px rgba(50,116,247,.55);padding:0}#fabCreate:active{transform:scale(.93)}#rangebar .rg-line{flex-wrap:nowrap;gap:6px}#rangebar .rg-l1{flex:none}#rangebar .rg-cap{display:block;white-space:normal;text-align:center;font-size:10px}#gridPager{display:flex;align-items:center;gap:8px;background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 10px;font-size:10px;font-weight:600;color:var(--mut);position:fixed;left:0;right:0;bottom:72px;z-index:15;box-shadow:0 -6px 20px rgba(23,43,72,.10)}#gridPager .pg-info{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#gridPager .pg-info b{color:var(--navy)}#gridPager .pg-btns{display:flex;gap:4px;flex:none}#gridPager .pg-btns button{min-width:28px;min-height:28px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:11px;font-weight:800;color:var(--navy);padding:0 7px}#gridPager .pg-btns button.cur{background:var(--navy);border-color:var(--navy);color:#fff}#gridPager .pg-btns button:disabled{opacity:.4}main{padding-bottom:150px}}
 @media(max-width:899px){#pillsRow{overflow:visible;margin-top:12px}#pillsRow .pill{flex:1 1 0;min-width:0;white-space:nowrap;position:relative;overflow:visible;padding:7px 3px 6px;font-size:10px;gap:3px}#pillsRow .pill .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}#pillsRow .pill .n{position:absolute;top:-5px;right:10px;z-index:2;font-size:8px;line-height:1.5;padding:0 5px;background:#fff;border:1px solid var(--line);box-shadow:0 1px 4px rgba(23,43,72,.2)}#pillsRow .pill:last-child{flex:0 0 auto;padding:6px 9px}#pillsRow .pill.on .n{background:rgba(255,255,255,.28);color:#fff;border-color:rgba(255,255,255,.55)}}
 @media(min-width:900px){#navCreate{display:none!important}#gridPager{display:none!important}#fabCreate{display:none!important}}
@@ -381,7 +383,7 @@ body.wide.has-drawer header{padding-right:668px}
 }
 
 /* ===== createModal luôn là dialog nhỏ giữa màn hình (detail giữ drawer phải) ===== */
-#createModal,#editModal,#printKindModal,#introModal,#fbModal{align-items:center;justify-content:center;padding:0 16px}
+#createModal,#editModal,#printKindModal,#introModal,#fbModal,#chatModal{align-items:center;justify-content:center;padding:0 16px}
 #leaveModal{align-items:center;justify-content:center;padding:0 16px}
 #leaveModal .sheet{height:auto}
 #createModal .sheet,#printKindModal .sheet,#introModal .sheet{max-width:440px;width:100%;height:auto;max-height:92%;border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(23,43,72,.35)}
@@ -391,7 +393,7 @@ body.wide.has-drawer header{padding-right:668px}
 .fbhead .big{font-size:26px;line-height:1}
 .fbhead h2{margin:4px 0 0;font-size:14.5px;color:var(--navy)}
 .fbhead .iconBtn{position:absolute;top:10px;right:8px}
-#fbList{flex:1;min-height:0;max-height:min(340px,50vh);overflow-y:auto;padding:10px 14px;background:#fbfcfe}
+#fbList,#chatThread{flex:1;min-height:0;max-height:min(340px,50vh);overflow-y:auto;padding:10px 14px;background:#fbfcfe}
 .fbfoot{flex:none;padding:12px 14px 14px;border-top:1px solid var(--line);background:var(--card)}
 .fbmsg{display:flex;gap:8px;margin:10px 0}
 .fbmsg .fbava{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;flex:none}
@@ -415,7 +417,7 @@ body.wide.has-drawer header{padding-right:668px}
 .fbsend{display:flex;gap:8px}
 .fbsend input{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-family:inherit;font-size:16px;background:#fff;min-width:0}
 .fbEmpty{text-align:center;color:var(--mut);font-size:12px;font-weight:600;padding:30px 10px;line-height:1.8}
-@media(min-width:900px){#fbModal{align-items:flex-start;padding:36px 16px 16px}#fbModal .sheet{max-width:560px;min-height:480px;height:66vh;max-height:84vh;border-radius:22px}#fbList{max-height:none;padding:14px 18px}}
+@media(min-width:900px){#fbModal{align-items:flex-start;padding:36px 16px 16px}#fbModal .sheet{max-width:560px;min-height:480px;height:66vh;max-height:84vh;border-radius:22px}#fbList{max-height:none;padding:14px 18px}#chatModal{align-items:flex-start;padding:36px 16px 16px}#chatModal .sheet{max-width:560px;min-height:480px;height:66vh;max-height:84vh;border-radius:22px}#chatThread{max-height:none;padding:14px 18px}}
 .ehead{display:flex;align-items:center;gap:10px}
 .ehead h2{flex:1;min-width:0;margin:0}
 .ehead .hact{display:flex;gap:6px;flex:none;align-items:center}
@@ -693,6 +695,7 @@ body.rail #siteBtnSide,body.rail #siteMenuSide{display:none!important}
 <div class="bottom-row"><button id="navToggle" class="side-toggle" type="button" title="Thu gọn"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><g stroke="#fff" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></g><path class="chevL" d="M13.5 8.5 L10 12 L13.5 15.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path class="chevR" d="M10.5 8.5 L14 12 L10.5 15.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
 </div>
 <button id="fabCreate" type="button" title="Tạo mới" aria-label="Tạo mới">+</button>
+<button id="fabChat" type="button" title="Trợ lý tìm đơn" aria-label="Trợ lý tìm đơn">💬</button>
 <div class="railbox" id="railbox"></div>
 <div class="rfly" id="railFlyout"><div class="rfly-h">Bộ lọc</div><div class="stitle">Trạng thái</div><div id="flyStatus"></div><div class="stitle">Loại</div><div id="flyKind"></div><div class="rwrap"><button class="freset" id="flyReset" type="button" title="Về mặc định: Tất cả + Box + Item">↺ Reset</button></div></div>
 </nav>
@@ -896,6 +899,11 @@ body.rail #siteBtnSide,body.rail #siteMenuSide{display:none!important}
 <div class="fbhead"><div class="big">💬</div><h2>Feedback</h2><button id="btnCloseFb" class="iconBtn" type="button" title="Đóng">✕</button></div>
 <div id="fbList"></div>
 <div class="fbfoot"><div class="msg" id="msgFb"></div><div class="fbsend"><input id="fbInput" placeholder="Nhắn góp ý cho cả nhóm…" maxlength="2000"><button id="btnFbSend" class="primary" type="button">Gửi</button></div></div>
+</div></div>
+<div class="modal" id="chatModal"><div class="sheet">
+<div class="fbhead"><div class="big">🤖</div><h2>Trợ lý tìm đơn</h2><button id="btnCloseChat" class="iconBtn" type="button" title="Đóng">✕</button></div>
+<div id="chatThread"></div>
+<div class="fbfoot"><div class="msg" id="msgChat"></div><div class="fbsend"><button id="btnChatPhoto" type="button" title="Chụp/chọn ảnh">📷</button><input id="chatName" placeholder="Tên sản phẩm" maxlength="200"><input id="chatTime" placeholder="16/10/2026 14:00" style="max-width:132px"></div><input type="file" id="chatPhoto" accept="image/*" style="display:none"><div class="fbsend"><input id="chatQuick" placeholder="Hoặc gõ nhanh tại đây…" maxlength="200"><button id="btnChatSend" class="primary" type="button">Gửi</button></div></div>
 </div></div>
 <div id="lightbox" role="dialog" aria-label="Xem ảnh phóng to"><div class="bar"><button id="lbBack" title="Đóng">‹</button><span style="flex:1"></span><button id="lbOut" title="Thu nhỏ">−</button><button id="lbIn" title="Phóng to">＋</button><button id="lbFit" title="Vừa màn hình">⟳</button><button id="lbX" title="Đóng">✕</button></div><div id="lbStage"><img id="lbImg" alt="Ảnh phóng to"></div><div id="lbCap"></div></div>
 <div id="printArea"></div>
@@ -2078,6 +2086,7 @@ var bct=document.getElementById('btnCreateTop');if(bct)bct.style.display=can('cr
 var bpm=document.getElementById('btnPrintMain');if(bpm)bpm.style.display=can('print')?'':'none';
 var bpt=document.getElementById('btnPrintTop');if(bpt)bpt.style.display=can('print')?'':'none';
 var bf=document.getElementById('btnFeedback');if(bf)bf.style.display=can('feedback')?'':'none';
+var cb=document.getElementById('fabChat');if(cb)cb.style.display=can('backlog')?'':'none';
 }catch(e1){}
 try{renderRail();}catch(err){}
 document.getElementById('whoIni').textContent=String(e.email).charAt(0).toUpperCase();
@@ -2797,6 +2806,58 @@ document.getElementById('btnCloseFb').onclick=function(){document.getElementById
 document.getElementById('fbModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 document.getElementById('btnFbSend').onclick=sendFeedback;
 document.getElementById('fbInput').addEventListener('keydown',function(e){if(e.key==='Enter')sendFeedback();});
+var chatPhotoB64='';
+function chatBubble(ava,html){return '<div class="fbmsg"><div class="fbava">'+ava+'</div><div class="fbcol"><div class="fbbub">'+html+'</div></div></div>';}
+function chatThreadHtml(h){var t=document.getElementById('chatThread');if(!t)return;t.innerHTML=h;t.scrollTop=t.scrollHeight;}
+function chatCardHtml(r){
+  return '<div class="opt" style="cursor:default;margin-top:8px"><div style="flex:1;min-width:0"><b>'+esc(r.product_name)+'</b><small>'+r.score+' điểm · Aging '+esc(r.aging_leadtime)+' · Chạm cuối '+esc(r.last_touch_at)+'<br>Mã: <span class="mono">'+esc(r.shipment_id)+'</span><br>'+esc(r.reason)+'</small></div></div>'
+  +'<div class="btnrow"><button type="button" data-chatcopy="'+esc(r.shipment_id)+'">Copy mã</button></div>';
+}
+function openChat(){
+  var m=document.getElementById('chatModal');if(!m)return;m.classList.add('open');
+  var t=document.getElementById('chatThread');
+  if(t&&!t.innerHTML)chatThreadHtml(chatBubble('🤖','Gửi <b>ảnh + tên sản phẩm + giờ nhập kho</b>, tôi tìm đơn tương đồng nhất trong Backlog.'));
+}
+function chatDownscale(file){return new Promise(function(res,rej){
+  var img=new Image();var url=URL.createObjectURL(file);
+  img.onload=function(){try{var s=Math.min(1,1024/Math.max(img.naturalWidth,img.naturalHeight));var c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*s));c.height=Math.max(1,Math.round(img.naturalHeight*s));c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',0.8));}catch(e){rej(e);}};
+  img.onerror=function(){rej(new Error('bad image'));};img.src=url;});
+}
+async function sendChat(){
+  var nm=document.getElementById('chatName'),tm=document.getElementById('chatTime'),qk=document.getElementById('chatQuick');
+  var name=((nm&&nm.value)||'').trim()||((qk&&qk.value)||'').trim();
+  var at=((tm&&tm.value)||'').trim();
+  if(!name&&!chatPhotoB64){msg('msgChat','Chụp ảnh hoặc nhập tên sản phẩm.');return;}
+  if(!at){msg('msgChat','Nhập thời gian nhập kho.');return;}
+  msg('msgChat','Đang tìm…',true);
+  try{
+    var r=await gs('chatSmart',[{productName:name,inboundTime:at,photo:chatPhotoB64},siteCur]);
+    if(!r||!r.ok)throw new Error((r&&r.error)||'Tìm thất bại');
+    var list=(r.data&&r.data.results)||[];
+    var h=chatBubble('B','<b>'+esc(name||'(chỉ ảnh)')+'</b><div class="fbtm">Nhập kho: '+esc(at)+'</div>');
+    h+=list.length?chatBubble('🤖','Tìm thấy <b>'+list.length+' đơn</b> tương đồng nhất:'+list.map(chatCardHtml).join(''))
+      :chatBubble('🤖','Không tìm thấy đơn phù hợp — thử tên hoặc ảnh khác.');
+    chatThreadHtml(h);msg('msgChat','',true);
+  }catch(e){msg('msgChat',e.message||'Lỗi tìm đơn.');}
+}
+document.getElementById('fabChat').onclick=openChat;
+document.getElementById('btnCloseChat').onclick=function(){document.getElementById('chatModal').classList.remove('open');};
+document.getElementById('chatModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+document.getElementById('btnChatPhoto').onclick=function(){document.getElementById('chatPhoto').click();};
+document.getElementById('chatPhoto').addEventListener('change',function(e){
+  var f=e.target.files&&e.target.files[0];if(!f)return;
+  chatDownscale(f).then(function(u){chatPhotoB64=u;msg('msgChat','Đã gắn 1 ảnh.',true);},function(){chatPhotoB64='';msg('msgChat','Không đọc được ảnh.');});
+});
+document.getElementById('btnChatSend').onclick=sendChat;
+document.getElementById('chatQuick').addEventListener('keydown',function(e){if(e.key==='Enter')sendChat();});
+document.getElementById('chatThread').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('[data-chatcopy]'):null;if(!b)return;
+  var v=b.getAttribute('data-chatcopy');
+  function done(){b.textContent='Đã copy ✓';}
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(v).then(done,done);return;}}catch(_){}
+  try{var ta=document.createElement('textarea');ta.value=v;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}catch(_){}
+  done();
+});
 document.getElementById('fbList').addEventListener('click',function(e){
   var b=e.target.closest('[data-fbid]');
   if(b){fbReplyId=fbReplyId===b.getAttribute('data-fbid')?null:b.getAttribute('data-fbid');renderFbList();

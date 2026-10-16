@@ -1726,3 +1726,47 @@ function listBacklog(site) {
     return ok({ updatedAt: updatedAt, titles: titles, keys: keys, rows: rows, defaults: BACKLOG_DEFAULT });
   } catch (e) { Logger.log(e); return fail(e.message); }
 }
+
+// ===== Chat tim don tuong dong qua Smart Workflow (KHOP mockup 19 duyet) =====
+// Secrets SMART_ENDPOINT_HASH/KEY nam o Script Properties (khong hardcode, khong log).
+var PROP_SMART_HASH = 'SMART_ENDPOINT_HASH';
+var PROP_SMART_KEY = 'SMART_ENDPOINT_KEY';
+var SMART_INVOKE_URL = 'https://smart.shopee.io/apis/smart/v1/workflow_orchestrator/deployments/invoke';
+
+function chatSmart(p, site) {
+  try {
+    checkPerm_('backlog', site);
+    p = p || {};
+    var name = String(p.productName || '').trim().slice(0, 200);
+    var photo = String(p.photo || '');
+    var at = String(p.inboundTime || '').trim().slice(0, 32);
+    if (!name && !photo) return fail('Chụp ảnh hoặc nhập tên sản phẩm.');
+    if (!at) return fail('Nhập thời gian nhập kho.');
+    if (photo.length > 1500000) return fail('Ảnh quá lớn, vui lòng chụp lại.');
+    var props = PropertiesService.getScriptProperties();
+    var hash = String(props.getProperty(PROP_SMART_HASH) || '').trim();
+    var key = String(props.getProperty(PROP_SMART_KEY) || '').trim();
+    if (!hash || !key) return fail('Chưa cấu hình kết nối Smart.');
+    var resp = UrlFetchApp.fetch(SMART_INVOKE_URL, {
+      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      payload: JSON.stringify({
+        endpoint_deployment_hash_id: hash, endpoint_deployment_key: key,
+        user_id: currentEmail_(),
+        start_user_variables: { product_name: name, inbound_time: at, photo: photo }
+      })
+    });
+    if (resp.getResponseCode() !== 200) throw new Error('code ' + resp.getResponseCode());
+    var body = JSON.parse(resp.getContentText() || '{}');
+    var raw = body.result == null ? '' : body.result;
+    var inner = (typeof raw === 'string' && raw) ? JSON.parse(raw) : raw;
+    var list = (inner && inner.results) || [];
+    var out = list.slice(0, 5).map(function (r) {
+      return {
+        shipment_id: String(r.shipment_id || ''), product_name: String(r.product_name || ''),
+        aging_leadtime: String(r.aging_leadtime || ''), last_touch_at: String(r.last_touch_at || ''),
+        score: +r.score || 0, reason: String(r.reason || '')
+      };
+    }).filter(function (r) { return !!r.shipment_id; });
+    return ok({ results: out });
+  } catch (e) { Logger.log('chatSmart fail'); return fail('Không tìm được đơn, thử lại sau.'); }
+}
