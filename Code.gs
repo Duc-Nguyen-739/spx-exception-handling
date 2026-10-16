@@ -1815,19 +1815,26 @@ var PROP_SMART_KEY = 'SMART_ENDPOINT_KEY';
 var SMART_INVOKE_URL = 'https://smart.shopee.io/apis/smart/v1/workflow_orchestrator/deployments/invoke';
 
 function chatSmart(p, site) {
+  // Loi quyen/validate phai noi dung nguyen nhan; rieng loi goi Smart (HTTP/timeout/
+  // parse) hay bi nuot thanh 'thu lai sau' — tra HTTP code + body da che hash/key.
+  checkPerm_('backlog', site);
+  p = p || {};
+  var name = String(p.productName || '').trim().slice(0, 200);
+  var photo = String(p.photo || '');
+  var at = String(p.inboundTime || '').trim().slice(0, 32);
+  if (!name && !photo) return fail('Chụp ảnh hoặc nhập tên sản phẩm.');
+  if (!at) return fail('Nhập thời gian nhập kho.');
+  if (photo.length > 1500000) return fail('Ảnh quá lớn, vui lòng chụp lại.');
+  var props = PropertiesService.getScriptProperties();
+  var hash = String(props.getProperty(PROP_SMART_HASH) || '').trim();
+  var key = String(props.getProperty(PROP_SMART_KEY) || '').trim();
+  if (!hash || !key) return fail('Chưa cấu hình kết nối Smart (thiếu SMART_ENDPOINT_HASH/KEY trong Script Properties). Liên hệ ADMIN.');
+  function scrub(s) {
+    s = String(s == null ? '' : s);
+    try { if (hash) s = s.split(hash).join('[hash]'); if (key) s = s.split(key).join('[key]'); } catch (_) {}
+    return s.slice(0, 400);
+  }
   try {
-    checkPerm_('backlog', site);
-    p = p || {};
-    var name = String(p.productName || '').trim().slice(0, 200);
-    var photo = String(p.photo || '');
-    var at = String(p.inboundTime || '').trim().slice(0, 32);
-    if (!name && !photo) return fail('Chụp ảnh hoặc nhập tên sản phẩm.');
-    if (!at) return fail('Nhập thời gian nhập kho.');
-    if (photo.length > 1500000) return fail('Ảnh quá lớn, vui lòng chụp lại.');
-    var props = PropertiesService.getScriptProperties();
-    var hash = String(props.getProperty(PROP_SMART_HASH) || '').trim();
-    var key = String(props.getProperty(PROP_SMART_KEY) || '').trim();
-    if (!hash || !key) return fail('Chưa cấu hình kết nối Smart (thiếu SMART_ENDPOINT_HASH/KEY trong Script Properties). Liên hệ ADMIN.');
     var resp = UrlFetchApp.fetch(SMART_INVOKE_URL, {
       method: 'post', contentType: 'application/json', muteHttpExceptions: true,
       payload: JSON.stringify({
@@ -1836,11 +1843,22 @@ function chatSmart(p, site) {
         start_user_variables: { product_name: name, inbound_time: at, photo: photo }
       })
     });
-    if (resp.getResponseCode() !== 200) throw new Error('code ' + resp.getResponseCode());
-    var body = JSON.parse(resp.getContentText() || '{}');
-    var raw = body.result == null ? '' : body.result;
-    var inner = (typeof raw === 'string' && raw) ? JSON.parse(raw) : raw;
-    var list = (inner && inner.results) || [];
+    var code = resp.getResponseCode();
+    var text = resp.getContentText() || '';
+    if (code !== 200) { Logger.log('chatSmart HTTP ' + code + ' ' + scrub(text)); return fail('Smart lỗi HTTP ' + code + ': ' + scrub(text)); }
+    var body = null;
+    try { body = JSON.parse(text || ''); } catch (e2) { body = null; }
+    if (!body) { Logger.log('chatSmart non-JSON ' + scrub(text)); return fail('Smart trả về không phải JSON: ' + scrub(text)); }
+    // Smart boc ket qua trong nhieu tang (result/data/output, co the la chuoi JSON) —
+    // do deu cac tang truoc khi ket luan rong.
+    function pickList(o) {
+      if (!o) return null;
+      if (Object.prototype.toString.call(o) === '[object Array]') return o;
+      if (typeof o === 'string') { try { return pickList(JSON.parse(o)); } catch (_) { return null; } }
+      if (o.results) return o.results;
+      return pickList(o.result) || pickList(o.data) || pickList(o.output) || null;
+    }
+    var list = pickList(body) || [];
     var out = list.slice(0, 5).map(function (r) {
       return {
         shipment_id: String(r.shipment_id || ''), product_name: String(r.product_name || ''),
@@ -1848,6 +1866,10 @@ function chatSmart(p, site) {
         score: +r.score || 0, reason: String(r.reason || '')
       };
     }).filter(function (r) { return !!r.shipment_id; });
+    if (!out.length) {
+      var em = body.message || body.error || (body.data && body.data.message) || '';
+      if (em) { Logger.log('chatSmart msg ' + scrub(em)); return fail('Smart: ' + scrub(em)); }
+    }
     return ok({ results: out });
-  } catch (e) { Logger.log('chatSmart fail'); return fail('Không tìm được đơn, thử lại sau.'); }
+  } catch (e) { Logger.log('chatSmart fail ' + scrub(e && e.message)); return fail('Không gọi được Smart: ' + scrub(e && e.message)); }
 }

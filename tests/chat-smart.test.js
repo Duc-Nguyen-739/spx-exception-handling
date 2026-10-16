@@ -14,11 +14,17 @@ function chatValidate(p) {
   return [true, ''];
 }
 
-// Mirror: Code.gs chatSmart Smart-response parse (result là chuỗi JSON 2 lớp).
+// Mirror: Code.gs chatSmart Smart-response parse — dò qua result/data/output,
+// chuỗi JSON lồng nhau, mảng trần (pickList) rồi mới kết luận rỗng.
+function pickList(o) {
+  if (!o) return null;
+  if (Object.prototype.toString.call(o) === '[object Array]') return o;
+  if (typeof o === 'string') { try { return pickList(JSON.parse(o)); } catch (_) { return null; } }
+  if (o.results) return o.results;
+  return pickList(o.result) || pickList(o.data) || pickList(o.output) || null;
+}
 function chatParseResult(body) {
-  var raw = body.result == null ? '' : body.result;
-  var inner = (typeof raw === 'string' && raw) ? JSON.parse(raw) : raw;
-  var list = (inner && inner.results) || [];
+  var list = pickList(body) || [];
   return list.slice(0, 5).map(function (r) {
     return {
       shipment_id: String(r.shipment_id || ''), product_name: String(r.product_name || ''),
@@ -49,6 +55,10 @@ test('chat-smart: parse — chuỗi JSON 2 lớp + lọc rỗng + chặn 5', () 
   assert.strictEqual(out[1].score, 55);
   assert.deepStrictEqual(chatParseResult({}), []);
   assert.deepStrictEqual(chatParseResult({ result: '{"results":[]}' }), []);
+  // envelope da dang: data.results, output JSON string, mang tran
+  assert.strictEqual(chatParseResult({ data: { results: [{ shipment_id: 'S9' }] } }).length, 1);
+  assert.strictEqual(chatParseResult({ output: '{"results":[{"shipment_id":"S8"}]}' }).length, 1);
+  assert.strictEqual(chatParseResult([{ shipment_id: 'S7' }]).length, 1);
 });
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
@@ -77,6 +87,10 @@ test('chat-smart: guard UI + server + mock', () => {
   assert.ok(gs.includes("checkPerm_('backlog', site)"), 'chatSmart must gate backlog perm');
   assert.ok(gs.includes('SMART_ENDPOINT_HASH') && gs.includes('SMART_ENDPOINT_KEY'), 'missing Smart props');
   assert.ok(gs.includes('thiếu SMART_ENDPOINT_HASH/KEY trong Script Properties'), 'Smart missing-config must guide ADMIN');
+  assert.ok(gs.includes('Smart lỗi HTTP '), 'chatSmart must surface HTTP status on Smart failure');
+  assert.ok(gs.includes('function scrub(s)'), 'chatSmart must scrub secret before returning/logging');
+  assert.ok(gs.includes('pickList(body)'), 'chatSmart must unwind nested Smart envelopes');
+  assert.ok(/checkPerm_\('backlog', site\);\n  p = p \|\| \{\};/.test(gs), 'chatSmart: perm gate must be outside try so denial is not swallowed');
   assert.ok(!/getProperty\(PROP_SMART_KEY\)[^]*Logger\.log\([^)]*key/i.test(gs), 'must not log key');
   assert.ok(mock.includes('chatSmart: function'), 'missing mock chatSmart');
 });
