@@ -63,6 +63,7 @@ test('chat-smart: guard UI + server + mock', () => {
   assert.ok(!html.includes('document.body.scrollHeight'), 'aiBub drag must not force layout per move');
   assert.ok(html.includes('requestAnimationFrame'), 'aiBub drag must coalesce via rAF');
   assert.ok(html.includes('window.innerHeight'), 'aiBub clamp must be viewport-space');
+  assert.ok(html.includes('.modal.open ~ #aiBub'), 'bubble must hide when any modal is open');
   assert.ok(html.includes('btnPrintMain'), 'aiBub must dock next to In Ma');
   assert.ok(html.includes('can(\'backlog\')'), 'aiBub must gate backlog perm');
   assert.ok(html.includes('id="chatModal"'), 'missing #chatModal');
