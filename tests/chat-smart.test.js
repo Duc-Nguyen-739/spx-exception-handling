@@ -76,6 +76,7 @@ test('chat-smart: guard UI + server + mock', () => {
   assert.ok(gs.includes('function chatSmart(p, site)'), 'missing server chatSmart');
   assert.ok(gs.includes("checkPerm_('backlog', site)"), 'chatSmart must gate backlog perm');
   assert.ok(gs.includes('SMART_ENDPOINT_HASH') && gs.includes('SMART_ENDPOINT_KEY'), 'missing Smart props');
+  assert.ok(gs.includes('thiếu SMART_ENDPOINT_HASH/KEY trong Script Properties'), 'Smart missing-config must guide ADMIN');
   assert.ok(!/getProperty\(PROP_SMART_KEY\)[^]*Logger\.log\([^)]*key/i.test(gs), 'must not log key');
   assert.ok(mock.includes('chatSmart: function'), 'missing mock chatSmart');
 });

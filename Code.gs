@@ -1827,7 +1827,7 @@ function chatSmart(p, site) {
     var props = PropertiesService.getScriptProperties();
     var hash = String(props.getProperty(PROP_SMART_HASH) || '').trim();
     var key = String(props.getProperty(PROP_SMART_KEY) || '').trim();
-    if (!hash || !key) return fail('Chưa cấu hình kết nối Smart.');
+    if (!hash || !key) return fail('Chưa cấu hình kết nối Smart (thiếu SMART_ENDPOINT_HASH/KEY trong Script Properties). Liên hệ ADMIN.');
     var resp = UrlFetchApp.fetch(SMART_INVOKE_URL, {
       method: 'post', contentType: 'application/json', muteHttpExceptions: true,
       payload: JSON.stringify({
