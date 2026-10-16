@@ -1810,8 +1810,12 @@ function listBacklog(site) {
 
 // ===== Chat tim don tuong dong qua Smart Workflow (KHOP mockup 19 duyet) =====
 // Secrets SMART_ENDPOINT_HASH/KEY nam o Script Properties (khong hardcode, khong log).
+// SMART_INVOKE_URL mac dinh la host noi bo Shopee — KHONG phan giai duoc tu GAS
+// (ha tang Google ngoai mang Shopee, DNS cong khai tra NXDOMAIN). Dat
+// SMART_ENDPOINT_URL trong Script Properties tro toi URL public/proxy moi goi duoc.
 var PROP_SMART_HASH = 'SMART_ENDPOINT_HASH';
 var PROP_SMART_KEY = 'SMART_ENDPOINT_KEY';
+var PROP_SMART_URL = 'SMART_ENDPOINT_URL';
 var SMART_INVOKE_URL = 'https://smart.shopee.io/apis/smart/v1/workflow_orchestrator/deployments/invoke';
 
 function chatSmart(p, site) {
@@ -1829,13 +1833,14 @@ function chatSmart(p, site) {
   var hash = String(props.getProperty(PROP_SMART_HASH) || '').trim();
   var key = String(props.getProperty(PROP_SMART_KEY) || '').trim();
   if (!hash || !key) return fail('Chưa cấu hình kết nối Smart (thiếu SMART_ENDPOINT_HASH/KEY trong Script Properties). Liên hệ ADMIN.');
+  var url = String(props.getProperty(PROP_SMART_URL) || '').trim() || SMART_INVOKE_URL;
   function scrub(s) {
     s = String(s == null ? '' : s);
     try { if (hash) s = s.split(hash).join('[hash]'); if (key) s = s.split(key).join('[key]'); } catch (_) {}
     return s.slice(0, 400);
   }
   try {
-    var resp = UrlFetchApp.fetch(SMART_INVOKE_URL, {
+    var resp = UrlFetchApp.fetch(url, {
       method: 'post', contentType: 'application/json', muteHttpExceptions: true,
       payload: JSON.stringify({
         endpoint_deployment_hash_id: hash, endpoint_deployment_key: key,
@@ -1871,5 +1876,10 @@ function chatSmart(p, site) {
       if (em) { Logger.log('chatSmart msg ' + scrub(em)); return fail('Smart: ' + scrub(em)); }
     }
     return ok({ results: out });
-  } catch (e) { Logger.log('chatSmart fail ' + scrub(e && e.message)); return fail('Không gọi được Smart: ' + scrub(e && e.message)); }
+  } catch (e) {
+    Logger.log('chatSmart fail ' + scrub(e && e.message));
+    var em = String(e && e.message || '');
+    if (/DNS/i.test(em)) return fail('Không phân giải được host Smart (' + url + ') từ GAS — host nội bộ Shopee không truy cập được từ ngoài mạng; đặt SMART_ENDPOINT_URL trỏ tới URL public/proxy.');
+    return fail('Không gọi được Smart: ' + scrub(em));
+  }
 }

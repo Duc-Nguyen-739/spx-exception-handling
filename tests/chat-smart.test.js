@@ -90,6 +90,8 @@ test('chat-smart: guard UI + server + mock', () => {
   assert.ok(gs.includes('Smart lỗi HTTP '), 'chatSmart must surface HTTP status on Smart failure');
   assert.ok(gs.includes('function scrub(s)'), 'chatSmart must scrub secret before returning/logging');
   assert.ok(gs.includes('pickList(body)'), 'chatSmart must unwind nested Smart envelopes');
+  assert.ok(gs.includes("props.getProperty(PROP_SMART_URL)"), 'chatSmart must allow SMART_ENDPOINT_URL override for internal host');
+  assert.ok(gs.includes('Không phân giải được host Smart'), 'chatSmart must explain DNS failure of internal Shopee host');
   assert.ok(/checkPerm_\('backlog', site\);\n  p = p \|\| \{\};/.test(gs), 'chatSmart: perm gate must be outside try so denial is not swallowed');
   assert.ok(!/getProperty\(PROP_SMART_KEY\)[^]*Logger\.log\([^)]*key/i.test(gs), 'must not log key');
   assert.ok(mock.includes('chatSmart: function'), 'missing mock chatSmart');
