@@ -551,9 +551,9 @@ async function main() {
     await sleep(400);
     const rlCtx = await evalIn(ws, `JSON.stringify({d: document.getElementById('ctxBar').style.display, t: document.getElementById('ctxBar').textContent, dl: document.getElementById('msgDeploy').textContent, home: !!document.getElementById('btnBackLiq')})`);
     check('Tab Role: an ctx duoi search, giu dong dang nhap trong noi dung + bo nut Man hinh chinh', !!(rlCtx.value && rlCtx.value.indexOf('"d":"none"') >= 0 && rlCtx.value.indexOf('admin.mock@spxexpress.com') >= 0 && rlCtx.value.indexOf('ADMIN') >= 0 && rlCtx.value.indexOf('"home":false') >= 0), rlCtx.value);
-    const roleTblOk = await waitUntil(ws, "document.querySelectorAll('#usersTable table.uptbl tbody tr').length === 5 && document.querySelectorAll('#usersTable .ck').length === 60", 8000);
+    const roleTblOk = await waitUntil(ws, "document.querySelectorAll('#usersTable table.uptbl tbody tr').length === 5 && document.querySelectorAll('#usersTable .ck').length === 75", 8000);
     const roleCnt = await evalIn(ws, `JSON.stringify({rows: document.querySelectorAll('#usersTable table.uptbl tbody tr').length, ck: document.querySelectorAll('#usersTable .ck').length, btn: document.querySelectorAll('#usersTable button.ck').length, lk: document.querySelectorAll('#usersTable span.ck.lk').length})`);
-    check('Role M6: 5 dong x 12 cot tich (36 nut + 24 o khoa)', !!(roleTblOk && JSON.parse(roleCnt.value).btn === 36 && JSON.parse(roleCnt.value).lk === 24), roleCnt.value);
+    check('Role M6: 5 dong x 15 cot tich (45 nut + 30 o khoa)', !!(roleTblOk && JSON.parse(roleCnt.value).btn === 45 && JSON.parse(roleCnt.value).lk === 30), roleCnt.value);
     await evalIn(ws, `window.__MOCK_CALLS__.length = 0`);
     await evalIn(ws, `document.querySelector('#usersTable button.ck[data-pk]').click()`);
     const tickOk = await waitUntil(ws, "(window.__MOCK_CALLS__||[]).some(function(c){return c[0]==='setUserPerms';})", 5000);
@@ -567,7 +567,7 @@ async function main() {
     check('Role M6: bam nhan cot -> bat/tat ca cot cho STAFF (3 RPC)', !!colOk, String(colN.value));
     await waitUntil(ws, "document.querySelectorAll('#usersTable table.uptbl tbody tr').length === 5", 8000);
     const lkOk = await evalIn(ws, `JSON.stringify((function(){var rows=document.querySelectorAll('#usersTable table.uptbl tbody tr');for(var i=0;i<rows.length;i++){var em=rows[i].querySelector('.mono').textContent;if(em.indexOf('admin.mock')>=0){return {btn: rows[i].querySelectorAll('button.ck').length, lk: rows[i].querySelectorAll('span.ck.lk').length};}}return null;})())`);
-    check('Role M6: dong ADMIN khoa o tich', !!(lkOk.value && JSON.parse(lkOk.value).btn === 0 && JSON.parse(lkOk.value).lk === 12), lkOk.value);
+    check('Role M6: dong ADMIN khoa o tich', !!(lkOk.value && JSON.parse(lkOk.value).btn === 0 && JSON.parse(lkOk.value).lk === 15), lkOk.value);
     await evalIn(ws, `(async () => { window.__setMockEmail('son.nguyenngoc@spxexpress.com'); await loadMe(); await loadUsers(); })()`);
     await sleep(500);
     const noRole = await evalIn(ws, `document.getElementById('navAccess').style.display`);

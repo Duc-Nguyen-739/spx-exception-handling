@@ -234,13 +234,16 @@ def check_create_photos(kind, outer, product, n_extras=0):
 
 
 # KHOP server: Code.gs parsePerms_ / checkPerm_ — SSOT PERM_KEYS guard tests/perm-model.test.js
-PERM_KEYS = ["create", "resolve", "liq", "print", "note", "editStatus",
-    "editPhotos", "backlog", "feedback", "adminReply", "roleView", "roleManage"]
-PERM_DEFAULT = {"create": 1, "resolve": 1, "liq": 1, "print": 1, "backlog": 1,
-    "note": 1, "feedback": 1, "editStatus": 0, "editPhotos": 0,
-    "adminReply": 0, "roleView": 0, "roleManage": 0}
+PERM_KEYS = ["create", "resolve", "liq", "print", "siteHN", "siteHN2", "dash",
+    "note", "editStatus", "editPhotos", "backlog", "feedback", "adminReply",
+    "roleView", "roleManage"]
+PERM_DEFAULT = {"create": 1, "resolve": 1, "liq": 1, "print": 1, "siteHN": 1,
+    "siteHN2": 1, "dash": 1, "backlog": 1, "note": 1, "feedback": 1,
+    "editStatus": 0, "editPhotos": 0, "adminReply": 0, "roleView": 0,
+    "roleManage": 0}
 PERM_LABELS = {"create": "Tạo mới", "resolve": "Resolve", "liq": "Thanh lý",
-    "print": "In mã", "note": "Mô tả", "editStatus": "Đổi TT",
+    "print": "In mã", "siteHN": "HN SOC", "siteHN2": "HN2 SOC",
+    "dash": "Dashboard", "note": "Mô tả", "editStatus": "Đổi TT",
     "editPhotos": "Ảnh", "backlog": "Backlog", "feedback": "Góp ý",
     "adminReply": "Reply", "roleView": "Xem Role", "roleManage": "User"}
 

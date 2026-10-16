@@ -43,9 +43,14 @@ test('perm-ui: can() ADMIN luon true, STAFF theo perms', () => {
 test('perm-ui: renderWho gate nav theo can()', () => {
   const i = html.indexOf('function renderWho(){');
   const blk = html.slice(i, i + 1600);
-  for (const k of ["can('roleView')", "can('backlog')", "can('liq')", "can('print')", "can('create')", "can('feedback')"]) {
+  for (const k of ["can('roleView')", "can('backlog')", "can('liq')", "can('print')", "can('create')", "can('feedback')", "can('dash')"]) {
     assert.ok(blk.includes(k), 'renderWho thieu ' + k);
   }
+});
+
+test('perm-ui: siteCan_ + setSite_ chan kho theo quyen', () => {
+  assert.ok(html.includes("function siteCan_(id){return id==='HN'?can('siteHN'):can('siteHN2');}"), 'thieu siteCan_');
+  assert.ok(html.includes('if(!siteCan_(id))'), 'setSite_ phai chan kho khong quyen');
 });
 
 test('perm-ui: openEdit tach 3 quyen', () => {
@@ -71,10 +76,13 @@ test('perm-ui: fbIsAdmin dung can(adminReply), nut Resolve gate', () => {
   assert.ok(html.includes("!can('resolve')"), 'nut Resolve phai gate resolve');
 });
 
-test('perm-ui: bang Role 12 cot + debounce + legend', () => {
+test('perm-ui: bang Role 15 cot + debounce + legend gon', () => {
   assert.ok(html.includes('id="newRole"'), 'thieu #newRole select');
   assert.ok(html.includes('permTableHtml_') && html.includes('colspan'), 'thieu render 2 dong header');
   assert.ok(html.includes('queueSavePerms_') && html.includes('600'), 'thieu debounce 600ms');
-  assert.ok(html.includes('permLegendHtml_'), 'thieu legend 12 cot');
+  assert.ok(html.includes('permLegendHtml_'), 'thieu legend');
+  assert.ok(html.includes('Tên đầy đủ</th>'), 'legend phai gon con Ten day du');
+  assert.ok(!html.includes('hàm server'), 'legend khong hien ham server');
+  assert.ok(html.includes('id="fabCreate"'), 'thieu FAB Tao moi');
   assert.ok(html.includes('togglePermCol_'), 'thieu bat/tat ca cot');
 });

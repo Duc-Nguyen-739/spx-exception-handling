@@ -15,8 +15,8 @@
 
   var ME = 'admin.mock@spxexpress.com';
   // KHOP server Code.gs PERM_KEYS — guard tests/perm-model.test.js
-  var PERM_KEYS = ['create','resolve','liq','print','note','editStatus','editPhotos','backlog','feedback','adminReply','roleView','roleManage'];
-  var PERM_DEFAULT = { create:1, resolve:1, liq:1, print:1, backlog:1, note:1, feedback:1,
+  var PERM_KEYS = ['create','resolve','liq','print','siteHN','siteHN2','dash','note','editStatus','editPhotos','backlog','feedback','adminReply','roleView','roleManage'];
+  var PERM_DEFAULT = { create:1, resolve:1, liq:1, print:1, siteHN:1, siteHN2:1, dash:1, backlog:1, note:1, feedback:1,
     editStatus:0, editPhotos:0, adminReply:0, roleView:0, roleManage:0 };
   function mkPerms(all){ var o={}; PERM_KEYS.forEach(function(k){ o[k]=all?1:(PERM_DEFAULT[k]?1:0); }); return o; }
   var USERS = [

@@ -49,7 +49,8 @@ test('station-site: UI duoi logo 2 vi tri, menu khong co search', () => {
 
 test('station-site: toast 1 cau don gian, khong kem chi tiet sheet', () => {
   assert.ok(html.includes("siteToast_('Đã chuyển sang '+siteLabel_(id))"), 'toast phai 1 cau');
-  assert.strictEqual(occurrences(html, 'siteToast_('), 2, '1 dinh nghia + 1 call');
+  assert.ok(html.includes("siteToast_('Bạn không có quyền truy cập '+siteLabel_(id)+'.')"), 'toast chan kho phai 1 cau');
+  assert.strictEqual(occurrences(html, 'siteToast_('), 3, '1 dinh nghia + 2 call');
 });
 
 test('station-site: khong dung ten cam cua tram in', () => {

@@ -284,8 +284,9 @@ class TestBacklog(unittest.TestCase):
 class TestPerms(unittest.TestCase):
     def test_default_staff(self):
         p = parse_perms("", "STAFF")
-        self.assertEqual(sum(p.values()), 7)
-        for k in ("create", "resolve", "liq", "print", "backlog", "note", "feedback"):
+        self.assertEqual(sum(p.values()), 10)
+        for k in ("create", "resolve", "liq", "print", "siteHN", "siteHN2",
+                  "dash", "backlog", "note", "feedback"):
             self.assertEqual(p[k], 1)
         for k in ("editStatus", "editPhotos", "adminReply", "roleView", "roleManage"):
             self.assertEqual(p[k], 0)
@@ -300,7 +301,7 @@ class TestPerms(unittest.TestCase):
         self.assertEqual(sum(parse_perms("NONE", "STAFF").values()), 0)
 
     def test_admin_all(self):
-        self.assertEqual(sum(parse_perms("", "ADMIN").values()), 12)
+        self.assertEqual(sum(parse_perms("", "ADMIN").values()), 15)
 
     def test_bad_key_ignored(self):
         p = parse_perms("create,bogus", "STAFF")

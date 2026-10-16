@@ -35,6 +35,9 @@ test('mob-pager: DOM + CSS mobile', () => {
   assert.ok(html.includes('#btnCreateMain{display:none!important}'), 'mobile phai an +Create canh In Ma');
   assert.ok(html.includes('#rangebar .rg-l1{flex:none}'), 'Display Range mobile phai 1 hang');
   assert.ok(html.includes("document.getElementById('navCreate').onclick=document.getElementById('btnCreateTop').onclick"), 'navCreate phai mo form Create');
+  assert.ok(html.includes('id="fabCreate"'), 'thieu FAB Tao moi goc phai');
+  assert.ok(html.includes('#navCreate{display:none!important}'), 'mobile phai an nut Tao moi giua nav');
+  assert.ok(html.includes("document.getElementById('fabCreate').onclick=document.getElementById('btnCreateTop').onclick"), 'FAB phai mo form Create');
   assert.ok(html.includes('pgList.forEach'), 'renderGrid phai render theo lat trang');
   assert.ok(html.includes('id="mHide"'), 'thieu wrapper thu gon header');
   assert.ok(html.includes('body.hidebars #mHide'), 'mobile cuon xuong phai an search/range/pills');

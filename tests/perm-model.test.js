@@ -42,17 +42,17 @@ test('perm-model: PERM_KEYS 4 noi giong het cung thu tu', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const mock = fs.readFileSync(path.join(__dirname, '..', 'mock', 'mock-google.js'), 'utf8');
   const a = extractKeys(gs);
-  assert.ok(a && a.length === 12, 'Code.gs PERM_KEYS phai 12 key, got ' + JSON.stringify(a));
+  assert.ok(a && a.length === 15, 'Code.gs PERM_KEYS phai 15 key, got ' + JSON.stringify(a));
   assert.deepStrictEqual(extractKeys(py), a, 'api/logic.py phai giong Code.gs');
   assert.deepStrictEqual(extractKeys(html), a, 'index.html phai giong Code.gs');
   assert.deepStrictEqual(extractKeys(mock), a, 'mock/mock-google.js phai giong Code.gs');
 });
 
-test('perm-model: parsePerms_ trong -> mac dinh STAFF 7 bat 5 tat', () => {
+test('perm-model: parsePerms_ trong -> mac dinh STAFF 10 bat 5 tat', () => {
   const o = parse('', 'STAFF');
   const on = Object.keys(o).filter((k) => o[k]);
-  assert.strictEqual(on.length, 7);
-  for (const k of ['create', 'resolve', 'liq', 'print', 'backlog', 'note', 'feedback']) assert.strictEqual(o[k], 1, k);
+  assert.strictEqual(on.length, 10);
+  for (const k of ['create', 'resolve', 'liq', 'print', 'siteHN', 'siteHN2', 'dash', 'backlog', 'note', 'feedback']) assert.strictEqual(o[k], 1, k);
   for (const k of ['editStatus', 'editPhotos', 'adminReply', 'roleView', 'roleManage']) assert.strictEqual(o[k], 0, k);
 });
 
@@ -69,9 +69,9 @@ test('perm-model: NONE tat toan bo', () => {
   assert.strictEqual(Object.values(o).reduce((s, v) => s + v, 0), 0);
 });
 
-test('perm-model: ADMIN luon 12/12', () => {
+test('perm-model: ADMIN luon 15/15', () => {
   const o = parse('', 'ADMIN');
-  assert.strictEqual(Object.values(o).reduce((s, v) => s + v, 0), 12);
+  assert.strictEqual(Object.values(o).reduce((s, v) => s + v, 0), 15);
 });
 
 test('perm-model: key la bi bo qua', () => {
@@ -95,10 +95,12 @@ test('perm-model: USERS_HEADER 5 cot, perms cuoi', () => {
   assert.strictEqual(arr[4], 'perms');
 });
 
-test('perm-model: gate du 12 key checkPerm_', () => {
+test('perm-model: gate du key co RPC checkPerm_ (tru 3 key UI-only)', () => {
   const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
   const keys = extractKeys(gs);
+  const uiOnly = ['siteHN', 'siteHN2', 'dash'];
   for (const k of keys) {
+    if (uiOnly.includes(k)) continue;
     assert.ok(gs.includes("checkPerm_('" + k + "',"), 'thieu gate ' + k);
   }
 });
