@@ -76,6 +76,15 @@ test('perm-ui: fbIsAdmin dung can(adminReply), nut Resolve gate', () => {
   assert.ok(html.includes("!can('resolve')"), 'nut Resolve phai gate resolve');
 });
 
+test('perm-ui: kho dau tien sau Vai tro + khoi noi bat hlk', () => {
+  const i = html.indexOf('var PERM_KEYS=');
+  const ks = html.slice(i, i + 300);
+  assert.ok(ks.indexOf("'siteHN','siteHN2'") >= 0 && ks.indexOf("'siteHN','siteHN2'") < ks.indexOf("'create'"), 'siteHN/siteHN2 phai dau PERM_KEYS');
+  assert.ok(html.includes("class=\"cRole hlk\">Vai trò ★"), 'thieu highlight Vai tro');
+  assert.ok(html.includes("g.g==='Kho ★'?' class=\"hlk\"':"), 'thieu highlight nhom Kho');
+  assert.ok(html.includes('<small>(View)</small>'), 'thieu nhan (View) duoi email');
+});
+
 test('perm-ui: bang Role 15 cot + debounce + legend gon', () => {
   assert.ok(html.includes('id="newRole"'), 'thieu #newRole select');
   assert.ok(html.includes('permTableHtml_') && html.includes('colspan'), 'thieu render 2 dong header');

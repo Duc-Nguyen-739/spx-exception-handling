@@ -9,7 +9,7 @@ var PROP_SHEET = 'SPREADSHEET_ID';
 var PROP_FOLDER = 'FOLDER_ID';
 var PROP_ADMINS = 'ADMIN_EMAILS';
 var USERS_HEADER = ['email', 'role', 'added_at', 'added_by', 'perms'];
-var PERM_KEYS = ['create','resolve','liq','print','siteHN','siteHN2','dash','note','editStatus','editPhotos','backlog','feedback','adminReply','roleView','roleManage'];
+var PERM_KEYS = ['siteHN','siteHN2','create','resolve','liq','print','dash','note','editStatus','editPhotos','backlog','feedback','adminReply','roleView','roleManage'];
 var PERM_DEFAULT = { create:1, resolve:1, liq:1, print:1, siteHN:1, siteHN2:1, dash:1, backlog:1, note:1, feedback:1,
   editStatus:0, editPhotos:0, adminReply:0, roleView:0, roleManage:0 };
 // KHOP index.html PERM_KEYS + api/logic.py PERM_KEYS — guard: tests/perm-model.test.js
@@ -1466,7 +1466,20 @@ function permsOf_(email, site) {
     if (normEmail_(u.rows[i][0]) === me) return parsePerms_(cellText_(u.rows[i][4]), cellText_(u.rows[i][1]));
   }
   if (seedAdmins_().indexOf(me) >= 0) return parsePerms_('', 'ADMIN');
-  return parsePerms_('', 'STAFF');
+  // Email chua them vao Users: chi xem (0 het) thay vi mac dinh STAFF.
+  var zero = {};
+  PERM_KEYS.forEach(function (k) { zero[k] = 0; });
+  return zero;
+}
+
+function isKnownUser_(email, site) {
+  var me = normEmail_(email || currentEmail_());
+  if (!me) return false;
+  var u = readUsers_(site);
+  for (var i = 0; i < u.rows.length; i++) {
+    if (normEmail_(u.rows[i][0]) === me) return true;
+  }
+  return seedAdmins_().indexOf(me) >= 0;
 }
 
 // Moi GAS request la runtime moi nen memo theo execution la an toan.
@@ -1495,7 +1508,7 @@ function deployerEmail_() {
 function me(site) {
   try {
     var em = currentEmail_(), ro = getRole_(site);
-    return ok({ email: em, role: ro, deployer: deployerEmail_(), perms: permsOf_(em, site) });
+    return ok({ email: em, role: ro, deployer: deployerEmail_(), perms: permsOf_(em, site), known: isKnownUser_(em, site) });
   }
   catch (e) { Logger.log(e); return fail(e.message); }
 }

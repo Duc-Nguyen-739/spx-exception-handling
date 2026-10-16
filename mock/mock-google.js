@@ -15,7 +15,7 @@
 
   var ME = 'admin.mock@spxexpress.com';
   // KHOP server Code.gs PERM_KEYS — guard tests/perm-model.test.js
-  var PERM_KEYS = ['create','resolve','liq','print','siteHN','siteHN2','dash','note','editStatus','editPhotos','backlog','feedback','adminReply','roleView','roleManage'];
+  var PERM_KEYS = ['siteHN','siteHN2','create','resolve','liq','print','dash','note','editStatus','editPhotos','backlog','feedback','adminReply','roleView','roleManage'];
   var PERM_DEFAULT = { create:1, resolve:1, liq:1, print:1, siteHN:1, siteHN2:1, dash:1, backlog:1, note:1, feedback:1,
     editStatus:0, editPhotos:0, adminReply:0, roleView:0, roleManage:0 };
   function mkPerms(all){ var o={}; PERM_KEYS.forEach(function(k){ o[k]=all?1:(PERM_DEFAULT[k]?1:0); }); return o; }
@@ -26,7 +26,8 @@
     { email: 'tuan.pham@spxexpress.com', role: 'STAFF', addedAt: '06/10/2026 11:20:00', addedBy: 'duc.nguyenvan05@spxexpress.com', perms: mkPerms(0) },
     { email: 'lan.tran@spxexpress.com', role: 'STAFF', addedAt: '06/10/2026 11:20:00', addedBy: 'duc.nguyenvan05@spxexpress.com', perms: mkPerms(0) }
   ];
-  function meU(){ for (var i=0;i<USERS.length;i++) if (USERS[i].email===ME) return USERS[i]; return { email: ME, role:'STAFF', perms: mkPerms(0) }; }
+  function zeroPerms(){ var o={}; PERM_KEYS.forEach(function(k){ o[k]=0; }); return o; }
+  function meU(){ for (var i=0;i<USERS.length;i++) if (USERS[i].email===ME) return { email: USERS[i].email, role: USERS[i].role, perms: USERS[i].perms, known: true }; return { email: ME, role:'STAFF', perms: zeroPerms(), known: false }; }
   window.__setMockEmail = function(e){ ME = String(e||''); };
 
   var ITEMS = [
@@ -131,7 +132,7 @@
   }
 
   var API = {
-    me: function () { var u = meU(); return { ok: true, data: { email: u.email, role: u.role, deployer: ME, perms: clone(u.perms) } }; },
+    me: function () { var u = meU(); return { ok: true, data: { email: u.email, role: u.role, deployer: ME, perms: clone(u.perms), known: !!u.known } }; },
     listItems: function (limit) {
       var out = ITEMS.slice().sort(function (a, b) { return b.code < a.code ? -1 : 1; });
       return { ok: true, data: clone(out.slice(0, limit || 150)) };

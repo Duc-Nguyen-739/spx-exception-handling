@@ -85,7 +85,7 @@ test('perm-rpc: adminEditItem — doi status + anh can ca hai', () => {
 function runSetUserPerms(opts) {
   const writes = [];
   const sb = {
-    PERM_KEYS: ['create', 'resolve', 'liq', 'print', 'siteHN', 'siteHN2', 'dash', 'note', 'editStatus', 'editPhotos', 'backlog', 'feedback', 'adminReply', 'roleView', 'roleManage'],
+    PERM_KEYS: ['siteHN', 'siteHN2', 'create', 'resolve', 'liq', 'print', 'dash', 'note', 'editStatus', 'editPhotos', 'backlog', 'feedback', 'adminReply', 'roleView', 'roleManage'],
     PERM_DEFAULT: { create: 1 },
     PERM_LABELS: {},
     Logger: { log: () => {} },

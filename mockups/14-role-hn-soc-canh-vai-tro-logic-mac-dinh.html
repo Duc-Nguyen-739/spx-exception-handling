@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>14 · HN/HN2 canh Vai tro + logic mac dinh</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',system-ui,sans-serif;background:#12151b;color:#dde3ee;padding:0 0 40px;-webkit-font-smoothing:antialiased}
+#bar{position:sticky;top:0;z-index:50;background:rgba(18,21,27,.95);border-bottom:1px solid #262b35;padding:10px 14px}
+#bar h1{font-size:13px;font-weight:800;color:#fff}
+#bar h1 span{color:#ee4d2d}
+#bar p{font-size:11px;color:#8b93a6;margin-top:4px;line-height:1.6}
+#bar p b{color:#fff}
+.wrap{max-width:1200px;margin:0 auto;padding:18px 14px;display:flex;flex-direction:column;gap:22px}
+.sec{background:#1a1f28;border:1px solid #2b313d;border-radius:16px;padding:16px}
+.sec h2{font-size:13px;font-weight:800;color:#fff;margin-bottom:4px}
+.sec h2 .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#ee4d2d;color:#fff;font-size:12px;margin-right:6px}
+.sec .sub{font-size:11px;color:#8b93a6;line-height:1.7;margin-bottom:12px}
+.sec .sub b{color:#ffd9cd}
+.rolebox{background:#fff;color:#303844;border-radius:14px;overflow:hidden}
+.rolebox .rh{padding:12px 14px;border-bottom:1px solid #eef0f3;font-size:12px;font-weight:800;color:#172b48}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:11.5px;min-width:820px}
+th,td{padding:9px 10px;border-bottom:1px solid #f5f6f9;text-align:left;vertical-align:middle}
+th{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#97a0ad;font-weight:800;background:#fbfcfe;text-align:center}
+td .em{font-family:ui-monospace,monospace;font-size:11px;font-weight:700;color:#172b48;overflow-wrap:anywhere}
+td.c{text-align:center}
+th.site-hl{background:#f79009;color:#fff;font-size:10px}
+td.site{background:#fff7e0;box-shadow:inset 0 0 0 1.5px #f79009;text-align:center}
+.selftag{font-size:9px;font-weight:800;color:#ee4d2d;background:#fff5f0;border-radius:99px;padding:2px 7px;margin-left:5px}
+.sub2{font-size:10px;color:#97a0ad;margin-top:3px}
+.seg{display:inline-flex;border:1px solid #eef0f3;border-radius:99px;overflow:hidden;background:#fff}
+.seg button{border:none;background:transparent;font-size:9px;font-weight:800;padding:5px 9px;color:#97a0ad;font-family:inherit}
+.seg button.on.a{background:#ee4d2d;color:#fff}
+.seg button.on.s{background:#3274f7;color:#fff}
+.tgl{width:42px;height:24px;border-radius:99px;background:#e2e8f1;position:relative;display:inline-block}
+.tgl::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(23,43,72,.3)}
+.tgl.on{background:#11c964}
+.tgl.on::after{left:20px}
+.tgl.navy.on{background:#172b48}
+.tgl.site.on{background:#f79009}
+.tgl.off{background:#e2e8f1}
+.legend{margin-top:12px;background:#fff;color:#303844;border-radius:14px;overflow:hidden}
+.legend table{min-width:0}
+.hl{background:#fffbe8}
+.hl2{background:#ffe9e4}
+.chipnew{font-size:9px;font-weight:800;background:#f79009;color:#fff;border-radius:99px;padding:2px 8px;margin-left:6px}
+.phones{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.phone{width:390px;max-width:100%;height:760px;background:#f5f6f9;border:10px solid #0b0e13;border-radius:40px;overflow:hidden;position:relative;display:flex;flex-direction:column;color:#303844}
+.phone .phdr{background:#fff;border-bottom:1px solid #eef0f3;padding:10px 12px;display:flex;align-items:center;gap:8px}
+.phdr .logo{font-weight:800;color:#ee4d2d;font-size:15px;font-style:italic}
+.phdr .t{font-size:12px;font-weight:800;color:#172b48}
+.phdr .who{margin-left:auto;font-size:10px;font-weight:700;background:#f5f6f9;border:1px solid #eef0f3;border-radius:99px;padding:3px 8px 3px 3px;display:flex;align-items:center;gap:5px}
+.phdr .who i{width:20px;height:20px;border-radius:50%;background:#97a0ad;color:#fff;display:grid;place-items:center;font-style:normal;font-size:10px}
+.psearch{margin:8px 10px;background:#fff;border:1.5px solid #ffcfbd;border-radius:12px;padding:7px 8px 7px 12px;display:flex;gap:8px;align-items:center;font-size:12px;font-weight:600;color:#97a0ad}
+.pbanner{margin:0 10px 8px;background:#fff7e0;border:1px solid #f79009;border-radius:10px;padding:8px 10px;font-size:10px;font-weight:700;color:#9a6200;line-height:1.5}
+.grid{flex:1;overflow:hidden;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 10px;align-content:start}
+.card{background:#fff;border:1px solid #eef0f3;border-radius:10px;overflow:hidden}
+.card .im{aspect-ratio:1/1;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,#eef1f6,#e2e8f1);position:relative}
+.card .im .st{position:absolute;top:5px;left:5px;font-size:8px;font-weight:800;background:rgba(255,255,255,.95);border-radius:6px;padding:2px 6px;color:#ee4d2d}
+.card .cp{padding:5px 6px;display:flex;justify-content:space-between;align-items:center;gap:4px}
+.card .cp b{font-size:8.5px;color:#97a0ad;font-family:ui-monospace,monospace}
+.card .cp span{font-size:8.5px;font-weight:800;background:#f5f6f9;border-radius:6px;padding:2px 6px;color:#97a0ad}
+.pager{background:#fff;border-top:1px solid #eef0f3;display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:10px;color:#97a0ad;font-weight:600}
+.pager .pg{margin-left:auto;display:flex;gap:4px}
+.pager .pg button{min-width:26px;height:26px;border:1px solid #eef0f3;border-radius:7px;background:#fff;font-weight:800}
+.pager .pg button.cur{background:#172b48;color:#fff}
+.bnav{background:#fff;border-top:1px solid #eef0f3;display:flex;padding:6px 4px 14px}
+.bnav .bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;font-weight:700;color:#97a0ad;background:none;border:none;font-family:inherit}
+.bnav .bn.on{color:#ee4d2d}
+.bnav .bn i{font-style:normal;font-size:16px}
+.bnav .bn.hide{display:none}
+.fab{position:absolute;right:12px;bottom:140px;width:56px;height:56px;border-radius:50%;background:#3274f7;color:#fff;font-size:30px;display:grid;place-items:center;border:3px solid #fff;box-shadow:0 8px 22px rgba(50,116,247,.55);line-height:1}
+.fab small{position:absolute;bottom:-16px;font-size:8.5px;font-weight:800;color:#3274f7;white-space:nowrap}
+.fab.hide{display:none}
+.tag{position:absolute;top:8px;right:8px;z-index:5;font-size:9px;font-weight:800;border-radius:99px;padding:3px 9px;background:#fff7e0;color:#9a6200;border:1px solid #f79009}
+.cap{font-size:10.5px;color:#8b93a6;text-align:center;margin-top:8px;line-height:1.6}
+.cap b{color:#fff}
+.note{font-size:11px;color:#c9d4e4;line-height:1.7}
+.note b{color:#fff}
+@media(max-width:640px){.phone{width:100%}}
+</style>
+</head>
+<body>
+<div id="bar">
+<h1><span>14</span> · HN/HN2 cạnh Vai trò + logic mặc định chỉ xem Danh sách</h1>
+<p>Mockup tĩnh duyệt giao diện — <b>không gọi API thật</b>. 1) Cột <b>HN SOC / HN2 SOC</b> dời ngay sau <b>Vai trò</b>, nền vàng nổi bật. 2) Email <b>chưa phân quyền</b> chỉ xem tab <b>Danh sách</b>. 3) ADMIN <b>bỏ tick quyền nào → ẩn tab đó</b>.</p>
+</div>
+<div class="wrap">
+
+<div class="sec">
+<h2><span class="n">1</span> Bảng Role — HN/HN2 ngay cạnh Vai trò, nổi bật</h2>
+<p class="sub">Cột kho dời lên <b>ngay sau Vai trò</b>, đầu cột cam + ô nền vàng viền cam — nổi hơn hẳn các cột thao tác (xanh/navy). Thứ tự còn lại giữ nguyên.</p>
+<div class="rolebox">
+<div class="rh">Đăng nhập: duc.nguyenvan05@spxexpress.com · ADMIN</div>
+<div class="tblwrap"><table>
+<thead><tr>
+<th style="text-align:left">Email người dùng</th><th>Vai trò</th>
+<th class="site-hl">HN SOC ★</th><th class="site-hl">HN2 SOC ★</th>
+<th>Tạo mới<br>1/1</th><th>Resolve<br>1/1</th><th>Thanh lý<br>1/1</th><th>In mã<br>1/1</th><th>Dashboard<br>1/1</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><span class="em">duc.nguyenvan05@spxexpress.com</span><span class="selftag">Bạn</span><div class="sub2">Thêm 10/05/2026 19:03:20 · bởi duc.nguyenvan05@spxexpress.com</div></td>
+<td class="c"><span class="seg"><button class="on a">ADMIN</button><button>STAFF</button></span></td>
+<td class="site"><span class="tgl site on"></span></td><td class="site"><span class="tgl site on"></span></td>
+<td class="c"><span class="tgl navy on"></span></td><td class="c"><span class="tgl navy on"></span></td><td class="c"><span class="tgl navy on"></span></td><td class="c"><span class="tgl navy on"></span></td><td class="c"><span class="tgl navy on"></span></td>
+</tr>
+<tr>
+<td><span class="em">thienhuong.tran@spxexpress.com</span><div class="sub2">Thêm 10/05/2026 19:03:20 · bởi duc.nguyenvan05@spxexpress.com</div></td>
+<td class="c"><span class="seg"><button>ADMIN</button><button class="on s">STAFF</button></span></td>
+<td class="site"><span class="tgl site"></span></td><td class="site"><span class="tgl site on"></span></td>
+<td class="c"><span class="tgl navy on"></span></td><td class="c"><span class="tgl navy on"></span></td><td class="c"><span class="tgl navy off"></span></td><td class="c"><span class="tgl navy on"></span></td><td class="c"><span class="tgl navy off"></span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="note" style="margin-top:10px">Đọc hàng 2: STAFF này chỉ thuộc <b>HN2 SOC</b> (HN SOC tắt), bị bỏ tick <b>Thanh lý + Dashboard</b> → 2 tab đó ẩn với email này (xem phần 2).</p>
+</div>
+
+<div class="sec">
+<h2><span class="n">2</span> Logic — email lạ chỉ xem Danh sách · bỏ tick là ẩn tab</h2>
+<p class="sub">Trái: email <b>chưa được thêm</b> → chỉ còn tab <b>Danh sách</b> (xem lưới, không FAB, không nút thao tác). Phải: email bị bỏ tick <b>Thanh lý + Dashboard</b> → 2 tab đó biến mất.</p>
+<div class="phones">
+<div>
+<div class="phone">
+<span class="tag">EMAIL LẠ · chỉ xem</span>
+<div class="phdr"><span class="logo">SPX</span><span class="t">Exception Handling</span><span class="who"><i>L</i>la.ngoai…</span></div>
+<div class="psearch"><span>🔍</span> Nhập thông tin để tìm kiếm…</div>
+<div class="pbanner">🔒 Tài khoản chưa được phân quyền — bạn chỉ xem được tab Danh sách.</div>
+<div class="grid">
+<div class="card"><div class="im">🦺<span class="st">Lưu kho</span></div><div class="cp"><b>Item.11-10…</b><span>4 Ngày</span></div></div>
+<div class="card"><div class="im">👕<span class="st">Lưu kho</span></div><div class="cp"><b>Item.10-10…</b><span>5 Ngày</span></div></div>
+<div class="card"><div class="im">🖱️<span class="st">Lưu kho</span></div><div class="cp"><b>Item.09-10…</b><span>6 Ngày</span></div></div>
+</div>
+<div class="pager"><span>Trang <b>1</b> · <b>50</b> đơn</span><span class="pg"><button>‹</button><button class="cur">1</button><button>›</button></span></div>
+<div class="fab hide">+<small>Tạo mới</small></div>
+<div class="bnav">
+<button class="bn on"><i>⌂</i>Danh sách</button>
+<button class="bn hide"><i>📊</i>Dashboard</button>
+<button class="bn hide"><i>🗂</i>Thanh lý</button>
+<button class="bn hide"><i>🖨</i>In Mã</button>
+<button class="bn hide"><i>👤</i>Role</button>
+</div>
+</div>
+<p class="cap"><b>Email lạ:</b> 1 tab duy nhất · không FAB · không Resolve/In Mã</p>
+</div>
+<div>
+<div class="phone">
+<span class="tag">BỎ TICK · ẩn tab</span>
+<div class="phdr"><span class="logo">SPX</span><span class="t">Exception Handling</span><span class="who"><i>T</i>thienhuong…</span></div>
+<div class="psearch"><span>🔍</span> Nhập thông tin để tìm kiếm…</div>
+<div class="pbanner">ℹ️ ADMIN đã tắt Thanh lý + Dashboard với tài khoản này.</div>
+<div class="grid">
+<div class="card"><div class="im">🦺<span class="st">Lưu kho</span></div><div class="cp"><b>Item.11-10…</b><span>4 Ngày</span></div></div>
+<div class="card"><div class="im">👕<span class="st">Lưu kho</span></div><div class="cp"><b>Item.10-10…</b><span>5 Ngày</span></div></div>
+<div class="card"><div class="im">🖱️<span class="st">Lưu kho</span></div><div class="cp"><b>Item.09-10…</b><span>6 Ngày</span></div></div>
+</div>
+<div class="pager"><span>Trang <b>1</b> · <b>50</b> đơn</span><span class="pg"><button>‹</button><button class="cur">1</button><button>›</button></span></div>
+<div class="fab">+<small>Tạo mới</small></div>
+<div class="bnav">
+<button class="bn on"><i>⌂</i>Danh sách</button>
+<button class="bn hide"><i>📊</i>Dashboard</button>
+<button class="bn hide"><i>🗂</i>Thanh lý</button>
+<button class="bn"><i>🖨</i>In Mã</button>
+<button class="bn hide"><i>👤</i>Role</button>
+</div>
+</div>
+<p class="cap"><b>Bỏ tick:</b> tab tương ứng biến mất khỏi thanh điều hướng</p>
+</div>
+</div>
+<div class="legend"><table>
+<tr><th style="text-align:left">Quyền</th><th>Tên đầy đủ</th><th>Tắt thì ẩn gì</th></tr>
+<tr class="hl2"><td><b>Mặc định (email chưa thêm)</b><span class="chipnew">MỚI</span></td><td>Chỉ xem Danh sách</td><td>Ẩn mọi tab/nút khác</td></tr>
+<tr class="hl"><td><b>HN SOC</b></td><td>Kho HN SOC</td><td>Phân Station</td></tr>
+<tr class="hl"><td><b>HN2 SOC</b></td><td>Kho HN2 SOC</td><td>Phân Station</td></tr>
+<tr><td><b>Dashboard</b></td><td>Dashboard</td><td>Ẩn tab Dashboard</td></tr>
+<tr><td><b>Tạo mới</b></td><td>Tạo mới</td><td>Ẩn Tạo mới</td></tr>
+<tr><td><b>Resolve</b></td><td>Resolve</td><td>Ẩn nút Resolve</td></tr>
+<tr><td><b>Thanh lý</b></td><td>Thanh lý</td><td>Ẩn tab Thanh lý</td></tr>
+<tr><td><b>In mã</b></td><td>In mã</td><td>Ẩn nút In Mã</td></tr>
+</table></div>
+<p class="note" style="margin-top:10px">Duyệt mẫu này tôi mới code vào app (đổi mặc định email lạ + dời cột kho). Giả định: nút thao tác trong chi tiết (Resolve/In Mã/Sửa) cũng ẩn theo quyền như tab.</p>
+</div>
+
+</div>
+</body>
+</html>

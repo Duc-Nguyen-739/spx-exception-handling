@@ -234,7 +234,7 @@ def check_create_photos(kind, outer, product, n_extras=0):
 
 
 # KHOP server: Code.gs parsePerms_ / checkPerm_ — SSOT PERM_KEYS guard tests/perm-model.test.js
-PERM_KEYS = ["create", "resolve", "liq", "print", "siteHN", "siteHN2", "dash",
+PERM_KEYS = ["siteHN", "siteHN2", "create", "resolve", "liq", "print", "dash",
     "note", "editStatus", "editPhotos", "backlog", "feedback", "adminReply",
     "roleView", "roleManage"]
 PERM_DEFAULT = {"create": 1, "resolve": 1, "liq": 1, "print": 1, "siteHN": 1,

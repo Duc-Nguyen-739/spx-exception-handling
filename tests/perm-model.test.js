@@ -105,6 +105,52 @@ test('perm-model: gate du key co RPC checkPerm_ (tru 3 key UI-only)', () => {
   }
 });
 
+test('perm-model: permsOf_ email la ve 0 het, seed ADMIN full', () => {
+  const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
+  function fnSrc(name) {
+    const start = gs.indexOf('function ' + name + '(');
+    assert.ok(start >= 0, 'missing ' + name);
+    let depth = 0, end = start;
+    for (let i = start; i < gs.length; i++) {
+      if (gs[i] === '{') depth++;
+      if (gs[i] === '}') { depth--; if (!depth) { end = i + 1; break; } }
+    }
+    return gs.slice(start, end);
+  }
+  const mK = gs.match(/var PERM_KEYS\s*=\s*(\[[\s\S]*?\]);/);
+  const mD = gs.match(/var PERM_DEFAULT\s*=\s*(\{[\s\S]*?\});/);
+  const sb = {
+    PERM_KEYS: null, PERM_DEFAULT: null,
+    Logger: { log: () => {} },
+    __rows: [],
+    __seeds: [],
+    __me: '',
+  };
+  vm.createContext(sb);
+  vm.runInContext(mK[0] + '\n' + mD[0], sb);
+  sb.normEmail_ = (s) => String(s || '').trim().toLowerCase();
+  sb.cellText_ = (v) => (v == null ? '' : String(v));
+  sb.currentEmail_ = () => sb.__me;
+  sb.readUsers_ = () => ({ sh: null, rows: sb.__rows });
+  sb.seedAdmins_ = () => sb.__seeds;
+  vm.runInContext(fnSrc('parsePerms_') + '\n' + fnSrc('permsOf_') + '\n' + fnSrc('isKnownUser_'), sb);
+  sb.__me = 'la.ngoai@x.com';
+  const zero = vm.runInContext('permsOf_()', sb);
+  assert.strictEqual(Object.values(zero).reduce((s, v) => s + v, 0), 0, 'email la phai 0 het');
+  assert.strictEqual(vm.runInContext('isKnownUser_()', sb), false);
+  sb.__rows = [['la.ngoai@x.com', 'STAFF', 't', 'b', 'create,liq']];
+  const back = vm.runInContext('permsOf_()', sb);
+  assert.strictEqual(back.create, 1);
+  assert.strictEqual(back.liq, 1);
+  assert.strictEqual(back.resolve, 0);
+  assert.strictEqual(vm.runInContext('isKnownUser_()', sb), true);
+  sb.__rows = [];
+  sb.__seeds = ['la.ngoai@x.com'];
+  const adm = vm.runInContext('permsOf_()', sb);
+  assert.strictEqual(Object.values(adm).reduce((s, v) => s + v, 0), 15, 'seed ADMIN full');
+  assert.strictEqual(vm.runInContext('isKnownUser_()', sb), true);
+});
+
 test('perm-model: readUsers_ dung ensureUsersHeader_', () => {
   const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
   assert.ok(gs.includes('function ensureUsersHeader_('), 'missing ensureUsersHeader_');

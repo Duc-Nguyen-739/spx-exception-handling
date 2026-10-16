@@ -289,6 +289,10 @@ td .st.adm{background:var(--tint);color:var(--o)}
 #usersTable .uptbl th.pin,#usersTable .uptbl td.pin{position:sticky;left:0;background:var(--card);z-index:2;min-width:210px}
 #usersTable .uptbl thead th{position:sticky;top:0;z-index:3}
 #usersTable .ugr th{text-align:center;font-size:9px;color:var(--navy)}
+#usersTable .hlk{background:#fff7e0}
+#usersTable th.hlk{background:#f79009;color:#fff}
+#usersTable td.hlk{box-shadow:inset 0 0 0 1.5px #f79009}
+#whoTxt small{display:block;font-size:8px;font-weight:800;color:var(--o);line-height:1.3}
 #usersTable .hpk{border:none;background:transparent;font-family:inherit;cursor:pointer;display:inline-flex;flex-direction:column;gap:2px;align-items:center;padding:2px 0;color:var(--navy);font-size:10px;font-weight:800;line-height:1.25}
 #usersTable .hpk .colcnt{font-size:9px;font-weight:800;color:var(--mut);background:var(--bg);border-radius:99px;padding:1px 6px}
 #usersTable .ck{width:40px;height:22px;border-radius:99px;border:none;background:#dbe1ea;display:inline-block;position:relative;cursor:pointer;padding:0;vertical-align:middle}
@@ -906,11 +910,11 @@ var DEMO=[
 {code:'Item.01-10-2026.3',kind:'Item',createdAt:'01/10/2026 10:00:00',createdBy:'demo@spx.vn',imgOuter:'',imgProduct:'',description:'Demo item',note:'',status:'da_tim_bill',statusLabel:'Resolve',bill:'SPXVN1',days:5}
 ];
 var state={items:[],itemMap:{},detailCache:{},detailAt:{},_loadingGrid:null,detail:null,liq:[],kind:'Box',lastCreated:'',me:null,filter:'',statusFilter:'',kinds:{Box:true,Item:true},pending:{},codeEdit:{Box:false,Item:false},range:{f:null,t:null},page:1,noMore:false,uiPage:1};
-var PERM_KEYS=['create','resolve','liq','print','siteHN','siteHN2','dash','note','editStatus','editPhotos','backlog','feedback','adminReply','roleView','roleManage'];
+var PERM_KEYS=['siteHN','siteHN2','create','resolve','liq','print','dash','note','editStatus','editPhotos','backlog','feedback','adminReply','roleView','roleManage'];
 // KHOP server Code.gs:PERM_KEYS — guard tests/perm-model.test.js
 var PERM_LABELS={create:'Tạo mới',resolve:'Resolve',liq:'Thanh lý',print:'In mã',siteHN:'HN SOC',siteHN2:'HN2 SOC',dash:'Dashboard',note:'Mô tả',editStatus:'Đổi TT',editPhotos:'Ảnh',backlog:'Backlog',feedback:'Góp ý',adminReply:'Reply',roleView:'Xem Role',roleManage:'User'};
 function can(k){var m=state.me||{};if(m.role==='ADMIN')return true;return !!(m.perms&&m.perms[k]);}
-var PERM_GROUPS=[{g:'Đơn & thao tác chính',keys:['create','resolve','liq','print']},{g:'Kho & Dashboard',keys:['siteHN','siteHN2','dash']},{g:'Sửa hồ sơ đơn',keys:['note','editStatus','editPhotos']},{g:'Backlog & Góp ý',keys:['backlog','feedback','adminReply']},{g:'Quản trị',keys:['roleView','roleManage']}];
+var PERM_GROUPS=[{g:'Kho ★',keys:['siteHN','siteHN2']},{g:'Đơn & thao tác chính',keys:['create','resolve','liq','print','dash']},{g:'Sửa hồ sơ đơn',keys:['note','editStatus','editPhotos']},{g:'Backlog & Góp ý',keys:['backlog','feedback','adminReply']},{g:'Quản trị',keys:['roleView','roleManage']}];
 var PERM_SHORT={create:'Tạo mới',resolve:'Resolve',liq:'Thanh lý',print:'In mã',siteHN:'HN SOC',siteHN2:'HN2 SOC',dash:'Dashboard',note:'Mô tả',editStatus:'Đổi TT',editPhotos:'Ảnh',backlog:'Backlog',feedback:'Góp ý',adminReply:'Reply',roleView:'Xem Role',roleManage:'User'};
 var PERM_INFO={create:{off:'Ẩn Tạo mới'},resolve:{off:'Ẩn nút Resolve'},liq:{off:'Ẩn tab Thanh lý'},print:{off:'Ẩn nút In Mã'},siteHN:{off:'Phân Station'},siteHN2:{off:'Phân Station'},dash:{off:'Ẩn tab Dashboard'},note:{off:'Ẩn Mô tả/Ghi chú'},editStatus:{off:'Ẩn khối Trạng thái'},editPhotos:{off:'Ẩn khối Ảnh'},backlog:{off:'Ẩn tab Backlog'},feedback:{off:'Ẩn nút Góp ý'},adminReply:{off:'Ẩn nút Reply'},roleView:{off:'Ẩn tab Role'},roleManage:{off:'Ẩn ô Thêm + cột Xóa'}};
 var PAGE=150;
@@ -2076,7 +2080,7 @@ var bf=document.getElementById('btnFeedback');if(bf)bf.style.display=can('feedba
 }catch(e1){}
 try{renderRail();}catch(err){}
 document.getElementById('whoIni').textContent=String(e.email).charAt(0).toUpperCase();
-document.getElementById('whoTxt').textContent=String(e.email).split('@')[0];
+document.getElementById('whoTxt').innerHTML=esc(String(e.email).split('@')[0])+((e.email&&e.known===false)?'<small>(View)</small>':'');
 try{renderSummary();}catch(err){}
 }
 var permUsers_=[],permSaveT_=null,permPending_=null;
@@ -2095,17 +2099,17 @@ return '<span class="seg"><button class="'+(a?'on a':'')+'" data-rk="ADMIN" data
 function cntCell_(u){var t=PERM_KEYS.length,n=(u.role==='ADMIN'?t:permCount_(u));return '<span class="mini2">'+n+'/'+t+'</span><span class="bar"><i style="width:'+Math.round(n/t*100)+'%"></i></span>';}
 function permTableHtml_(mutable){
 var me=(state.me&&state.me.email)||'';
-var h='<div class="uptblWrap"><table class="uptbl"><thead><tr class="ugr"><th rowspan="2" class="pin" style="text-align:left">Email người dùng</th><th rowspan="2" class="cRole">Vai trò</th>';
-PERM_GROUPS.forEach(function(g){h+='<th colspan="'+g.keys.length+'">'+esc(g.g)+'</th>';});
+var h='<div class="uptblWrap"><table class="uptbl"><thead><tr class="ugr"><th rowspan="2" class="pin" style="text-align:left">Email người dùng</th><th rowspan="2" class="cRole hlk">Vai trò ★</th>';
+PERM_GROUPS.forEach(function(g){h+='<th colspan="'+g.keys.length+'"'+(g.g==='Kho ★'?' class="hlk"':'')+'>'+esc(g.g)+'</th>';});
 h+='<th rowspan="2" class="cCnt">Đã mở</th><th rowspan="2" class="cDel">Xóa</th></tr><tr>';
 PERM_KEYS.forEach(function(k){var st=colStat_(k);var cls=st.total&&st.on===st.total?'all':(st.on?'':' none');var dis=mutable?'':' disabled';
-h+='<th class="cP"><button class="hpk" data-ck="'+esc(k)+'"'+dis+' title="'+esc(PERM_LABELS[k]||k)+' — '+(mutable?'bấm để bật/tắt cho toàn bộ STAFF':'chi doc')+'"><span>'+esc(PERM_SHORT[k]||k)+'</span><span class="colcnt'+cls+'">'+st.on+'/'+st.total+'</span></button></th>';});
+h+='<th class="cP'+((k==='siteHN'||k==='siteHN2')?' hlk':'')+'"><button class="hpk" data-ck="'+esc(k)+'"'+dis+' title="'+esc(PERM_LABELS[k]||k)+' — '+(mutable?'bấm để bật/tắt cho toàn bộ STAFF':'chi doc')+'"><span>'+esc(PERM_SHORT[k]||k)+'</span><span class="colcnt'+cls+'">'+st.on+'/'+st.total+'</span></button></th>';});
 h+='</tr></thead><tbody>';
 permUsers_.forEach(function(u,i){
 var isMe=u.email===me;
 h+='<tr class="'+(isMe?'me':'')+'"><td class="pin"><span class="mono" style="font-size:11px">'+esc(u.email)+'</span>'+(isMe?'<span class="selftag">Bạn</span>':'')+'<div class="sub2">Thêm '+esc(u.addedAt||'')+' · bởi '+esc(u.addedBy||'')+'</div></td>';
-h+='<td class="cRole">'+roleSeg_(u,i,mutable)+'</td>';
-PERM_KEYS.forEach(function(k){h+='<td class="cP">'+ckCell_(u,i,k,mutable)+'</td>';});
+h+='<td class="cRole hlk">'+roleSeg_(u,i,mutable)+'</td>';
+PERM_KEYS.forEach(function(k){h+='<td class="cP'+((k==='siteHN'||k==='siteHN2')?' hlk':'')+'">'+ckCell_(u,i,k,mutable)+'</td>';});
 h+='<td class="cCnt">'+cntCell_(u)+'</td>';
 h+='<td class="cDel">'+(mutable&&!isMe?'<button class="roleBtn" data-del="'+esc(u.email)+'">Xóa</button>':'<span class="mini2">—</span>')+'</td></tr>';});
 return h+'</tbody></table></div>';}

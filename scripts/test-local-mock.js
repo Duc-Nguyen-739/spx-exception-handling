@@ -577,6 +577,12 @@ async function main() {
     const selfLock = await evalIn(ws, `gs('setUserPerms',[state.me.email,'STAFF',['create']]).then(function(r){return JSON.stringify(r);})`);
     const selfRows = await evalIn(ws, `document.querySelectorAll('#usersTable table.uptbl tbody tr').length`);
     check('Role M6: tu tat roleView cua minh -> server bao loi, UI khong doi', !!(selfLock.value && selfLock.value.indexOf('xem trang Role') >= 0 && selfRows.value === 5), selfLock.value + ' rows=' + selfRows.value);
+    await evalIn(ws, `(async () => { window.__setMockEmail('la.ngoai@spxexpress.com'); await loadMe(); })()`);
+    await sleep(500);
+    const unKnown = await evalIn(ws, `JSON.stringify({dash: document.getElementById('navDash').style.display, liq: document.getElementById('navLiq').style.display, backlog: document.getElementById('navBacklog').style.display, print: document.getElementById('navPrint').style.display, access: document.getElementById('navAccess').style.display, main: document.getElementById('navMain').style.display, fab: document.getElementById('fabCreate').style.display, view: document.getElementById('whoTxt').innerHTML})`);
+    check('Role M6: email la chi xem Danh sach + nhan (View)', !!(unKnown.value && unKnown.value.indexOf('"dash":"none"') >= 0 && unKnown.value.indexOf('"liq":"none"') >= 0 && unKnown.value.indexOf('"backlog":"none"') >= 0 && unKnown.value.indexOf('"print":"none"') >= 0 && unKnown.value.indexOf('"access":"none"') >= 0 && unKnown.value.indexOf('"main":""') >= 0 && unKnown.value.indexOf('"fab":"none"') >= 0 && unKnown.value.indexOf('(View)') >= 0), unKnown.value);
+    await evalIn(ws, `(async () => { window.__setMockEmail('admin.mock@spxexpress.com'); await loadMe(); await loadUsers(); })()`);
+    await waitUntil(ws, "document.querySelectorAll('#usersTable table.uptbl tbody tr').length === 5", 8000);
     await evalIn(ws, `document.getElementById('navMain').click()`);
 
     await evalIn(ws, `document.getElementById('btnCreateMain').click()`);
