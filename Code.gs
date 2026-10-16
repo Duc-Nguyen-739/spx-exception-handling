@@ -77,6 +77,28 @@ function doGet() {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
+function doPost(e) {
+  // Option 3 (Smart webhook/trigger push-back): Smart pushes async result
+  // to GAS /exec endpoint. Payload shape depends on Smart webhook contract;
+  // this logs and parses generically for integration setup.
+  try {
+    var payload = e && e.postData ? e.postData.contents : '{}';
+    var data = JSON.parse(payload || '{}');
+    Logger.log('Smart webhook received: ' + (payload ? payload.slice(0, 300) : 'empty'));
+    // If Smart pushes a result payload (e.g., debug_tree or direct output),
+    // parse and return acknowledgment so Smart knows delivery succeeded.
+    if (data && (data.data || data.output || data.result || data.debug_tree || data.thread_id)) {
+      Logger.log('Smart result payload parsed; thread/result keys present.');
+    }
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, received: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    Logger.log('Smart webhook parse error: ' + err);
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
 function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
@@ -1881,5 +1903,34 @@ function chatSmart(p, site) {
     var em = String(e && e.message || '');
     if (/DNS/i.test(em)) return fail('Không phân giải được host Smart (' + url + ') từ GAS — host nội bộ Shopee không truy cập được từ ngoài mạng; đặt SMART_ENDPOINT_URL trỏ tới URL public/proxy.');
     return fail('Không gọi được Smart: ' + scrub(em));
+  }
+}
+
+// ===== Option 3 — Poll async Smart result (use khi Smart trigger/webhook da chay async) =====
+// Doc: POST /get_debug_tree voi channel=endpoint_deployment + endpoint_deployment_hash_id + endpoint_deployment_key + thread_id.
+// Goi tu may co quyen mang Smart (hoac qua SMART_ENDPOINT_URL proxy). Tu GAS truc tiep khong goi duoc vi host noi bo.
+function pollSmartAsync(hashId, endpointKey, threadId, site) {
+  try {
+    checkPerm_('backlog', site);
+    var props = PropertiesService.getScriptProperties();
+    var url = String(props.getProperty('SMART_ENDPOINT_URL') || '').trim() || SMART_INVOKE_URL;
+    url = url.replace('/invoke', '/get_debug_tree');
+    var payload = {
+      endpoint_deployment_hash_id: hashId,
+      endpoint_deployment_key: endpointKey,
+      thread_id: threadId,
+      channel: 'endpoint_deployment'
+    };
+    var resp = UrlFetchApp.fetch(url, {
+      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      payload: JSON.stringify(payload)
+    });
+    var code = resp.getResponseCode();
+    if (code !== 200) return { ok: false, error: 'Smart poll HTTP ' + code, raw: resp.getContentText().slice(0, 200) };
+    var body = JSON.parse(resp.getContentText() || '{}');
+    var tree = (body && body.data && body.data.debug_tree) ? body.data.debug_tree : (body && body.debug_tree) ? body.debug_tree : null;
+    return { ok: true, status: (tree && tree.summary && tree.summary.status) || 'unknown', output: (tree && tree.output) ? tree.output : null, error_messages: (tree && tree.summary && tree.summary.error_messages) || [] };
+  } catch (e) {
+    return { ok: false, error: 'Poll Smart async fail: ' + (e.message || e) };
   }
 }
