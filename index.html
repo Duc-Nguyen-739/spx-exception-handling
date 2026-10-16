@@ -2850,17 +2850,19 @@ async function sendChat(){
   }catch(e){msg('msgChat',e.message||'Lỗi tìm đơn.');}
 }
 var aiBubMoved=0,aiBubDrag=null;
-function aiBubPlace(x,y){var b=document.getElementById('aiBub');if(!b)return;var w=b.offsetWidth||64;var h=b.offsetHeight||64;b.style.left=Math.max(4,Math.min(window.innerWidth-w-4,x))+'px';b.style.top=Math.max(4,Math.min(document.body.scrollHeight-h-4,y+window.scrollY))+'px';}
+function aiBubPlace(x,y){var b=document.getElementById('aiBub');if(!b)return;var w=b.offsetWidth||64,h=b.offsetHeight||64;b.style.left=Math.max(4,Math.min(window.innerWidth-w-4,x))+'px';b.style.top=Math.max(4,Math.min(window.innerHeight-h-4,y))+'px';}
 function aiBubDock(){try{var p=document.getElementById('btnPrintMain');if(!p||!p.offsetParent)return false;var r=p.getBoundingClientRect();aiBubPlace(r.left-76,r.top+r.height/2-32);return true;}catch(e){return false;}}
 function aiBubInit(){var s=null;try{s=localStorage.getItem('spx_aiBub');}catch(e){}if(s){try{var o=JSON.parse(s);aiBubPlace(o.x,o.y);return;}catch(e){}}aiBubDock();}
 (function(){
 var el=document.getElementById('aiBub');if(!el)return;
-el.addEventListener('pointerdown',function(e){var r=el.getBoundingClientRect();aiBubDrag={dx:e.clientX-r.left,dy:e.clientY-r.top};aiBubMoved=0;try{el.setPointerCapture(e.pointerId);}catch(_){}});
-el.addEventListener('pointermove',function(e){if(!aiBubDrag)return;aiBubMoved++;aiBubPlace(e.clientX-aiBubDrag.dx,e.clientY-aiBubDrag.dy);});
-el.addEventListener('pointerup',function(){if(aiBubDrag&&aiBubMoved<3)openChat();if(aiBubMoved>=3){try{var r=el.getBoundingClientRect();localStorage.setItem('spx_aiBub',JSON.stringify({x:r.left,y:r.top+window.scrollY}));}catch(e){}}aiBubDrag=null;});
-el.addEventListener('pointercancel',function(){aiBubDrag=null;});
+var raf=0,pending=null,dim={w:64,h:64};
+function draw(){raf=0;if(!pending)return;var p=pending;pending=null;el.style.left=Math.max(4,Math.min(window.innerWidth-dim.w-4,p.x))+'px';el.style.top=Math.max(4,Math.min(window.innerHeight-dim.h-4,p.y))+'px';}
+el.addEventListener('pointerdown',function(e){var r=el.getBoundingClientRect();dim={w:el.offsetWidth||64,h:el.offsetHeight||64};aiBubDrag={dx:e.clientX-r.left,dy:e.clientY-r.top};aiBubMoved=0;try{el.setPointerCapture(e.pointerId);}catch(_){}});
+el.addEventListener('pointermove',function(e){if(!aiBubDrag)return;aiBubMoved++;pending={x:e.clientX-aiBubDrag.dx,y:e.clientY-aiBubDrag.dy};if(!raf)raf=requestAnimationFrame(draw);});
+el.addEventListener('pointerup',function(){if(raf){cancelAnimationFrame(raf);draw();}if(aiBubDrag&&aiBubMoved<3)openChat();if(aiBubMoved>=3){try{var r=el.getBoundingClientRect();localStorage.setItem('spx_aiBub',JSON.stringify({x:r.left,y:r.top}));}catch(e){}}aiBubDrag=null;});
+el.addEventListener('pointercancel',function(){aiBubDrag=null;pending=null;if(raf){cancelAnimationFrame(raf);raf=0;}});
 try{aiBubInit();}catch(e){}
-try{window.addEventListener('resize',function(){var s=null;try{s=localStorage.getItem('spx_aiBub');}catch(x){}if(!s)aiBubDock();});}catch(e){}
+try{window.addEventListener('resize',function(){var s=null;try{s=localStorage.getItem('spx_aiBub');}catch(x){}if(!s){aiBubDock();}else{var o=null;try{o=JSON.parse(s);}catch(x){}if(o)aiBubPlace(o.x,o.y);}});}catch(e){}
 try{window.addEventListener('load',function(){var s=null;try{s=localStorage.getItem('spx_aiBub');}catch(x){}if(!s)aiBubDock();});}catch(e){}
 })();
 document.getElementById('btnCloseChat').onclick=function(){document.getElementById('chatModal').classList.remove('open');};
