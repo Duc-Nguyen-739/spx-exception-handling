@@ -153,13 +153,22 @@ function check(name, cond, detail) {
   console.log((cond ? 'PASS' : 'FAIL') + '  ' + name + (detail ? '  — ' + detail : ''));
 }
 // Click chuột thật qua input pipeline (tin cậy như người dùng).
+// Scroll truoc, doi on dinh, do lai toa do roi moi bam + kiem tra diem cham (CI cham hon local).
 async function clickTh(ws, label) {
-  const r = await evalIn(ws, `(function(){var ths=document.querySelectorAll('#blThead th');for(var i=0;i<ths.length;i++){if(ths[i].textContent.indexOf('${label}')===0){ths[i].scrollIntoView({block:'nearest'});var b=ths[i].getBoundingClientRect();var el=document.elementFromPoint(b.left+b.width/2,b.top+b.height/2);return JSON.stringify({x:b.left+b.width/2,y:b.top+b.height/2,hit:el?((el.id||el.tagName)+' '+(el.className||'')):'none',vw:window.innerWidth,vh:window.innerHeight});}}return null;})()`);
-  if (r.err || !r.value) return false;
-  const p = JSON.parse(r.value);
-  await send(ws, 'Input.dispatchMouseEvent', { type: 'mousePressed', x: p.x, y: p.y, button: 'left', clickCount: 1 });
-  await send(ws, 'Input.dispatchMouseEvent', { type: 'mouseReleased', x: p.x, y: p.y, button: 'left', clickCount: 1 });
-  return true;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const f = await evalIn(ws, `(function(){var ths=document.querySelectorAll('#blThead th');for(var i=0;i<ths.length;i++){if(ths[i].textContent.indexOf('${label}')===0){ths[i].scrollIntoView({block:'center'});return 'found';}}return null;})()`);
+    if (f.err || !f.value) { console.log('clickTh ' + label + ' attempt ' + attempt + ': th not found'); return false; }
+    await sleep(500);
+    const r = await evalIn(ws, `(function(){var ths=document.querySelectorAll('#blThead th');for(var i=0;i<ths.length;i++){if(ths[i].textContent.indexOf('${label}')===0){var b=ths[i].getBoundingClientRect();var el=document.elementFromPoint(b.left+b.width/2,b.top+b.height/2);var ok=!!el&&(el===ths[i]||ths[i].contains(el));return JSON.stringify({x:b.left+b.width/2,y:b.top+b.height/2,ok:ok,hit:el?((el.id||el.tagName)+' '+(el.className||'')):'none'});}}return null;})()`);
+    if (r.err || !r.value) { console.log('clickTh ' + label + ' attempt ' + attempt + ': measure failed'); return false; }
+    const p = JSON.parse(r.value);
+    if (!p.ok) { console.log('clickTh ' + label + ' attempt ' + attempt + ': covered by ' + p.hit + ', retry'); continue; }
+    await send(ws, 'Input.dispatchMouseEvent', { type: 'mousePressed', x: p.x, y: p.y, button: 'left', clickCount: 1 });
+    await send(ws, 'Input.dispatchMouseEvent', { type: 'mouseReleased', x: p.x, y: p.y, button: 'left', clickCount: 1 });
+    return true;
+  }
+  console.log('clickTh ' + label + ': FAILED after 3 attempts');
+  return false;
 }
 
 async function main() {
@@ -660,9 +669,9 @@ async function main() {
     const blSortAsc = await waitUntil(ws, "document.querySelector('#blTbody tr td:last-child').textContent==='6,800'", 5000);
     check('Backlog: sort COGS 1 lan -> tang dan, dau 6,800', !!blSortAsc, String(blSortAsc));
     await clickTh(ws, 'COGS');
-    await sleep(400);
-    const blSort = await evalIn(ws, `document.querySelector('#blTbody tr td:last-child').textContent`);
-    check('Backlog: sort COGS 2 lan -> giam dan, dau 178,500', blSort.value === '178,500', blSort.value);
+    const blSort = await waitUntil(ws, "document.querySelector('#blTbody tr td:last-child').textContent==='178,500'", 5000);
+    const blSortV = await evalIn(ws, `document.querySelector('#blTbody tr td:last-child').textContent`);
+    check('Backlog: sort COGS 2 lan -> giam dan, dau 178,500', !!blSort, blSortV.value);
     await clickTh(ws, 'Status');
     const blDrop = await waitUntil(ws, "document.getElementById('blHdrop').style.display==='block' && document.querySelectorAll('#blHdrop .hrow').length===4", 5000);
     check('Backlog: filter Status xo 4 gia tri + nut OK', !!blDrop, String(blDrop));
