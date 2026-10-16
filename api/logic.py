@@ -269,8 +269,16 @@ def parse_perms(raw, role):
     return {k: (1 if k in seen else 0) for k in PERM_KEYS}
 
 
-def check_perm(perms, key):
-    if not (perms or {}).get(key):
+# KHOP Code.gs checkPerm_: chan theo kho (tru 2 key quan tri trang Role).
+ROLE_KEYS = {"roleView", "roleManage"}
+
+
+def check_perm(perms, key, site=None):
+    p = perms or {}
+    sd = norm_site(site)
+    if key not in ROLE_KEYS and not p.get("siteHN" if sd == "HN" else "siteHN2"):
+        return (False, "Bạn không có quyền truy cập " + SITE_LABELS[sd] + ". Liên hệ ADMIN.")
+    if not p.get(key):
         label = PERM_LABELS.get(key, key)
         return (False, "Bạn không có quyền: " + label + ". Liên hệ ADMIN.")
     return (True, "")
@@ -416,6 +424,8 @@ def fmt_cogs(v):
 
 # KHOP Code.gs normSite_/sheetName_: 2 kho HN2 (sheet goc) / HN (duoi HNSOC).
 SITE_SUFFIX = {"HN2": "", "HN": "HNSOC"}
+# KHOP Code.gs GLOBAL_BASES_: sheet dung chung 2 kho (Users — trang Role tap trung).
+GLOBAL_BASES = {"Users"}
 SITE_LABELS = {"HN2": "HN2 SOC", "HN": "HN SOC"}
 
 
@@ -427,4 +437,7 @@ def norm_site(s):
 
 
 def sheet_name(base, site=None):
-    return f"{base or ''}{SITE_SUFFIX.get(norm_site(site), '')}"
+    b = base or ""
+    if b in GLOBAL_BASES:
+        return b
+    return f"{b}{SITE_SUFFIX.get(norm_site(site), '')}"

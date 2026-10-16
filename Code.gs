@@ -33,6 +33,8 @@ var PRINTQUEUE_HEADER = ['job_id', 'codes_json', 'requested_at', 'requested_by',
 // 2 kho HN2/HN (site): HN2 = sheet ten goc, HN = ten goc + 'HNSOC'. SSOT duy nhat.
 var SITE_SUFFIX_ = { HN2: '', HN: 'HNSOC' };
 var SITE_LABEL_ = { HN2: 'HN2 SOC', HN: 'HN SOC' };
+// Sheet dung chung 2 kho (khong gan hau to site) — hien tai chi Users (trang Role tap trung).
+var GLOBAL_BASES_ = { Users: 1 };
 var PROP_FOLDER_HN = 'FOLDER_ID_HN';
 function normSite_(s) {
   s = String(s || '').trim().toUpperCase();
@@ -40,7 +42,11 @@ function normSite_(s) {
   return 'HN2';
 }
 function siteSuffix_(s) { return SITE_SUFFIX_[normSite_(s)] || ''; }
-function sheetName_(base, site) { return String(base || '') + siteSuffix_(site); }
+function sheetName_(base, site) {
+  var b = String(base || '');
+  if (GLOBAL_BASES_[b]) return b;
+  return b + siteSuffix_(site);
+}
 function getSheetFor_(base, header, site) { return getSheet_(sheetName_(base, site), header); }
 
 // KHỚP import: scripts/import-csv.js STATUS_RULES (copy, không tự bịa thêm).
@@ -1414,6 +1420,7 @@ function seedAdmins_() {
   return raw.split(',').map(normEmail_).filter(Boolean);
 }
 
+// Users la sheet dung chung 2 kho (GLOBAL_BASES_) — site giu de dong bo chu ky RPC.
 function ensureUsersHeader_(site) {
   var sh = getSheetFor_('Users', USERS_HEADER, site);
   if (sh.getLastColumn() < USERS_HEADER.length) {
@@ -1424,10 +1431,7 @@ function ensureUsersHeader_(site) {
 
 function readUsers_(site) {
   var sh = ensureUsersHeader_(site);
-  var last = sh.getLastRow();
-  if (last < 2) return { sh: sh, rows: [] };
-  var vals = sh.getRange(2, 1, last - 1, USERS_HEADER.length).getValues();
-  return { sh: sh, rows: vals };
+  return { sh: sh, rows: readRowsOf_(sh, USERS_HEADER.length) };
 }
 
 function getRole_(site) {
@@ -1494,9 +1498,15 @@ function currentPerms_(site) {
   return PERMS_MEMO_[site];
 }
 
+// 2 key quan tri trang Role khong chan theo kho — Role la 1 danh sach dung chung 2 kho.
+var ROLE_KEYS_ = { roleView: 1, roleManage: 1 };
 function checkPerm_(key, site) {
   if (getRole_(site) === 'ADMIN') return;
   var p = currentPerms_(site);
+  var sd = normSite_(site);
+  if (!ROLE_KEYS_[key] && !p[sd === 'HN' ? 'siteHN' : 'siteHN2']) {
+    throw new Error('Bạn không có quyền truy cập ' + SITE_LABEL_[sd] + '. Liên hệ ADMIN.');
+  }
   if (!p[key]) throw new Error('Bạn không có quyền: ' + (PERM_LABELS[key] || key) + '. Liên hệ ADMIN.');
 }
 
@@ -1620,6 +1630,77 @@ function deleteUser(email, site) {
       return { email: email };
     }));
   } catch (e) { Logger.log(e); return fail(e.message); }
+}
+
+// Doc toan bo data (bo header) cua 1 sheet thanh mang rows — 1 lan getValues.
+function readRowsOf_(sh, nCols) {
+  var last = sh.getLastRow();
+  if (last < 2) return [];
+  return sh.getRange(2, 1, last - 1, nCols).getValues();
+}
+
+// Gop 2 danh sach user thanh 1 (email khong trung). Q1: ADMIN thang + quyen hop nhat.
+// Q3: cot kho (siteHN/siteHN2) lay theo membership — co ten trong list kho nao thi vao kho do.
+// Tra { rows, emails, log }: rows san sang setValues theo USERS_HEADER.
+function mergeUsersRows_(baseRows, extraRows) {
+  var order = [], map = {}, log = [];
+  function add(row, inHN2, inHN) {
+    var email = normEmail_(row[0]);
+    if (!email) return;
+    var role = String(cellText_(row[1])).trim().toUpperCase() === 'ADMIN' ? 'ADMIN' : 'STAFF';
+    var perms = parsePerms_(cellText_(row[4]), role);
+    var cur = map[email];
+    if (!cur) {
+      cur = map[email] = { email: email, role: role, addedAt: cellText_(row[2]),
+        addedBy: cellText_(row[3]), perms: perms, hn2: false, hn: false };
+      order.push(email);
+    } else {
+      if (role === 'ADMIN' && cur.role !== 'ADMIN') { cur.role = 'ADMIN'; log.push(email + ': ADMIN thang'); }
+      PERM_KEYS.forEach(function (k) { if (perms[k]) cur.perms[k] = 1; });
+      if (!cur.addedAt) cur.addedAt = cellText_(row[2]);
+      if (!cur.addedBy) cur.addedBy = cellText_(row[3]);
+    }
+    if (inHN2) cur.hn2 = true;
+    if (inHN) cur.hn = true;
+  }
+  (baseRows || []).forEach(function (r) { add(r, true, false); });
+  (extraRows || []).forEach(function (r) { add(r, false, true); });
+  var rows = order.map(function (email) {
+    var u = map[email];
+    u.perms.siteHN2 = u.hn2 ? 1 : 0;
+    u.perms.siteHN = u.hn ? 1 : 0;
+    var clean = PERM_KEYS.filter(function (k) { return u.perms[k]; });
+    var str = u.role === 'ADMIN' ? '' : (clean.length ? clean.join(',') : 'NONE');
+    return [u.email, u.role, textDate_(u.addedAt), u.addedBy, str];
+  });
+  return { rows: rows, emails: order, log: log };
+}
+
+// Chay 1 lan trong Apps Script editor (KHONG phai RPC): gop UsersHNSOC -> Users,
+// doi ten sheet cu thanh UsersHNSOC_backup_<dd-MM-yyyy>. Xem ket qua o Execution log.
+function mergeUsersHNSOCOnce() {
+  var ss = ss_();
+  var legacy = ss.getSheetByName('UsersHNSOC');
+  if (!legacy) { Logger.log('Khong co UsersHNSOC — khong can gop.'); return 'skipped'; }
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) throw new Error('He thong dang ban — thu lai sau.');
+  try {
+    var sh = ensureUsersHeader_('HN2');
+    if (legacy.getLastColumn() < USERS_HEADER.length) {
+      legacy.getRange(1, 1, 1, USERS_HEADER.length).setValues([USERS_HEADER]);
+    }
+    var baseRows = readRowsOf_(sh, USERS_HEADER.length);
+    var extraRows = readRowsOf_(legacy, USERS_HEADER.length);
+    var m = mergeUsersRows_(baseRows, extraRows);
+    var oldLast = sh.getLastRow();
+    if (oldLast > 1) sh.getRange(2, 1, oldLast - 1, USERS_HEADER.length).clearContent();
+    if (m.rows.length) sh.getRange(2, 1, m.rows.length, USERS_HEADER.length).setValues(m.rows);
+    legacy.setName('UsersHNSOC_backup_' + todayPart_());
+    Logger.log('Users gop: HN2 ' + baseRows.length + ' dong + HNSOC ' + extraRows.length
+      + ' dong -> ' + m.rows.length + ' dong.');
+    Logger.log('Trung email: ' + (m.log.length ? m.log.join(' | ') : 'khong co'));
+    return 'merged';
+  } finally { lock.releaseLock(); }
 }
 
 // ===== Feedback — nhom chat gop y chung, thao tac an danh tung message append-only =====

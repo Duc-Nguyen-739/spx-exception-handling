@@ -925,7 +925,7 @@ var PERM_LABELS={create:'Tạo mới',resolve:'Resolve',liq:'Thanh lý',print:'I
 function can(k){var m=state.me||{};if(m.role==='ADMIN')return true;return !!(m.perms&&m.perms[k]);}
 var PERM_GROUPS=[{g:'Kho ★',keys:['siteHN','siteHN2']},{g:'Đơn & thao tác chính',keys:['create','resolve','liq','print','dash']},{g:'Sửa hồ sơ đơn',keys:['note','editStatus','editPhotos']},{g:'Backlog & Góp ý',keys:['backlog','feedback','adminReply']},{g:'Quản trị',keys:['roleView','roleManage']}];
 var PERM_SHORT={create:'Tạo mới',resolve:'Resolve',liq:'Thanh lý',print:'In mã',siteHN:'HN SOC',siteHN2:'HN2 SOC',dash:'Dashboard',note:'Mô tả',editStatus:'Đổi TT',editPhotos:'Ảnh',backlog:'Backlog',feedback:'Góp ý',adminReply:'Reply',roleView:'Xem Role',roleManage:'User'};
-var PERM_INFO={create:{off:'Ẩn Tạo mới'},resolve:{off:'Ẩn nút Resolve'},liq:{off:'Ẩn tab Thanh lý'},print:{off:'Ẩn nút In Mã'},siteHN:{off:'Phân Station'},siteHN2:{off:'Phân Station'},dash:{off:'Ẩn tab Dashboard'},note:{off:'Ẩn Mô tả/Ghi chú'},editStatus:{off:'Ẩn khối Trạng thái'},editPhotos:{off:'Ẩn khối Ảnh'},backlog:{off:'Ẩn tab Backlog'},feedback:{off:'Ẩn nút Góp ý'},adminReply:{off:'Ẩn nút Reply'},roleView:{off:'Ẩn tab Role'},roleManage:{off:'Ẩn ô Thêm + cột Xóa'}};
+var PERM_INFO={create:{off:'Ẩn Tạo mới'},resolve:{off:'Ẩn nút Resolve'},liq:{off:'Ẩn tab Thanh lý'},print:{off:'Ẩn nút In Mã'},siteHN:{off:'Chặn vào kho HN'},siteHN2:{off:'Chặn vào kho HN2'},dash:{off:'Ẩn tab Dashboard'},note:{off:'Ẩn Mô tả/Ghi chú'},editStatus:{off:'Ẩn khối Trạng thái'},editPhotos:{off:'Ẩn khối Ảnh'},backlog:{off:'Ẩn tab Backlog'},feedback:{off:'Ẩn nút Góp ý'},adminReply:{off:'Ẩn nút Reply'},roleView:{off:'Ẩn tab Role'},roleManage:{off:'Ẩn ô Thêm + cột Xóa'}};
 var PAGE=150;
 // 2 kho HN2/HN (KHOP Code.gs normSite_/sheetName_): HN2 sheet goc, HN duoi HNSOC.
 var SITE_LIST=[{id:'HN2',label:'HN2 SOC'},{id:'HN',label:'HN SOC'}];
@@ -2066,7 +2066,10 @@ msg('msgLiq',e.message||'Lỗi thanh lý');
 }
 
 async function loadMe(){
-try{var r=await gs('me',[siteCur]);if(r.ok){state.me=r.data;renderWho();return;}}catch(e){}
+try{var r=await gs('me',[siteCur]);if(r.ok){state.me=r.data;renderWho();
+var other=siteCur==='HN'?'HN2':'HN';
+if(state.me.email&&!siteCan_(siteCur)&&siteCan_(other)){await setSite_(other);}
+return;}}catch(e){}
 state.me={email:'',role:'STAFF',perms:{}};renderWho();
 }
 function renderWho(){
@@ -2112,7 +2115,8 @@ return '<span class="seg"><button class="'+(a?'on a':'')+'" data-rk="ADMIN" data
 function cntCell_(u){var t=PERM_KEYS.length,n=(u.role==='ADMIN'?t:permCount_(u));return '<span class="mini2">'+n+'/'+t+'</span><span class="bar"><i style="width:'+Math.round(n/t*100)+'%"></i></span>';}
 function permTableHtml_(mutable){
 var me=(state.me&&state.me.email)||'';
-var h='<div class="uptblWrap"><table class="uptbl"><thead><tr class="ugr"><th rowspan="2" class="pin" style="text-align:left">Email người dùng</th><th rowspan="2" class="cRole hlk">Vai trò ★</th>';
+var h='<div class="sub2" style="margin:0 0 6px">Danh sách dùng chung cho cả 2 kho — cột <b>HN SOC</b>/<b>HN2 SOC</b> quyết định kho mỗi người vào được.</div>';
+h+='<div class="uptblWrap"><table class="uptbl"><thead><tr class="ugr"><th rowspan="2" class="pin" style="text-align:left">Email người dùng</th><th rowspan="2" class="cRole hlk">Vai trò ★</th>';
 PERM_GROUPS.forEach(function(g){h+='<th colspan="'+g.keys.length+'"'+(g.g==='Kho ★'?' class="hlk"':'')+'>'+esc(g.g)+'</th>';});
 h+='<th rowspan="2" class="cCnt">Đã mở</th><th rowspan="2" class="cDel">Xóa</th></tr><tr>';
 PERM_KEYS.forEach(function(k){var st=colStat_(k);var cls=st.total&&st.on===st.total?'all':(st.on?'':' none');var dis=mutable?'':' disabled';

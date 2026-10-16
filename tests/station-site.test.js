@@ -32,6 +32,8 @@ test('station-site: normSite_/sheetName_ map dung, la ve HN2', () => {
   assert.strictEqual(vm.runInContext("sheetName_('Items','HN')", sb), 'ItemsHNSOC');
   assert.strictEqual(vm.runInContext("sheetName_('Items','HN2')", sb), 'Items');
   assert.strictEqual(vm.runInContext("sheetName_('Backlog')", sb), 'Backlog');
+  assert.strictEqual(vm.runInContext("sheetName_('Users','HN')", sb), 'Users');
+  assert.strictEqual(vm.runInContext("sheetName_('Users','HN2')", sb), 'Users');
 });
 
 test('station-site: UI duoi logo 2 vi tri, menu khong co search', () => {

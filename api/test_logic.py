@@ -323,8 +323,12 @@ class TestPerms(unittest.TestCase):
         self.assertEqual((q["siteHN"], q["editStatus"], q["roleView"]), (1, 1, 1))
 
     def test_check_perm(self):
-        self.assertEqual(check_perm({"create": 1}, "create"), (True, ""))
-        self.assertEqual(check_perm({"create": 0}, "create")[0], False)
+        self.assertEqual(check_perm({"create": 1, "siteHN2": 1}, "create", "HN2"), (True, ""))
+        self.assertEqual(check_perm({"create": 0, "siteHN2": 1}, "create", "HN2")[0], False)
+        # chan theo kho: co 'create' nhung khong co quyen vao kho HN
+        self.assertIn("truy cập HN SOC", check_perm({"create": 1, "siteHN2": 1}, "create", "HN")[1])
+        # 2 key quan tri trang Role mien chan theo kho
+        self.assertEqual(check_perm({"roleView": 1, "siteHN": 1}, "roleView", "HN"), (True, ""))
 
 
 class TestSite(unittest.TestCase):
@@ -346,9 +350,12 @@ class TestSite(unittest.TestCase):
         self.assertEqual(sheet_name("Backlog", None), "Backlog")
         for b in ["Logic", "Note", "Backlog", "Feedback", "FeedbackReplies",
                   "PrintQueue", "Thumbs", "PrintedCodes", "ActivityLog",
-                  "Photos", "Items", "Users"]:
+                  "Photos", "Items"]:
             self.assertEqual(sheet_name(b, "HN"), b + "HNSOC")
             self.assertEqual(sheet_name(b, "HN2"), b)
+        # Users dung chung 2 kho (Code.gs GLOBAL_BASES_)
+        self.assertEqual(sheet_name("Users", "HN"), "Users")
+        self.assertEqual(sheet_name("Users", "HN2"), "Users")
 
     def test_site_labels(self):
         self.assertEqual(SITE_LABELS, {"HN2": "HN2 SOC", "HN": "HN SOC"})

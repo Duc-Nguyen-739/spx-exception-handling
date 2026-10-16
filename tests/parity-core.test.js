@@ -25,6 +25,7 @@ const NOW_PY = '@dt:2026-10-13T12:00:00+07:00';
 
 const sb = makeSandbox([
   extractVar(gs, 'SITE_SUFFIX_'),
+  extractVar(gs, 'GLOBAL_BASES_'),
   extractVar(gs, 'STATUS_RULES'),
   ...GAS_FNS.map((n) => extractFn(gs, n)),
   'Date.now = function () { return ' + NOW_EPOCH + '; };',

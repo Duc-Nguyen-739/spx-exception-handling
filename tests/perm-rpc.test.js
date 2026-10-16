@@ -19,6 +19,9 @@ function permSandbox(role, perms) {
   };
   vm.createContext(sb);
   vm.runInContext(mK[0] + '\n' + mD[0] + '\n' + mL[0], sb);
+  vm.runInContext("var ROLE_KEYS_={roleView:1,roleManage:1};", sb);
+  vm.runInContext("function normSite_(s){s=String(s||'').trim().toUpperCase();if(s==='HN'||s==='HN SOC'||s==='HNSOC')return 'HN';return 'HN2';}", sb);
+  vm.runInContext("var SITE_LABEL_={HN2:'HN2 SOC',HN:'HN SOC'};", sb);
   vm.runInContext(extractFn(gs, 'parsePerms_'), sb);
   sb.getRole_ = () => sb.__role;
   sb.currentPerms_ = () => sb.__perms;
@@ -27,13 +30,25 @@ function permSandbox(role, perms) {
 }
 
 test('perm-rpc: checkPerm_ cho qua khi co quyen', () => {
-  const sb = permSandbox('STAFF', { create: 1 });
-  vm.runInContext("checkPerm_('create')", sb);
+  const sb = permSandbox('STAFF', { create: 1, siteHN2: 1 });
+  vm.runInContext("checkPerm_('create','HN2')", sb);
 });
 
 test('perm-rpc: checkPerm_ throw dung thong bao khi thieu', () => {
-  const sb = permSandbox('STAFF', { create: 0 });
-  assert.throws(() => vm.runInContext("checkPerm_('create')", sb), /không có quyền/);
+  const sb = permSandbox('STAFF', { create: 0, siteHN2: 1 });
+  assert.throws(() => vm.runInContext("checkPerm_('create','HN2')", sb), /không có quyền/);
+});
+
+test('perm-rpc: chan theo kho — STAFF khong co siteHN khong thao tac duoc o HN', () => {
+  const sb = permSandbox('STAFF', { create: 1, siteHN2: 1, siteHN: 0 });
+  vm.runInContext("checkPerm_('create','HN2')", sb);
+  assert.throws(() => vm.runInContext("checkPerm_('create','HN')", sb), /truy c\u1eadp HN/);
+});
+
+test('perm-rpc: checkPerm_ — roleView/roleManage mien chan theo kho', () => {
+  const sb = permSandbox('STAFF', { roleView: 1, roleManage: 1, siteHN2: 1, siteHN: 0 });
+  vm.runInContext("checkPerm_('roleView','HN')", sb);
+  vm.runInContext("checkPerm_('roleManage','HN')", sb);
 });
 
 test('perm-rpc: ADMIN luon qua', () => {

@@ -31,7 +31,9 @@ Spreadsheet ID để ở Script Properties `SPREADSHEET_ID` (không hardcode —
 | K | `reporter` | Người nhập | Email; trống ở dữ liệu cũ |
 | L | `note` | — | Ghi chú vận hành (mã lạ, nhiều MVDN…) |
 
-### `Users` (phân quyền ADMIN/STAFF)
+### `Users` (phân quyền ADMIN/STAFF — sheet **dùng chung 2 kho**, trang Role tập trung)
+
+- 1 email = 1 vai trò (`ADMIN`/`STAFF`) + 1 bộ quyền cho cả 2 kho; cột `perms` chứa key quyền chung, trong đó 2 key `siteHN`/`siteHN2` quyết định kho mỗi người vào được (`checkPerm_` chặn thật ở server, trừ `roleView`/`roleManage`). `listUsers` đứng kho nào cũng trả cùng 1 danh sách.
 
 | `email` | `role` (`ADMIN`/`STAFF`) | `added_at` | `added_by` |
 
@@ -79,8 +81,11 @@ Sửa 2026-10-10: sheet chỉ còn 16 cột A-P (bỏ cột TO inbound, không c
 
 HN2 dùng đúng tên dưới đây; HN dùng tên + đuôi `HNSOC` (`ItemsHNSOC`, `PhotosHNSOC`,
 `ActivityLogHNSOC`, `PrintedCodesHNSOC`, `PrintQueueHNSOC`, `FeedbackHNSOC`,
-`FeedbackRepliesHNSOC`, `BacklogHNSOC`, `UsersHNSOC`). Server chọn tên qua
-`sheetName_()` duy nhất theo `site` cuối mỗi RPC. `Logic`/`Note`/`Thumbs` không có code nào
+`FeedbackRepliesHNSOC`, `BacklogHNSOC`). Server chọn tên qua
+`sheetName_()` duy nhất theo `site` cuối mỗi RPC. Ngoại lệ: `Users` không tách kho
+(`GLOBAL_BASES_` trong `Code.gs`) — đứng kho nào RPC ghi cũng bị `checkPerm_`
+chặn theo cột kho của người gọi; gộp 1 lần từ `UsersHNSOC` cũ bằng
+`mergeUsersHNSOCOnce()` (sheet cũ đổi tên `UsersHNSOC_backup_<ngày>`). `Logic`/`Note`/`Thumbs` không có code nào
 gọi nên không tách bằng code. Ảnh HN nằm cây `FOLDER_ID_HN` (subfolder `YYYY-MM`).
 
 
