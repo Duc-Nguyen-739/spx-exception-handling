@@ -12,6 +12,9 @@ from api.logic import (
     PERM_KEYS, PERM_DEFAULT, parse_perms, check_perm,
     SITE_SUFFIX, SITE_LABELS, norm_site, sheet_name,
 )
+from api.logic import (
+    _strip, _norm_head, _valid_ymd, parse_created_at, date_part, _max_seq,
+)
 
 
 class TestCodeFormat(unittest.TestCase):
@@ -350,6 +353,53 @@ class TestSite(unittest.TestCase):
     def test_site_labels(self):
         self.assertEqual(SITE_LABELS, {"HN2": "HN2 SOC", "HN": "HN SOC"})
         self.assertEqual(SITE_SUFFIX, {"HN2": "", "HN": "HNSOC"})
+
+
+class TestHelpersDirect(unittest.TestCase):
+    """Helper thuần trước đây chỉ phủ gián tiếp — test trực tiếp edge case."""
+
+    def test_strip_diacritics(self):
+        for raw, want in (
+            ("Tìm thấy Bill", "tim thay bill"),
+            ("ĐÃ VỨT", "da vut"),
+            ("  Thanh Lý  ", "  thanh ly  "),
+        ):
+            with self.subTest(raw=raw):
+                self.assertEqual(_strip(raw), want)
+
+    def test_date_part_format(self):
+        self.assertEqual(date_part(datetime(2026, 10, 6, tzinfo=TZ)), "06-10-2026")
+
+    def test_max_seq_ignores_bad_suffix(self):
+        self.assertEqual(_max_seq(["Box.06-10-2026.1", "Box.06-10-2026.x"], "Box.06-10-2026."), 1)
+        self.assertEqual(_max_seq([], "Box.06-10-2026."), 0)
+
+    def test_parse_created_at_formats(self):
+        self.assertEqual(
+            parse_created_at("06/10/2026 18:01:00"),
+            datetime(2026, 10, 6, 18, 1, 0, tzinfo=TZ),
+        )
+        self.assertEqual(
+            parse_created_at("06/10/2026"),
+            datetime(2026, 10, 6, 0, 0, 0, tzinfo=TZ),
+        )
+        self.assertIsNone(parse_created_at("khong-phai-ngay"))
+        self.assertIsNone(parse_created_at(None))
+
+    def test_valid_ymd_leap(self):
+        self.assertTrue(_valid_ymd(2024, 2, 29))
+        self.assertFalse(_valid_ymd(2023, 2, 29))
+        self.assertFalse(_valid_ymd(2026, 13, 1))
+
+    def test_norm_head_variants(self):
+        for raw, want in (
+            ("From Status", "fromstatus"),
+            ("To Status", "tostatus"),
+            ("Lý do", "lydo"),
+            ("Mã Đơn", "madon"),
+        ):
+            with self.subTest(raw=raw):
+                self.assertEqual(_norm_head(raw), want)
 
 
 if __name__ == "__main__":
