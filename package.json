@@ -6,6 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "test": "node --test tests/*.test.js",
+    "test:cov": "node --test --experimental-test-coverage tests/*.test.js",
     "test:py": "python3 -m unittest discover -s api -p 'test_*.py'",
     "test:chrome": "node scripts/test-local-mock.js",
     "check:drift": "node scripts/check-drift.js",

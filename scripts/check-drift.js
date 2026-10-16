@@ -30,7 +30,8 @@ const CORE_PAIRS = [
   { gas: 'canonicalStatus_', py: 'canonical_status' },
   { gas: 'codeDate_', py: 'code_date' },
   { gas: 'parseCreatedSmart_', py: 'parse_created_smart' },
-  { gas: 'driveIdFromUrl_', py: 'extract_drive_id' },
+  // fileIdOf_ (không phải driveIdFromUrl_): giữ ID trần + bóc link — khớp extract_drive_id.
+  { gas: 'fileIdOf_', py: 'extract_drive_id' },
   { gas: 'storageDays_', py: 'storage_days' },
   { gas: 'normSite_', py: 'norm_site' },
   { gas: 'sheetName_', py: 'sheet_name' },

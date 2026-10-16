@@ -4,18 +4,9 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 
-const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
+const { extractFn } = require('./gs-vm.js');
 
-function extractFn(name) {
-  const start = gs.indexOf('function ' + name + '(');
-  assert.ok(start >= 0, 'missing ' + name);
-  let depth = 0, end = start;
-  for (let i = start; i < gs.length; i++) {
-    if (gs[i] === '{') depth++;
-    if (gs[i] === '}') { depth--; if (!depth) { end = i + 1; break; } }
-  }
-  return gs.slice(start, end);
-}
+const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
 
 function permSandbox(role, perms) {
   const mK = gs.match(/var PERM_KEYS\s*=\s*(\[[\s\S]*?\]);/);
@@ -28,10 +19,10 @@ function permSandbox(role, perms) {
   };
   vm.createContext(sb);
   vm.runInContext(mK[0] + '\n' + mD[0] + '\n' + mL[0], sb);
-  vm.runInContext(extractFn('parsePerms_'), sb);
+  vm.runInContext(extractFn(gs, 'parsePerms_'), sb);
   sb.getRole_ = () => sb.__role;
   sb.currentPerms_ = () => sb.__perms;
-  vm.runInContext(extractFn('checkPerm_'), sb);
+  vm.runInContext(extractFn(gs, 'checkPerm_'), sb);
   return sb;
 }
 
@@ -62,19 +53,19 @@ function decideBranch(toStatus, cur, delN, addN) {
 
 test('perm-rpc: adminEditItem tach 3 quyen — STAFF doi status can editStatus', () => {
   assert.deepStrictEqual(decideBranch('thanh_ly', 'chua_xu_ly', 0, 0), ['editStatus']);
-  const blk = extractFn('adminEditItem');
+  const blk = extractFn(gs, 'adminEditItem');
   assert.ok(blk.includes("checkPerm_('editStatus',"), 'missing editStatus gate');
 });
 
 test('perm-rpc: adminEditItem — chi mo ta can note', () => {
   assert.deepStrictEqual(decideBranch('', 'chua_xu_ly', 0, 0), ['note']);
-  const blk = extractFn('adminEditItem');
+  const blk = extractFn(gs, 'adminEditItem');
   assert.ok(blk.includes("checkPerm_('note',"), 'missing note gate');
 });
 
 test('perm-rpc: adminEditItem — them anh can editPhotos', () => {
   assert.deepStrictEqual(decideBranch('', 'chua_xu_ly', 0, 1), ['editPhotos']);
-  const blk = extractFn('adminEditItem');
+  const blk = extractFn(gs, 'adminEditItem');
   assert.ok(blk.includes("checkPerm_('editPhotos',"), 'missing editPhotos gate');
 });
 
@@ -105,7 +96,7 @@ function runSetUserPerms(opts) {
     }),
   };
   vm.createContext(sb);
-  vm.runInContext(extractFn('setUserPerms'), sb);
+  vm.runInContext(extractFn(gs, 'setUserPerms'), sb);
   const args = JSON.stringify([opts.email, opts.role, opts.keys]);
   const res = vm.runInContext('setUserPerms.apply(null,' + args + ')', sb);
   return { res, writes };

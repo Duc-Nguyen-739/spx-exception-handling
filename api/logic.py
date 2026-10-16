@@ -204,7 +204,7 @@ def can_liquidate(status):
 
 
 def extract_drive_id(s):
-    # KHỚP Code.gs driveIdFromUrl_: nhận file ID trần hoặc link Drive (?id= / /d/).
+    # KHỚP Code.gs fileIdOf_: nhận file ID trần hoặc link Drive (?id= / /d/).
     import re as _re
     s = (s or "").strip()
     if _re.match(r"^[A-Za-z0-9_-]{10,}$", s):

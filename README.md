@@ -47,7 +47,9 @@ Workflows giống repo `spx-diem-danh`:
 
 ## Verify
 
-`npm test` · `npm run test:py` · `npm run check:drift` · `npm run build:local` · `npm run test:chrome` (lần đầu chạy `npm run setup:chrome` để tải Chrome for Testing chính chủ về `.chrome/`).
+`npm test` · `npm run test:py` · `npm run check:drift` · `npm run build:local` · `npm run test:chrome` · `npm run test:cov` (coverage built-in, không gate CI — chỉ tính file `require()` được; lần đầu chạy `npm run setup:chrome` để tải Chrome for Testing chính chủ về `.chrome/`).
+
+- `npm test` có thêm: `tests/rpc-guard.test.js` (mọi `gs('fn')` trong `index.html` phải là hàm công khai của `Code.gs` + có trong mock) và `tests/parity-core.test.js` (parity hành vi 10 cặp CORE `Code.gs` ↔ `api/logic.py` qua `python3`; thiếu python3 thì tự skip).
 
 - `check:drift` — so cấu trúc 3 bản mirror `Code.gs` ↔ `api/logic.py` ↔ `scripts/import-csv.js` (hàm CORE, `STATUS_RULES`, `STATUS_LABEL`); lệch → exit 1. Cũng nằm trong `npm test` (`tests/drift.test.js`).
 
