@@ -74,6 +74,9 @@ test('station-site: doi site xoa cache list + anh + liq', () => {
   assert.ok(b.includes('blCache=null'), 'xoa backlog cache');
   assert.ok(b.includes('state.liq=[]'), 'xoa lo thanh ly chua gui');
   assert.ok(b.includes('photoCache={}'), 'xoa cache anh kho cu');
+  assert.ok(b.includes("getElementById('grid')") && b.includes("innerHTML=''"), 'xoa luoi ngay khi doi site');
+  assert.ok(b.includes('renderSummary()'), 'reset pills ngay khi doi site');
+  assert.ok(b.includes("msg('msgMain','Đang tải"), 'hien Dang tai ngay khi doi site');
 });
 
 test('station-site: moi RPC sheet kem site cuoi args', () => {
