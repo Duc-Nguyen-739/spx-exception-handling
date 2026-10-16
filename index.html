@@ -2848,6 +2848,8 @@ async function sendChat(){
     h+=list.length?chatBubble('🤖','Tìm thấy <b>'+list.length+' đơn</b> tương đồng nhất:'+list.map(chatCardHtml).join(''))
       :chatBubble('🤖','Không tìm thấy đơn phù hợp — thử tên hoặc ảnh khác.');
     chatThreadHtml(h);msg('msgChat','',true);
+    chatPhotoB64='';var ci=document.getElementById('chatPhoto');if(ci)ci.value='';
+    if(nm)nm.value='';if(tm)tm.value='';if(qk)qk.value='';
   }catch(e){msg('msgChat',e.message||'Lỗi tìm đơn.');}
 }
 var aiBubMoved=0,aiBubDrag=null;
