@@ -286,18 +286,22 @@ tr:last-child td{border-bottom:none}
 td .st{background:var(--bg);color:var(--mut)}
 td .st.adm{background:var(--tint);color:var(--o)}
 #usersTable .roleBtn{font-size:10px;padding:6px 11px;border-radius:8px}
-#usersTable .uptblWrap{overflow-x:auto}
-#usersTable table.uptbl{min-width:1380px}
+#usersTable .uptblWrap{overflow-x:auto;background:var(--card);border:1px solid #d9dee6;border-radius:12px}
+#usersTable table.uptbl{min-width:1380px;border-collapse:collapse}
+#usersTable .uptbl th,#usersTable .uptbl td{border:1px solid #d9dee6}
 #usersTable .uptbl th.cP,#usersTable .uptbl td.cP{width:64px;text-align:center;padding-left:3px;padding-right:3px}
-#usersTable .uptbl th.pin,#usersTable .uptbl td.pin{position:sticky;left:0;background:var(--card);z-index:2;min-width:210px}
-#usersTable .uptbl thead th{position:sticky;top:0;z-index:3}
-#usersTable .ugr th{text-align:center;font-size:9px;color:var(--navy)}
-#usersTable .hlk{background:#fff7e0}
-#usersTable th.hlk{background:#f79009;color:#fff}
-#usersTable td.hlk{box-shadow:inset 0 0 0 1.5px #f79009}
+#usersTable .uptbl th.pin,#usersTable .uptbl td.pin{position:sticky;left:0;z-index:2;min-width:210px}
+#usersTable .uptbl td.pin{background:var(--card)}
+#usersTable .uptbl thead th{position:sticky;top:0;z-index:3;background:var(--navy);color:#fff;border-color:#33475f;text-align:center}
+#usersTable .uptbl thead tr.ugr th{background:#243c64;font-size:9px}
+#usersTable .uptbl thead th.pin{background:var(--navy)}
+#usersTable .uptbl thead tr.ugr th.pin{background:#243c64}
+#usersTable .uptbl tbody tr:nth-child(even) td{background:#f8fafc}
+#usersTable .uptbl tbody tr:hover td{background:#eef4ff}
+#usersTable .mono{font-family:inherit;font-size:12.5px;font-weight:600;color:var(--navy)}
 #whoTxt small{display:block;font-size:8px;font-weight:800;color:var(--o);line-height:1.3}
-#usersTable .hpk{border:none;background:transparent;font-family:inherit;cursor:pointer;display:inline-flex;flex-direction:column;gap:2px;align-items:center;padding:2px 0;color:var(--navy);font-size:10px;font-weight:800;line-height:1.25}
-#usersTable .hpk .colcnt{font-size:9px;font-weight:800;color:var(--mut);background:var(--bg);border-radius:99px;padding:1px 6px}
+#usersTable .hpk{border:none;background:transparent;font-family:inherit;cursor:pointer;display:inline-flex;flex-direction:column;gap:2px;align-items:center;padding:2px 0;color:#fff;font-size:10px;font-weight:800;line-height:1.25}
+#usersTable .hpk .colcnt{font-size:9px;font-weight:800;color:#fff;background:rgba(255,255,255,.18);border-radius:99px;padding:1px 6px}
 #usersTable .ck{width:40px;height:22px;border-radius:99px;border:none;background:#dbe1ea;display:inline-block;position:relative;cursor:pointer;padding:0;vertical-align:middle}
 #usersTable .ck span{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(23,43,72,.35);transition:left .15s}
 #usersTable .ck.on{background:var(--navy)}
@@ -923,7 +927,7 @@ var PERM_KEYS=['siteHN','siteHN2','create','resolve','liq','print','dash','note'
 // KHOP server Code.gs:PERM_KEYS — guard tests/perm-model.test.js
 var PERM_LABELS={create:'Tạo mới',resolve:'Resolve',liq:'Thanh lý',print:'In mã',siteHN:'HN SOC',siteHN2:'HN2 SOC',dash:'Dashboard',note:'Mô tả',editStatus:'Đổi TT',editPhotos:'Ảnh',backlog:'Backlog',feedback:'Góp ý',adminReply:'Reply',roleView:'Xem Role',roleManage:'User'};
 function can(k){var m=state.me||{};if(m.role==='ADMIN')return true;return !!(m.perms&&m.perms[k]);}
-var PERM_GROUPS=[{g:'Kho ★',keys:['siteHN','siteHN2']},{g:'Đơn & thao tác chính',keys:['create','resolve','liq','print','dash']},{g:'Sửa hồ sơ đơn',keys:['note','editStatus','editPhotos']},{g:'Backlog & Góp ý',keys:['backlog','feedback','adminReply']},{g:'Quản trị',keys:['roleView','roleManage']}];
+var PERM_GROUPS=[{g:'Kho',keys:['siteHN','siteHN2']},{g:'Đơn & thao tác chính',keys:['create','resolve','liq','print','dash']},{g:'Sửa hồ sơ đơn',keys:['note','editStatus','editPhotos']},{g:'Backlog & Góp ý',keys:['backlog','feedback','adminReply']},{g:'Quản trị',keys:['roleView','roleManage']}];
 var PERM_SHORT={create:'Tạo mới',resolve:'Resolve',liq:'Thanh lý',print:'In mã',siteHN:'HN SOC',siteHN2:'HN2 SOC',dash:'Dashboard',note:'Mô tả',editStatus:'Đổi TT',editPhotos:'Ảnh',backlog:'Backlog',feedback:'Góp ý',adminReply:'Reply',roleView:'Xem Role',roleManage:'User'};
 var PERM_INFO={create:{off:'Ẩn Tạo mới'},resolve:{off:'Ẩn nút Resolve'},liq:{off:'Ẩn tab Thanh lý'},print:{off:'Ẩn nút In Mã'},siteHN:{off:'Chặn vào kho HN'},siteHN2:{off:'Chặn vào kho HN2'},dash:{off:'Ẩn tab Dashboard'},note:{off:'Ẩn Mô tả/Ghi chú'},editStatus:{off:'Ẩn khối Trạng thái'},editPhotos:{off:'Ẩn khối Ảnh'},backlog:{off:'Ẩn tab Backlog'},feedback:{off:'Ẩn nút Góp ý'},adminReply:{off:'Ẩn nút Reply'},roleView:{off:'Ẩn tab Role'},roleManage:{off:'Ẩn ô Thêm + cột Xóa'}};
 var PAGE=150;
@@ -2116,17 +2120,17 @@ function cntCell_(u){var t=PERM_KEYS.length,n=(u.role==='ADMIN'?t:permCount_(u))
 function permTableHtml_(mutable){
 var me=(state.me&&state.me.email)||'';
 var h='<div class="sub2" style="margin:0 0 6px">Danh sách dùng chung cho cả 2 kho — cột <b>HN SOC</b>/<b>HN2 SOC</b> quyết định kho mỗi người vào được.</div>';
-h+='<div class="uptblWrap"><table class="uptbl"><thead><tr class="ugr"><th rowspan="2" class="pin" style="text-align:left">Email người dùng</th><th rowspan="2" class="cRole hlk">Vai trò ★</th>';
-PERM_GROUPS.forEach(function(g){h+='<th colspan="'+g.keys.length+'"'+(g.g==='Kho ★'?' class="hlk"':'')+'>'+esc(g.g)+'</th>';});
+h+='<div class="uptblWrap"><table class="uptbl"><thead><tr class="ugr"><th rowspan="2" class="pin" style="text-align:left">Email người dùng</th><th rowspan="2" class="cRole">Vai trò</th>';
+PERM_GROUPS.forEach(function(g){h+='<th colspan="'+g.keys.length+'">'+esc(g.g)+'</th>';});
 h+='<th rowspan="2" class="cCnt">Đã mở</th><th rowspan="2" class="cDel">Xóa</th></tr><tr>';
 PERM_KEYS.forEach(function(k){var st=colStat_(k);var cls=st.total&&st.on===st.total?'all':(st.on?'':' none');var dis=mutable?'':' disabled';
-h+='<th class="cP'+((k==='siteHN'||k==='siteHN2')?' hlk':'')+'"><button class="hpk" data-ck="'+esc(k)+'"'+dis+' title="'+esc(PERM_LABELS[k]||k)+' — '+(mutable?'bấm để bật/tắt cho toàn bộ STAFF':'chi doc')+'"><span>'+esc(PERM_SHORT[k]||k)+'</span><span class="colcnt'+cls+'">'+st.on+'/'+st.total+'</span></button></th>';});
+h+='<th class="cP"><button class="hpk" data-ck="'+esc(k)+'"'+dis+' title="'+esc(PERM_LABELS[k]||k)+' — '+(mutable?'bấm để bật/tắt cho toàn bộ STAFF':'chi doc')+'"><span>'+esc(PERM_SHORT[k]||k)+'</span><span class="colcnt'+cls+'">'+st.on+'/'+st.total+'</span></button></th>';});
 h+='</tr></thead><tbody>';
 permUsers_.forEach(function(u,i){
 var isMe=u.email===me;
-h+='<tr class="'+(isMe?'me':'')+'"><td class="pin"><span class="mono" style="font-size:11px">'+esc(u.email)+'</span>'+(isMe?'<span class="selftag">Bạn</span>':'')+'<div class="sub2">Thêm '+esc(u.addedAt||'')+' · bởi '+esc(u.addedBy||'')+'</div></td>';
-h+='<td class="cRole hlk">'+roleSeg_(u,i,mutable)+'</td>';
-PERM_KEYS.forEach(function(k){h+='<td class="cP'+((k==='siteHN'||k==='siteHN2')?' hlk':'')+'">'+ckCell_(u,i,k,mutable)+'</td>';});
+h+='<tr class="'+(isMe?'me':'')+'"><td class="pin"><span class="mono">'+esc(u.email)+'</span>'+(isMe?'<span class="selftag">Bạn</span>':'')+'<div class="sub2">Thêm '+esc(u.addedAt||'')+' · bởi '+esc(u.addedBy||'')+'</div></td>';
+h+='<td class="cRole">'+roleSeg_(u,i,mutable)+'</td>';
+PERM_KEYS.forEach(function(k){h+='<td class="cP">'+ckCell_(u,i,k,mutable)+'</td>';});
 h+='<td class="cCnt">'+cntCell_(u)+'</td>';
 h+='<td class="cDel">'+(mutable&&!isMe?'<button class="roleBtn" data-del="'+esc(u.email)+'">Xóa</button>':'<span class="mini2">—</span>')+'</td></tr>';});
 return h+'</tbody></table></div>';}

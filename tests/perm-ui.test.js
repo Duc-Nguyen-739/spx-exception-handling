@@ -76,12 +76,13 @@ test('perm-ui: fbIsAdmin dung can(adminReply), nut Resolve gate', () => {
   assert.ok(html.includes("!can('resolve')"), 'nut Resolve phai gate resolve');
 });
 
-test('perm-ui: kho dau tien sau Vai tro + khoi noi bat hlk', () => {
+test('perm-ui: kho dau tien sau Vai tro, bang ke o khong highlight cot', () => {
   const i = html.indexOf('var PERM_KEYS=');
   const ks = html.slice(i, i + 300);
   assert.ok(ks.indexOf("'siteHN','siteHN2'") >= 0 && ks.indexOf("'siteHN','siteHN2'") < ks.indexOf("'create'"), 'siteHN/siteHN2 phai dau PERM_KEYS');
-  assert.ok(html.includes("class=\"cRole hlk\">Vai trò ★"), 'thieu highlight Vai tro');
-  assert.ok(html.includes("g.g==='Kho ★'?' class=\"hlk\"':"), 'thieu highlight nhom Kho');
+  assert.ok(html.includes('>Vai trò</th>'), 'header Vai tro khong sao');
+  assert.ok(!html.includes('hlk'), 'da bo highlight hlk khoi bang Role (mockup 21)');
+  assert.ok(html.includes('border:1px solid #d9dee6'), 'bang Role phai ke o');
   assert.ok(html.includes('<small>(View)</small>'), 'thieu nhan (View) duoi email');
 });
 
