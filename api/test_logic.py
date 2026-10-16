@@ -312,6 +312,13 @@ class TestPerms(unittest.TestCase):
         p = parse_perms(" CREATE , liq ", "STAFF")
         self.assertEqual((p["create"], p["liq"]), (1, 1))
 
+    def test_camel_case_insensitive(self):
+        p = parse_perms("siteHN,siteHN2,editStatus,editPhotos,adminReply,roleView,roleManage", "STAFF")
+        for k in ("siteHN", "siteHN2", "editStatus", "editPhotos", "adminReply", "roleView", "roleManage"):
+            self.assertEqual(p[k], 1)
+        q = parse_perms("SITEHN,EDITSTATUS,RoleView", "STAFF")
+        self.assertEqual((q["siteHN"], q["editStatus"], q["roleView"]), (1, 1, 1))
+
     def test_check_perm(self):
         self.assertEqual(check_perm({"create": 1}, "create"), (True, ""))
         self.assertEqual(check_perm({"create": 0}, "create")[0], False)

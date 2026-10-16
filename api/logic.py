@@ -256,14 +256,16 @@ def parse_perms(raw, role):
         return {k: (1 if PERM_DEFAULT.get(k) else 0) for k in PERM_KEYS}
     if s.lower() == "none":
         return {k: 0 for k in PERM_KEYS}
+    lower_map = {k.lower(): k for k in PERM_KEYS}
     seen = set()
     for part in s.split(","):
-        k = str(part).strip().lower()
-        if not k:
+        lk = str(part).strip().lower()
+        if not lk:
             continue
-        if k not in PERM_KEYS:
+        real = lower_map.get(lk)
+        if not real:
             continue
-        seen.add(k)
+        seen.add(real)
     return {k: (1 if k in seen else 0) for k in PERM_KEYS}
 
 

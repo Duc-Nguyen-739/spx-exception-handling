@@ -95,3 +95,10 @@ test('perm-ui: bang Role 15 cot + debounce + legend gon', () => {
   assert.ok(html.includes('id="fabCreate"'), 'thieu FAB Tao moi');
   assert.ok(html.includes('togglePermCol_'), 'thieu bat/tat ca cot');
 });
+
+test('perm-ui: toggle optimistic cache truoc khi ghi sheet + bao Luu thanh cong', () => {
+  assert.ok(html.includes('paintPermTable_'), 'thieu paint optimistic');
+  assert.ok(html.includes('bindPermTable_'), 'thieu bind lai sau paint');
+  assert.ok(html.includes('u.perms[k]=to?1:0'), 'phai update cache ngay khi bat/tat');
+  assert.ok(html.includes('Lưu thành công'), 'ghi xong phai bao Luu thanh cong');
+});

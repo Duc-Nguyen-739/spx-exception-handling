@@ -1447,12 +1447,15 @@ function parsePerms_(raw, role) {
   var s = String(raw == null ? '' : raw).trim();
   if (!s) { PERM_KEYS.forEach(function (k) { o[k] = PERM_DEFAULT[k] ? 1 : 0; }); return o; }
   if (/^none$/i.test(s)) { PERM_KEYS.forEach(function (k) { o[k] = 0; }); return o; }
+  var lowerMap = {};
+  PERM_KEYS.forEach(function (k) { lowerMap[k.toLowerCase()] = k; });
   var seen = {};
   s.split(',').forEach(function (kRaw) {
-    var k = String(kRaw).trim().toLowerCase();
-    if (!k) return;
-    if (PERM_KEYS.indexOf(k) < 0) { Logger.log('perm key la: ' + k); return; }
-    seen[k] = 1;
+    var lk = String(kRaw).trim().toLowerCase();
+    if (!lk) return;
+    var real = lowerMap[lk];
+    if (!real) { Logger.log('perm key la: ' + lk); return; }
+    seen[real] = 1;
   });
   PERM_KEYS.forEach(function (k) { o[k] = seen[k] ? 1 : 0; });
   return o;

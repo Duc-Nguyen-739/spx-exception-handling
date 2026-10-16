@@ -158,3 +158,12 @@ test('perm-model: readUsers_ dung ensureUsersHeader_', () => {
   const block = gs.slice(i, i + 600);
   assert.ok(block.includes('ensureUsersHeader_('), 'readUsers_ phai goi ensureUsersHeader_');
 });
+
+test('perm-model: parse camelCase khong phan biet hoa/thuong', () => {
+  const o = parse('siteHN,siteHN2,editStatus,editPhotos,adminReply,roleView,roleManage', 'STAFF');
+  for (const k of ['siteHN', 'siteHN2', 'editStatus', 'editPhotos', 'adminReply', 'roleView', 'roleManage']) assert.strictEqual(o[k], 1, k);
+  const o2 = parse('SITEHN,EDITSTATUS,RoleView', 'STAFF');
+  assert.strictEqual(o2.siteHN, 1);
+  assert.strictEqual(o2.editStatus, 1);
+  assert.strictEqual(o2.roleView, 1);
+});
