@@ -3,7 +3,7 @@
 > Repo: `spx-exception-handling`. GAS WebApp xử lý ngoại lệ (khung ban đầu: `Code.gs` + `index.html` + `appsscript.json`) + backend Python song song (`api/`) + CI dual workflow (`deploy.yml` + `test.yml`) giống `spx-diem-danh`. Học từ `spx-diem-danh/AGENTS.md`, đã lược bỏ luật chưa áp dụng (UI 3-file, camera, SSOT map lớn, suite 541 test) và adapt cho repo skeleton này.
 
 > [!TIP]
-> **TL;DR 60s trước khi code:** Đọc bảng luật `§1` → Checkpoint A (`§6.1`) → sửa file có tiếng Việt qua pattern deterministic `§1.1` → không lộ secret/ID (`§1` luật 1) → verify `npm test` + `test:py` + `build:local` + `test:chrome` (`§7`) → 1 issue = 1 commit + push ngay, không tự `clasp push` (CI lo).
+> **TL;DR 60s trước khi code:** Đọc bảng luật `§1` → Checkpoint A (`§6.1`) → sửa file có tiếng Việt qua pattern deterministic `§1.1` → không lộ secret/ID (`§1` luật 1) → verify `npm test` + `test:py` + `check:drift` + `build:local` + `test:chrome` (`§7`) → 1 issue = 1 commit + push ngay, không tự `clasp push` (CI lo).
 
 ## Mục lục
 
@@ -157,16 +157,19 @@ Khi trả kết quả có sửa code, thêm 1 dòng `**Rule check:** A: <tóm t�
 | **P1** | Tính năng hỏng |
 | **P2** | Cosmetic / câu chữ |
 
-Gate bắt buộc trước push (luật 4) — repo hiện skeleton, chạy đủ 4 lệnh:
+Gate bắt buộc trước push (luật 4) — chạy đủ các lệnh (số liệu đếm từ lần chạy thật 2026-10-16):
 
 | Lệnh | Chạy gì | Khi nào bắt buộc |
 | :--- | :------ | :--------------- |
-| `npm test` | `node --test tests/*.test.js` (hiện 1 smoke — tăng dần khi thêm logic) | Mọi commit |
-| `npm run test:py` | `python3 -m unittest discover -s api -p 'test_*.py'` | Đổi `api/*.py` |
-| `npm run build:local` | `scripts/build-local.js` → `index.local.html` cho `file://` (hiện stub copy `index.html`; khi tách `css.html`/`js.html` thì nâng lên inline `<?!= include() ?>` như `spx-diem-danh`) | Trước `test:chrome` |
-| `npm run test:chrome` | `scripts/test-local-mock.js` (hiện stub; khi có UI thì nâng lên CDP headless + mock `google.script.run` như `spx-diem-danh` 12 check) | Đổi UI |
+| `npm test` | `node --test tests/*.test.js` — 59 file, 304 test: pure logic + guard UI (đọc `index.html`/`Code.gs`) + `gs-syntax` + `drift` + `cdp-helper` | Mọi commit |
+| `npm run test:py` | `python3 -m unittest discover -s api -p 'test_*.py'` — mirror logic `api/logic.py` (43 test) | Đổi `api/*.py` |
+| `npm run check:drift` | `scripts/check-drift.js` — so cấu trúc `Code.gs` ↔ `api/logic.py` ↔ `scripts/import-csv.js` (hàm CORE, `STATUS_RULES`, `STATUS_LABEL`) | Thêm/đổi hàm mirror, bảng trạng thái |
+| `npm run build:local` | `scripts/build-local.js` → `index.local.html` cho `file://` (copy + chặn sót directive `<?!= ?>`; khi tách `css.html`/`js.html` thì nâng lên inline như `spx-diem-danh`) | Trước `test:chrome` |
+| `npm run test:chrome` | `scripts/test-local-mock.js` — CDP headless + mock `google.script.run` (101 check) | Đổi UI |
 
-CI `.github/workflows/test.yml` chạy đủ 4 lệnh trên. Không claim pass khi chưa có output cụ thể. `index.local.html` đã `.gitignore`/`.claspignore`.
+CI `.github/workflows/test.yml` chạy 4 lệnh: `npm test` + `test:py` + `build:local` + `test:chrome` (`check:drift` đã nằm trong `npm test` qua `tests/drift.test.js`). Không claim pass khi chưa có output cụ thể. `index.local.html` đã `.gitignore`/`.claspignore`.
+
+Self-test UI tay (agent): `npm run dev` (preview `127.0.0.1:4173`, mock tự nạp) + `node scripts/cdp-helper.js list|open <url>|eval <expr>|shot <png>|click <x> <y>|reload|close` (tự boot Chrome `.chrome/`, port 9222 — env `CDP_PORT` đổi port; `test:chrome` dùng 9223).
 
 ## §8. Security
 
@@ -203,12 +206,12 @@ Thứ tự: **(1)** Correctness **(2)** Readability **(3)** Architecture **(4)**
 
 | File | Vai trò |
 | :--- | :--- |
-| `Code.gs` | Entry `doGet` + `include()` (khung — 13 dòng) |
-| `index.html` | UI duy nhất (khung — chưa tách `css.html`/`js.html`; khi phình ra thì tách theo `spx-diem-danh §18` và giữ `index.html` chỉ HTML) |
+| `Code.gs` | Entry `doGet` + `include()` + toàn bộ server logic (Items/Photos/Users/Print/Feedback, PERM_KEYS, 2 kho HN2/HN; ~1.2k dòng) |
+| `index.html` | UI duy nhất (~266KB — chưa tách `css.html`/`js.html`; khi phình ra thì tách theo `spx-diem-danh §18` và giữ `index.html` chỉ HTML) |
 | `appsscript.json` | Manifest (`Asia/Ho_Chi_Minh`, V8, WebApp `USER_DEPLOYING`/`DOMAIN`) |
-| `api/` | Backend Python song song (hiện smoke; đổi logic → mirror cả `.gs` lẫn `api/*.py` như dual-runtime `spx-diem-danh`) |
-| `tests/` | Test JS (`node:test`, glob `tests/*.test.js` — file mới tự chạy, không cần đăng ký) |
-| `scripts/` | `build-local.js` + `test-local-mock.js` (stub — roadmap nâng cấp theo `§7`) |
+| `api/` | Backend Python mirror (`logic.py` + `test_logic.py`, marker `KHỚP Code.gs`) — đổi logic → mirror cả `.gs` lẫn `api/*.py`; gate `npm run check:drift` |
+| `tests/` | Test JS (`node:test`, glob `tests/*.test.js` — file mới tự chạy): logic thuần + guard UI/server (đọc `index.html`/`Code.gs`/`api/logic.py`) + `gs-syntax` + `drift` + `cdp-helper` |
+| `scripts/` | `build-local.js` · `test-local-mock.js` (`test:chrome`) · `chrome-path.js` (SSOT tìm Chrome) · `cdp-helper.js` (lái Chrome tay) · `setup-chrome.js` · `serve.js` (`dev`) · `check-drift.js` · `measure-gas.js` · `import-csv.js` |
 
 Contract ngoài: WebApp `/exec` production redeploy qua CI (xem `§14`). Đổi API/schema/flow → sync `README.md` cùng commit (luật 9).
 

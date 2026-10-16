@@ -16,6 +16,7 @@ const { spawn } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const { build } = require('./build-local.js');
+const { findChrome } = require('./chrome-path.js');
 
 build();
 
@@ -23,40 +24,7 @@ const CDP_PORT = 9223;
 const CDP_HTTP = 'http://127.0.0.1:' + CDP_PORT;
 const INDEX_FILE = 'file:///' + path.resolve(__dirname, '..', 'index.local.html').replace(/\\/g, '/');
 
-function findChrome() {
-  if (process.env.CHROME_PATH) return { exe: process.env.CHROME_PATH, shell: false };
-  try {
-    const local = path.join(__dirname, '..', '.chrome');
-    if (fs.existsSync(local)) {
-      const vers = fs.readdirSync(local).filter((v) => !v.startsWith('.')).sort().reverse();
-      const subs = ['chrome-headless-shell-linux64/chrome-headless-shell', 'chrome-headless-shell-linux-arm64/chrome-headless-shell', 'chrome-headless-shell-mac-arm64/chrome-headless-shell', 'chrome-headless-shell-mac-x64/chrome-headless-shell', 'chrome-headless-shell-win64/chrome-headless-shell.exe', 'chrome-headless-shell-win32/chrome-headless-shell.exe'];
-      for (const v of vers) for (const sub of subs) {
-        const p = path.join(local, v, sub);
-        if (fs.existsSync(p)) return { exe: p, shell: true };
-      }
-    }
-  } catch (e) { /* bo qua */ }
-  const cands = [
-    '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable',
-    '/usr/bin/chromium', '/usr/bin/chromium-browser', '/snap/bin/chromium',
-  ];
-  for (const p of cands) if (fs.existsSync(p)) return { exe: p, shell: false };
-  try {
-    const root = path.join(os.homedir(), '.cache', 'puppeteer');
-    for (const kind of ['chrome-headless-shell', 'chrome']) {
-      const base = path.join(root, kind);
-      if (!fs.existsSync(base)) continue;
-      const versions = fs.readdirSync(base).filter((v) => !v.startsWith('.')).sort().reverse();
-      for (const v of versions) {
-        for (const sub of ['chrome-headless-shell-linux64/chrome-headless-shell', 'chrome-linux64/chrome', 'chrome-linux/chrome']) {
-          const p = path.join(base, v, sub);
-          if (fs.existsSync(p)) return { exe: p, shell: sub.includes('headless-shell') };
-        }
-      }
-    }
-  } catch (e) { /* bỏ qua */ }
-  return { exe: 'google-chrome', shell: false };
-}
+// findChrome() nằm ở scripts/chrome-path.js (SSOT — luật 10), dùng chung với cdp-helper.js.
 
 let chromeProc = null;
 let userDataDir = null;
@@ -499,6 +467,10 @@ async function main() {
     const phQ = await evalIn(ws, `JSON.stringify({enq: (window.__MOCK_CALLS__||[]).filter(function(c){return c[0]==='enqueuePrintJob';}).length, jobs: window.__PRINTED__||0})`);
     const PHQ = phQ.err ? null : JSON.parse(phQ.value);
     check('Phone gui In Ma toi tram (khong in local, khong doi UI)', !!(phOk && PHQ && PHQ.enq >= 1 && PHQ.jobs === 2), phQ.value);
+    // Đợi promise enqueueRemotePrint_ settle ('chờ laptop in.') trước khi test xoá
+    // thông báo: mock trả sau 20ms, .then muộn có thể ghi lại lastPrint SAU
+    // clearPrintMsgs() → check "Doi loai in…" chập chờn (race có sẵn, không phải app sai).
+    await waitUntil(ws, "document.getElementById('lastPrint').innerText.includes('chờ laptop in.')", 3000);
     const stQ = await evalIn(ws, `JSON.stringify({poll: typeof stationPollOnce_ === 'function', timer: stationTimer_ === null, cool: (typeof STATION_COOLDOWN_MS !== 'undefined' ? STATION_COOLDOWN_MS : 0), gap: (typeof STATION_POLL_MS !== 'undefined' ? STATION_POLL_MS : 0), serial: (typeof stationPrinting_ !== 'undefined' && typeof stationNextAllowed_ !== 'undefined' && typeof waitAfterPrint_ === 'function' && typeof viewPrintVisible_ === 'function')})`);
     const STQ = stQ.err ? null : JSON.parse(stQ.value);
     check('Tram poll 3s + serial + nghi 10s sau in xong', !!(STQ && STQ.poll && STQ.cool === 10000 && STQ.gap === 3000 && STQ.serial), stQ.value);
