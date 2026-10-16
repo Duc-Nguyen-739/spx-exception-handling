@@ -56,7 +56,12 @@ const gs = fs.readFileSync(path.join(__dirname, '..', 'Code.gs'), 'utf8');
 const mock = fs.readFileSync(path.join(__dirname, '..', 'mock/mock-google.js'), 'utf8');
 
 test('chat-smart: guard UI + server + mock', () => {
-  assert.ok(html.includes('id="fabChat"'), 'missing #fabChat');
+  assert.ok(html.includes('id="aiBub"'), 'missing #aiBub');
+  assert.ok(!html.includes('id="fabChat"'), 'old #fabChat must be gone');
+  assert.ok(html.includes('@media(max-width:899px){#aiBub{display:none'), 'aiBub must hide on mobile');
+  assert.ok(html.includes('spx_aiBub'), 'missing drag persist key');
+  assert.ok(html.includes('btnPrintMain'), 'aiBub must dock next to In Ma');
+  assert.ok(html.includes('can(\'backlog\')'), 'aiBub must gate backlog perm');
   assert.ok(html.includes('id="chatModal"'), 'missing #chatModal');
   assert.ok(html.includes('id="chatThread"'), 'missing #chatThread');
   assert.ok(html.includes('id="chatName"'), 'missing #chatName');

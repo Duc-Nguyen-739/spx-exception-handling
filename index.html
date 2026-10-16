@@ -171,8 +171,9 @@ header .search-group input{flex:1;min-width:0;margin:0;text-align:center}
 @media(max-width:899px){.pills{flex-wrap:nowrap;gap:5px;overflow:hidden}.pill{flex:1 1 0;min-width:0;justify-content:center;padding:5px 4px;font-size:10px;gap:4px;overflow:hidden}.pill .n{font-size:9px;padding:1px 6px;flex:none}.pill:last-child{flex:0 0 auto;padding:5px 10px}}
 /* ===== mobile: nut Tao moi giua nav + pager 50/trang + cuon an/hien muot (KHOP mockup v15 duyet) ===== */
 #navCreate,#gridPager,#fabCreate{display:none}
-#chatFab{position:fixed;right:12px;bottom:210px;z-index:16;width:56px;height:56px;border-radius:50%;background:var(--o);color:#fff;font-size:24px;line-height:1;border:3px solid #fff;box-shadow:0 8px 22px rgba(238,77,45,.5);padding:0}
-#chatFab:active{transform:scale(.93)}
+#aiBub{position:fixed;z-index:30;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font-size:34px;border:3px solid #fff;box-shadow:0 8px 22px rgba(14,165,233,.55);cursor:grab;touch-action:none;display:grid;place-items:center;user-select:none;-webkit-user-select:none}
+#aiBub:active{cursor:grabbing}
+@media(max-width:899px){#aiBub{display:none!important}}
 @media(max-width:899px){#btnCreateMain{display:none!important}#btnPrintMain{display:none!important}#navCreate{display:none!important}#fabCreate{display:grid;place-items:center;position:fixed;right:12px;bottom:140px;z-index:16;width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;font-size:30px;line-height:1;border:3px solid #fff;box-shadow:0 8px 22px rgba(50,116,247,.55);padding:0}#fabCreate:active{transform:scale(.93)}#rangebar .rg-line{flex-wrap:nowrap;gap:6px}#rangebar .rg-l1{flex:none}#rangebar .rg-cap{display:block;white-space:normal;text-align:center;font-size:10px}#gridPager{display:flex;align-items:center;gap:8px;background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 10px;font-size:10px;font-weight:600;color:var(--mut);position:fixed;left:0;right:0;bottom:72px;z-index:15;box-shadow:0 -6px 20px rgba(23,43,72,.10)}#gridPager .pg-info{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#gridPager .pg-info b{color:var(--navy)}#gridPager .pg-btns{display:flex;gap:4px;flex:none}#gridPager .pg-btns button{min-width:28px;min-height:28px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:11px;font-weight:800;color:var(--navy);padding:0 7px}#gridPager .pg-btns button.cur{background:var(--navy);border-color:var(--navy);color:#fff}#gridPager .pg-btns button:disabled{opacity:.4}main{padding-bottom:150px}}
 @media(max-width:899px){#pillsRow{overflow:visible;margin-top:12px}#pillsRow .pill{flex:1 1 0;min-width:0;white-space:nowrap;position:relative;overflow:visible;padding:7px 3px 6px;font-size:10px;gap:3px}#pillsRow .pill .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}#pillsRow .pill .n{position:absolute;top:-5px;right:10px;z-index:2;font-size:8px;line-height:1.5;padding:0 5px;background:#fff;border:1px solid var(--line);box-shadow:0 1px 4px rgba(23,43,72,.2)}#pillsRow .pill:last-child{flex:0 0 auto;padding:6px 9px}#pillsRow .pill.on .n{background:rgba(255,255,255,.28);color:#fff;border-color:rgba(255,255,255,.55)}}
 @media(min-width:900px){#navCreate{display:none!important}#gridPager{display:none!important}#fabCreate{display:none!important}}
@@ -695,7 +696,6 @@ body.rail #siteBtnSide,body.rail #siteMenuSide{display:none!important}
 <div class="bottom-row"><button id="navToggle" class="side-toggle" type="button" title="Thu gọn"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><g stroke="#fff" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></g><path class="chevL" d="M13.5 8.5 L10 12 L13.5 15.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path class="chevR" d="M10.5 8.5 L14 12 L10.5 15.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
 </div>
 <button id="fabCreate" type="button" title="Tạo mới" aria-label="Tạo mới">+</button>
-<button id="fabChat" type="button" title="Trợ lý tìm đơn" aria-label="Trợ lý tìm đơn">💬</button>
 <div class="railbox" id="railbox"></div>
 <div class="rfly" id="railFlyout"><div class="rfly-h">Bộ lọc</div><div class="stitle">Trạng thái</div><div id="flyStatus"></div><div class="stitle">Loại</div><div id="flyKind"></div><div class="rwrap"><button class="freset" id="flyReset" type="button" title="Về mặc định: Tất cả + Box + Item">↺ Reset</button></div></div>
 </nav>
@@ -907,6 +907,7 @@ body.rail #siteBtnSide,body.rail #siteMenuSide{display:none!important}
 </div></div>
 <div id="lightbox" role="dialog" aria-label="Xem ảnh phóng to"><div class="bar"><button id="lbBack" title="Đóng">‹</button><span style="flex:1"></span><button id="lbOut" title="Thu nhỏ">−</button><button id="lbIn" title="Phóng to">＋</button><button id="lbFit" title="Vừa màn hình">⟳</button><button id="lbX" title="Đóng">✕</button></div><div id="lbStage"><img id="lbImg" alt="Ảnh phóng to"></div><div id="lbCap"></div></div>
 <div id="printArea"></div>
+<div id="aiBub" title="Trợ lý AI tìm đơn" role="button" aria-label="Trợ lý AI tìm đơn">🤖</div>
 
 <script>
 if(typeof google==='undefined'||!google.script){
@@ -2086,7 +2087,7 @@ var bct=document.getElementById('btnCreateTop');if(bct)bct.style.display=can('cr
 var bpm=document.getElementById('btnPrintMain');if(bpm)bpm.style.display=can('print')?'':'none';
 var bpt=document.getElementById('btnPrintTop');if(bpt)bpt.style.display=can('print')?'':'none';
 var bf=document.getElementById('btnFeedback');if(bf)bf.style.display=can('feedback')?'':'none';
-var cb=document.getElementById('fabChat');if(cb)cb.style.display=can('backlog')?'':'none';
+var ab=document.getElementById('aiBub');if(ab)ab.style.display=can('backlog')?'':'none';
 }catch(e1){}
 try{renderRail();}catch(err){}
 document.getElementById('whoIni').textContent=String(e.email).charAt(0).toUpperCase();
@@ -2840,7 +2841,20 @@ async function sendChat(){
     chatThreadHtml(h);msg('msgChat','',true);
   }catch(e){msg('msgChat',e.message||'Lỗi tìm đơn.');}
 }
-document.getElementById('fabChat').onclick=openChat;
+var aiBubMoved=0,aiBubDrag=null;
+function aiBubPlace(x,y){var b=document.getElementById('aiBub');if(!b)return;var w=b.offsetWidth||64;var h=b.offsetHeight||64;b.style.left=Math.max(4,Math.min(window.innerWidth-w-4,x))+'px';b.style.top=Math.max(4,Math.min(document.body.scrollHeight-h-4,y+window.scrollY))+'px';}
+function aiBubDock(){try{var p=document.getElementById('btnPrintMain');if(!p||!p.offsetParent)return false;var r=p.getBoundingClientRect();aiBubPlace(r.left-76,r.top+r.height/2-32);return true;}catch(e){return false;}}
+function aiBubInit(){var s=null;try{s=localStorage.getItem('spx_aiBub');}catch(e){}if(s){try{var o=JSON.parse(s);aiBubPlace(o.x,o.y);return;}catch(e){}}aiBubDock();}
+(function(){
+var el=document.getElementById('aiBub');if(!el)return;
+el.addEventListener('pointerdown',function(e){var r=el.getBoundingClientRect();aiBubDrag={dx:e.clientX-r.left,dy:e.clientY-r.top};aiBubMoved=0;try{el.setPointerCapture(e.pointerId);}catch(_){}});
+el.addEventListener('pointermove',function(e){if(!aiBubDrag)return;aiBubMoved++;aiBubPlace(e.clientX-aiBubDrag.dx,e.clientY-aiBubDrag.dy);});
+el.addEventListener('pointerup',function(){if(aiBubDrag&&aiBubMoved<3)openChat();if(aiBubMoved>=3){try{var r=el.getBoundingClientRect();localStorage.setItem('spx_aiBub',JSON.stringify({x:r.left,y:r.top+window.scrollY}));}catch(e){}}aiBubDrag=null;});
+el.addEventListener('pointercancel',function(){aiBubDrag=null;});
+try{aiBubInit();}catch(e){}
+try{window.addEventListener('resize',function(){var s=null;try{s=localStorage.getItem('spx_aiBub');}catch(x){}if(!s)aiBubDock();});}catch(e){}
+try{window.addEventListener('load',function(){var s=null;try{s=localStorage.getItem('spx_aiBub');}catch(x){}if(!s)aiBubDock();});}catch(e){}
+})();
 document.getElementById('btnCloseChat').onclick=function(){document.getElementById('chatModal').classList.remove('open');};
 document.getElementById('chatModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 document.getElementById('btnChatPhoto').onclick=function(){document.getElementById('chatPhoto').click();};

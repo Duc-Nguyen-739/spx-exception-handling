@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 18 — Bong bóng AI cạnh In Mã ở thanh Display Range</title>
+<style>
+:root{--o:#ee4d2d;--navy:#172b48;--ink:#303844;--mut:#97a0ad;--line:#eef0f3;--bg:#f5f6f9;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,Roboto,Arial;background:var(--bg);color:var(--ink)}
+.demobar{background:#fff7e0;border-bottom:1px solid #f5d98b;color:#8a5a00;font-size:11.5px;font-weight:700;padding:8px 14px;text-align:center}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:12px 22px;font-weight:800;font-size:13px;color:var(--navy)}
+main{max-width:none;padding:18px 26px 40px}
+#rangebar{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 16px;margin-bottom:10px;font-size:12.5px}
+#rangebar .rg-main{flex:1;min-width:0}
+#rangebar .rg-cap{margin:6px 0 0;font-size:10.5px;color:var(--mut);font-weight:600}
+.rg-actions{display:flex;gap:8px;align-items:center}
+.rg-actions button{cursor:pointer;font-family:inherit;border-radius:10px;padding:9px 13px;font-size:12.5px;font-weight:700}
+#btnPrint{border:1.5px solid #172b48;background:#fff;color:var(--navy);padding:12px 22px;font-size:14px}
+#btnCreate{background:var(--o);border:1px solid var(--o);color:#fff;padding:12px 22px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px;margin-top:12px}
+.ph{aspect-ratio:1/1;border-radius:12px;background:linear-gradient(135deg,#eef1f6,#e2e8f1);display:grid;place-items:center;font-size:30px;color:var(--mut)}
+#aiBub{position:fixed;z-index:30;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font-size:34px;border:3px solid #fff;box-shadow:0 8px 22px rgba(14,165,233,.55);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;display:grid;place-items:center}
+#aiBub:active{cursor:grabbing}
+.tip{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12px;margin-top:12px;color:var(--navy)}
+@media(max-width:899px){#aiBub{display:none}}
+</style>
+</head>
+<body>
+<div class="demobar">MOCKUP 18 — Bong bóng 🤖 cạnh In Mã (CHỈ PC, mobile ẩn) · KÉO THỬ đi khắp trang</div>
+<header>SPX Exception Handling · HN2 SOC</header>
+<main>
+<div id="rangebar">
+  <div class="rg-main">ⓘ <b>Display Range:</b> 17/09/2026 - 16/10/2026 <a href="#" onclick="return false">Edit</a>
+    <div class="rg-cap">Dữ liệu được cập nhật mỗi 5 phút. Nếu không tìm thấy, vui lòng mở rộng phạm vi thời gian này hoặc ↻ Mới.</div>
+  </div>
+  <div class="rg-actions"><button id="btnPrint">🖨 In Mã</button><button id="btnCreate">+ Create</button></div>
+</div>
+<div class="grid"><div class="ph">📦</div><div class="ph">📦</div><div class="ph">📦</div><div class="ph">📦</div><div class="ph">📦</div><div class="ph">📦</div><div class="ph">📦</div><div class="ph">📦</div></div>
+<div class="tip"><b>Cách thử:</b> lúc mới mở, bong bóng 🤖 nằm sát nút <b>In Mã</b>. Dí giữ và kéo nó đi bất kỳ đâu — thả ra nằm yên (bản thật nhớ vị trí qua lần mở sau). Bấm (không kéo) mở panel chat. Thu nhỏ trình duyệt dưới 900px để kiểm tra: bong bóng biến mất.</div>
+</main>
+<div id="aiBub" title="Trợ lý AI tìm đơn">🤖</div>
+<script>(function(){
+var b=document.getElementById('aiBub'),print=document.getElementById('btnPrint');
+function dock(){var r=print.getBoundingClientRect();b.style.left=(r.left-76)+'px';b.style.top=(r.top+r.height/2-32+window.scrollY)+'px';}
+dock();window.addEventListener('resize',function(){if(!moved)dock();});
+var drag=null,moved=0,sx=0,sy=0;
+b.addEventListener('pointerdown',function(e){var r=b.getBoundingClientRect();drag={dx:e.clientX-r.left,dy:e.clientY-r.top};moved=0;b.setPointerCapture(e.pointerId);});
+b.addEventListener('pointermove',function(e){if(!drag)return;moved++;
+b.style.left=Math.max(4,Math.min(window.innerWidth-b.offsetWidth-4,e.clientX-drag.dx))+'px';
+b.style.top=Math.max(4,Math.min(document.body.scrollHeight-b.offsetHeight-4,e.clientY-drag.dy+window.scrollY))+'px';});
+b.addEventListener('pointerup',function(){if(drag&&moved<3)alert('Mở panel chat Trợ lý tìm đơn.');drag=null;});
+b.addEventListener('pointercancel',function(){drag=null;});
+})();</script>
+</body>
+</html>
