@@ -161,4 +161,15 @@ Endpoint tắt rồi bật lại → **Hash ID + Key mới**, chuỗi cũ chết
 
 1. Agent gọi Smart App (workflow) **có truyền được ảnh làm file-input của workflow** không (workflow input `photo` là File/dataURL) — test trong **Preview** trước khi cắm SeaTalk; thất bại 2 lần → fallback bot tự dựng.
 2. Form SeaTalk Bot của Agent 2.0: callback URL tự cắm hay cần paste thủ công (docs còn TODO) — test thực tế trả lời.
-3. Budgt/token mỗi tin SeaTalk (LLM) — đo trên Operate → Usage.
+3. App Quota/token mỗi tin SeaTalk (LLM) — đo trên Operate → Usage.
+
+## Trang Bot thật trên SeaTalk Open Platform (screenshot user 2026-10-17)
+
+- App hiện hữu của user: **"Backlog HN SOC"**, **Status: Online** (đã release). Capabilities: **Bot** (đang xem) · Workspace App (Web App / Release) · Login with SeaTalk.
+- Trang Bot hiển thị: **SeaTalk ID `9227685607`** (+ nút Copy) và **SeaTalk Link** (`link.seatalk.io/profile/open?seatalk_id=…`) — link nhắn bot 1-1.
+- **Bot Integrations**: 3 thẻ partner — *Alpha Knowledge · AI Bot Platform · **SMART*** — mỗi thẻ hiển thị cùng bộ **App ID / App Secret / Signing Secret** với nút Copy. Thẻ SMART ghi *"Copy these app details to SMART to enhance your bot"* → đây chính là 3/4 giá trị cần cho form Smart **Integrate → SeaTalk Bot** (giá trị thứ 4 = SeaTalk ID ngay phía trên).
+- Menu trái gồm: *Basic Info & Credentials · App Managers · **Scopes & Permission** · Bot · Workspace App (Web App / Release) · Login with SeaTalk* và *Advanced Settings: **Event Callback** · Security Settings*.
+- **Event Callback** (Advanced Settings) = nơi dán callback URL mà Smart phát sau khi Confirm form SeaTalk Bot (đối chiếu docs classic — bước "paste it under Event Callback, click the tick button to test").
+- Quy tắc: **đổi Scopes phải Release lại** (Workspace App → Release) mới có hiệu lực.
+- Chưa xác nhận từ screenshot: danh sách scopes đã cấp, cấu hình **Service Scope** (ai được chat bot), vị trí toggle **Combined Message Delivery API** (lục advanced settings khi cấu hình).
+- Lưu ý chính sách: app mang tên/dịch vụ *Backlog HN SOC* — tái dùng cho "tìm đơn tương đồng" thì **Service Scope/quyền dính chung** với dịch vụ cũ; muốn tách sạch → tạo app riêng (chậm hơn, duyệt lại từ đầu).
