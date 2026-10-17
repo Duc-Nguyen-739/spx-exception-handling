@@ -87,6 +87,7 @@ POST https://openapi.seatalk.io/auth/app_access_token  (Content-Type: applicatio
 - [x] Docs: Troubleshooting — ✅ (`failed to invoke graph`, endpoint draft, credential Tool node)
 - [x] Docs: Code workflows (Build with Beaver / Inspect and update / Preview and test) — ✅ (đối chiếu Canvas vs Code; workflow của ta loại Canvas)
 - [x] Docs: Agents classic (đối chiếu callback + async/get_messages) — ✅ cùng đợt, hợp nhất vào `docs/smart-agents.md`
+- [x] Docs: SeaTalk Open Platform (SOP) — ✅ paste 2026-10-17 → distill ở `docs/seatalkbot.md` (lifecycle app, Event Callback + Signature, API shapes, System Account webhook, luồng No-Code SMART partner — khẳng định runbook P2-A/P2-B)
 
 ## Docs: Release (nguồn: paste markdown trang docs, 2026-10-17)
 
