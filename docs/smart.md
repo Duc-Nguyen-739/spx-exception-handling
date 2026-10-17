@@ -9,7 +9,7 @@
 |---|---|
 | Mạng: máy văn phòng/VPN → `smart.shopee.io` | ✅ OK (HTTP 400 với body rỗng, DNS nội bộ `100.64.x.x` — xác nhận host intranet-only) |
 | Mạng: máy cloudshell agent / hạ tầng Google (GAS) → `smart.shopee.io` | ❌ NXDOMAIN — không có đường nào công khai (đã dò 7 biến thể domain) |
-| Invoke API (dùng hash/key thật) | 🔎 **Chẩn đoán có trong docs**: `error:workflow endpoint deployment not exists` = Hash ID sai **hoặc endpoint đã bị tắt** / release chưa gắn đủ channel — khả năng cao nhất: Workflow-as-API bật **sau** lần release → phải **release lại** (chi tiết mục *Contract*) |
+| Invoke API (dùng hash/key thật) | ✅ **XANH 2026-10-17**: `data.success:true`, thread_id `geivkgj14e7wm3ex_18781`, output shape đã ghi mục *Contract* (6 field). Root cause xác nhận: release chưa gắn kênh API → fix Release lại. |
 | Regenerate key | ⏳ Chưa xác nhận có sinh giá trị mới (key masked cũ và mới cùng đuôi `…d7u`) |
 | Mạng: máy văn phòng → `openapi.seatalk.io` | ✅ OK (server trả `JSON format is required (Ref:…)` cho body hỏng) |
 | Mạng: cloudshell agent → `openapi.seatalk.io` | ✅ OK (`invalid app id (Ref:…)` cho dummy creds) — lỗi non-JSON dạng text + `Ref:` |
@@ -153,6 +153,20 @@ POST https://smart.shopee.io/apis/smart/v1/workflow_orchestrator/deployments/inv
 | `failed to invoke graph. Error: …` | Node nào đó fail — thường do thiếu input required |
 
 > ⚠️ Chỉnh `chatSmart` (Code.gs:1843): hiện coi HTTP ≠ 200 là fail — thực tế luôn 200; phải check `data.success`.
+
+### Output shape — verify thật 2026-10-17 (P1)
+
+Invoke sync thành công trả `data.output` là object có field `result` là **chuỗi JSON** (không phải object trực tiếp) chứa `{"results":[...]}`:
+
+```json
+{ "result": "{\"results\":[{\"shipment_id\":\"SPXVN...\",\"product_name\":\"...\",\"aging_leadtime\":\"08. 2-3 days\",\"last_touch_at\":\"2026-10-14 19:44:11.040000\",\"score\":95,\"reason\":\"...\"}] }" }
+```
+
+Mỗi item trong `results` có 6 field: `shipment_id` (string) · `product_name` (string) · `aging_leadtime` (string) · `last_touch_at` (string, format `yyyy-MM-dd HH:mm:ss.SSSSSS`) · `score` (number 0-100) · `reason` (string, tiếng Việt).
+
+Số lượng tối đa 5 item (workflow tự cắt). Bridge lưu `data.output` nguyên vào sheet cell `SmartJobs.result` (JSON.stringify). Client `chatPickList` unwind qua 2 lớp (object → `.result` string → JSON.parse → `.results`). Template `chatCardHtml` (index.html) khớp đúng 6 field — không cần đổi.
+
+> Ghi chú: `last_touch_at` có microsecond (6 chữ số) — hiển thị nên cắt về giây nếu cần.
 
 ### Async + poll `get_debug_tree` (coroutine đã đúng thiết kế, SAI ĐƯỜNG DẪN 1 đoạn)
 
