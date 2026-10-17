@@ -75,7 +75,7 @@ def http_json(method, url, payload=None, timeout=30):
         return 0, {'error': repr(e)}
 
 
-def invoke_smart(env, product_name, inbound_time):
+def invoke_smart(env, product_name, inbound_time, photo_data_url=''):
     hash_id = env.get('SMART_ENDPOINT_HASH', '').strip()
     key = env.get('SMART_ENDPOINT_KEY', '').strip()
     url = env.get('SMART_ENDPOINT_URL', '').strip() or 'https://smart.shopee.io/apis/smart/v1/workflow_orchestrator/deployments/invoke'
@@ -87,6 +87,7 @@ def invoke_smart(env, product_name, inbound_time):
         'start_user_variables': {
             'product_name': product_name,
             'inbound_time': inbound_time,
+            'photo': photo_data_url,
         },
     }
     if body['user_id'] is None:
@@ -143,8 +144,21 @@ def main():
                     continue
                 product_name = job.get('productName', '')
                 inbound_time = job.get('inboundTime', '')
-                print('claimed job %s (%s / %s)' % (jid, product_name, inbound_time), flush=True)
-                ok_flag, result, err = invoke_smart(env, product_name, inbound_time)
+                photo_file_id = (job.get('photoFileId') or '').strip()
+                photo_data_url = ''
+                if photo_file_id:
+                    print('fetching photo %s for job %s' % (photo_file_id, jid), flush=True)
+                    gcode, gj = http_json('GET', gas_url + '?action=getPhoto&fileId=' + urllib.parse.quote(photo_file_id) + '&token=' + urllib.parse.quote(token) + '&site=' + urllib.parse.quote(site), None, timeout=30)
+                    if gcode == 200 and isinstance(gj, dict) and gj.get('ok'):
+                        gd = gj.get('data') or {}
+                        mime = gd.get('mime') or 'image/jpeg'
+                        b64 = gd.get('b64') or ''
+                        if b64:
+                            photo_data_url = 'data:%s;base64,%s' % (mime, b64)
+                    else:
+                        print('photo fetch failed for %s: HTTP %d' % (photo_file_id, gcode), flush=True)
+                print('claimed job %s (%s / %s)%s' % (jid, product_name, inbound_time, ' [photo]' if photo_data_url else ''), flush=True)
+                ok_flag, result, err = invoke_smart(env, product_name, inbound_time, photo_data_url)
                 thread_id = None
                 if isinstance(result, dict):
                     thread_id = result.get('thread_id')

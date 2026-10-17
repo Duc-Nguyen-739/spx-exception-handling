@@ -94,6 +94,9 @@ test('chat-smart: guard UI + server + mock', () => {
   assert.ok(gs.includes('smartJobsSheet_'), 'missing smartJobsSheet_ helper');
   assert.ok(gs.includes('smartClaimJob'), 'missing smartClaimJob');
   assert.ok(gs.includes('smartCompleteJob'), 'missing smartCompleteJob');
+  assert.ok(gs.includes('uploadChatPhoto_'), 'missing uploadChatPhoto_ helper');
+  assert.ok(gs.includes("action === 'getPhoto'"), 'missing getPhoto route');
+  assert.ok(gs.includes('photoFileId'), 'missing photoFileId column');
   assert.ok(gs.includes('SMART_BRIDGE_TOKEN') || gs.includes('PROP_SMART_BRIDGE'), 'missing bridge token prop');
   assert.ok(gs.includes('bridgeAuth_'), 'missing bridgeAuth_');
   assert.ok(!gs.includes('pollSmartAsync'), 'pollSmartAsync must be removed');

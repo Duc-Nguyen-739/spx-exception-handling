@@ -2846,10 +2846,9 @@ async function sendChat(){
   var at=((tm&&tm.value)||'').trim();
   if(!name&&!chatPhotoB64){msg('msgChat','Chụp ảnh hoặc nhập tên sản phẩm.');return;}
   if(!at){msg('msgChat','Nhập thời gian nhập kho.');return;}
-  if(chatPhotoB64){msg('msgChat','Photo qua webapp chưa hỗ trợ — dùng tên sản phẩm (P4a) hoặc bot SeaTalk/Live App.');return;}
   msg('msgChat','Đang tìm…',true);
   try{
-    var r=await gs('chatSmart',[{productName:name,inboundTime:at},siteCur]);
+    var r=await gs('chatSmart',[{productName:name,inboundTime:at,photo:chatPhotoB64},siteCur]);
     if(!r||!r.ok)throw new Error((r&&r.error)||'Tìm thất bại');
     var jobId=(r.data&&r.data.jobId)||'';
     if(!jobId)throw new Error('Không nhận được jobId.');

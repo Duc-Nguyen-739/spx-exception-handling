@@ -35,7 +35,7 @@ const HTML = fs.readFileSync('index.html', 'utf8');
 
 test('photo-poison: server chi tra byte anh that (getPhoto/getThumb/getThumbs)', () => {
   const n = (GS.match(/indexOf\('image\/'\)/g) || []).length;
-  assert.strictEqual(n, 3, 'ca 3 API anh deu gate image/*, hien co ' + n);
+  assert.strictEqual(n, 4, 'ca 4 ham anh (getPhoto/getThumb/getThumbs/uploadChatPhoto_) deu gate image/*, hien co ' + n);
   const t = GS.slice(GS.indexOf('function getThumb('), GS.indexOf('function getThumbs('));
   assert.ok(t.includes("indexOf('image/') !== 0) return fail("), 'getThumb fail trung thuc thay vi ok rac');
   const b = GS.slice(GS.indexOf('function getThumbs('), GS.indexOf('function thumbOrder_('));

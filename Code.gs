@@ -29,7 +29,7 @@ var FEEDBACK_HEADER = ['id', 'at', 'email', 'role', 'text'];
 var FEEDBACK_REPLY_HEADER = ['id', 'feedback_id', 'at', 'text'];
 var FEEDBACK_TAIL = 100;
 var PRINTQUEUE_HEADER = ['job_id', 'codes_json', 'requested_at', 'requested_by', 'status', 'claimed_by', 'claimed_at', 'done_at', 'note'];
-var SMARTJOBS_HEADER = ['jobId', 'createdAt', 'userEmail', 'product_name', 'inbound_time', 'status', 'result', 'error', 'claimedAt', 'finishedAt', 'thread_id'];
+var SMARTJOBS_HEADER = ['jobId', 'createdAt', 'userEmail', 'product_name', 'inbound_time', 'status', 'result', 'error', 'claimedAt', 'finishedAt', 'thread_id', 'photoFileId'];
 
 // 2 kho HN2/HN (site): HN2 = sheet ten goc, HN = ten goc + 'HNSOC'. SSOT duy nhat.
 var SITE_SUFFIX_ = { HN2: '', HN: 'HNSOC' };
@@ -82,6 +82,16 @@ function doGet(e) {
     }
     var site = String(p.site || 'HN2').trim();
     return ContentService.createTextOutput(JSON.stringify(smartJobsList_(site)))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  if (action === 'getPhoto') {
+    if (!bridgeAuth_(String(p.token || '').trim())) {
+      return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'forbidden' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    var fid = String(p.fileId || '').trim();
+    var site2 = String(p.site || 'HN2').trim();
+    return ContentService.createTextOutput(JSON.stringify(getPhoto(fid, site2)))
       .setMimeType(ContentService.MimeType.JSON);
   }
   return HtmlService.createTemplateFromFile('index').evaluate()
@@ -1871,6 +1881,25 @@ var PROP_SMART_URL = 'SMART_ENDPOINT_URL';
 var PROP_SMART_BRIDGE = 'SMART_BRIDGE_TOKEN';
 var SMART_INVOKE_URL = 'https://smart.shopee.io/apis/smart/v1/workflow_orchestrator/deployments/invoke';
 
+function uploadChatPhoto_(dataUrl, site) {
+  site = normSite_(site);
+  var rootProp = site === 'HN' ? PROP_FOLDER_HN : PROP_FOLDER;
+  var rootId = String(PropertiesService.getScriptProperties().getProperty(rootProp) || '').trim();
+  if (!rootId) throw new Error('Chưa cấu hình FOLDER_ID (Script Properties).');
+  var m = String(dataUrl || '').match(/^data:([^;]+);base64,(.+)$/);
+  if (!m) throw new Error('Ảnh không hợp lệ (không phải data URL).');
+  var mime = m[1];
+  if (mime.indexOf('image/') !== 0) throw new Error('Chỉ chấp nhận ảnh.');
+  var bytes = Utilities.base64Decode(m[2]);
+  if (bytes.length > 4 * 1024 * 1024) throw new Error('Ảnh quá lớn (>4MB).');
+  var ext = (mime === 'image/png') ? '.png' : '.jpg';
+  var blob = Utilities.newBlob(bytes, mime, 'chat_' + Utilities.getUuid() + ext);
+  var root = DriveApp.getFolderById(rootId);
+  var f = root.createFile(blob);
+  // Khong share public — GAS doc bang OAuth; bridge goi GAS getPhoto de lay bytes.
+  return f.getId();
+}
+
 function chatSmart(p, site) {
   checkPerm_('backlog', site);
   p = p || {};
@@ -1880,14 +1909,17 @@ function chatSmart(p, site) {
   if (!name && !photo) return fail('Chụp ảnh hoặc nhập tên sản phẩm.');
   if (!at) return fail('Nhập thời gian nhập kho.');
   if (photo.length > 1500000) return fail('Ảnh quá lớn, vui lòng chụp lại.');
-  // MVP (quyet dinh #4): webapp khong gui photo — cell Sheet <=50k, khong chua dataURL ~1.3MB.
-  if (photo) return fail('Photo qua webapp chưa hỗ trợ — dùng tên sản phẩm (P4a) hoặc bot SeaTalk/Live App.');
+  var photoFileId = '';
+  if (photo) {
+    try { photoFileId = uploadChatPhoto_(photo, site); }
+    catch (e) { Logger.log('chatSmart upload photo fail: ' + e); return fail('Không upload được ảnh: ' + (e.message || e)); }
+  }
   try {
     return ok(withLock_(function () {
       var sh = smartJobsSheet_(site);
       var id = Utilities.getUuid();
       sh.getRange(sh.getLastRow() + 1, 1, 1, SMARTJOBS_HEADER.length).setValues(
-        [[id, nowStr_(), currentEmail_(), name, "'" + at, 'pending', '', '', '', '', '']]);
+        [[id, nowStr_(), currentEmail_(), name, "'" + at, 'pending', '', '', '', '', '', photoFileId]]);
       return { pending: true, jobId: id, message: 'Đang tìm đơn tương đồng trong backlog… ~1 phút' };
     }));
   } catch (e) { Logger.log('chatSmart enqueue fail: ' + e); return fail('Không tạo được job: ' + (e.message || e)); }
@@ -1944,7 +1976,8 @@ function smartJobsList_(site) {
       out.push({
         jobId: cellText_(rows[i][0]),
         productName: cellText_(rows[i][3]),
-        inboundTime: cellText_(rows[i][4])
+        inboundTime: cellText_(rows[i][4]),
+        photoFileId: cellText_(rows[i][11])
       });
     }
     return ok({ jobs: out });
@@ -1994,12 +2027,15 @@ function smartCompleteJob(jobId, okFlag, result, errMsg, threadId, site) {
         if (String(ids[i][0] || '').trim() === id) { row = 2 + i; break; }
       }
       if (row < 0) throw new Error('Job không tồn tại.');
+      var photoFid = String(vals[11] || '').trim();
       var status = okFlag ? 'done' : 'error';
       sh.getRange(row, 6, 1, 1).setValues([[status]]);
       sh.getRange(row, 7, 1, 1).setValues([[resStr]]);
       sh.getRange(row, 8, 1, 1).setValues([[msg]]);
       sh.getRange(row, 10, 1, 1).setValues([["'" + nowStr_()]]);
       if (threadId) sh.getRange(row, 11, 1, 1).setValues([[String(threadId)]]);
+      // cleanup anh tam (neu co) sau khi job xong — khong chan ket qua neu xoa loi.
+      if (photoFid) { try { DriveApp.getFileById(photoFid).setTrashed(true); } catch (_) {} }
       return { jobId: id, status: status };
     }));
   } catch (e) { Logger.log('smartCompleteJob fail: ' + e); return fail(e.message); }
