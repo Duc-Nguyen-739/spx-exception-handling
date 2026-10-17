@@ -29,6 +29,7 @@ var FEEDBACK_HEADER = ['id', 'at', 'email', 'role', 'text'];
 var FEEDBACK_REPLY_HEADER = ['id', 'feedback_id', 'at', 'text'];
 var FEEDBACK_TAIL = 100;
 var PRINTQUEUE_HEADER = ['job_id', 'codes_json', 'requested_at', 'requested_by', 'status', 'claimed_by', 'claimed_at', 'done_at', 'note'];
+var SMARTJOBS_HEADER = ['jobId', 'createdAt', 'userEmail', 'product_name', 'inbound_time', 'status', 'result', 'error', 'claimedAt', 'finishedAt', 'thread_id'];
 
 // 2 kho HN2/HN (site): HN2 = sheet ten goc, HN = ten goc + 'HNSOC'. SSOT duy nhat.
 var SITE_SUFFIX_ = { HN2: '', HN: 'HNSOC' };
@@ -71,19 +72,48 @@ function slotVn_(s) {
   return m[k] || 'Ảnh bổ sung';
 }
 
-function doGet() {
+function doGet(e) {
+  var p = (e && e.parameter) ? e.parameter : {};
+  var action = String(p.action || '').trim();
+  if (action === 'smartjobs') {
+    if (!bridgeAuth_(String(p.token || '').trim())) {
+      return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'forbidden' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    var site = String(p.site || 'HN2').trim();
+    return ContentService.createTextOutput(JSON.stringify(smartJobsList_(site)))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   return HtmlService.createTemplateFromFile('index').evaluate()
     .setTitle('SPX Exception Handling')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
 function doPost(e) {
+  var payload = '';
+  try { payload = (e && e.postData) ? e.postData.contents : ''; } catch (_) { payload = ''; }
+  var data = {};
+  try { data = JSON.parse(payload || '{}'); } catch (_) { data = {}; }
+  var action = String(data.action || (e && e.parameter && e.parameter.action) || '').trim();
+  // Bridge routes (smartclaim / smartcomplete) — goi boi bot/smart_bridge.py.
+  if (action === 'smartclaim' || action === 'smartcomplete') {
+    var tok = String(data.token || (e && e.parameter && e.parameter.token) || '').trim();
+    if (!bridgeAuth_(tok)) {
+      return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'forbidden' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    var site = String(data.site || (e && e.parameter && e.parameter.site) || 'HN2').trim();
+    if (action === 'smartclaim') {
+      return ContentService.createTextOutput(JSON.stringify(smartClaimJob(data.jobId, data.bridgeId, site)))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput(JSON.stringify(smartCompleteJob(data.jobId, !!data.ok, data.result, data.error, data.thread_id, site)))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   // Option 3 (Smart webhook/trigger push-back): Smart pushes async result
   // to GAS /exec endpoint. Payload shape depends on Smart webhook contract;
   // this logs and parses generically for integration setup.
   try {
-    var payload = e && e.postData ? e.postData.contents : '{}';
-    var data = JSON.parse(payload || '{}');
     Logger.log('Smart webhook received: ' + (payload ? payload.slice(0, 300) : 'empty'));
     // If Smart pushes a result payload (e.g., debug_tree or direct output),
     // parse and return acknowledgment so Smart knows delivery succeeded.
@@ -1838,11 +1868,10 @@ function listBacklog(site) {
 var PROP_SMART_HASH = 'SMART_ENDPOINT_HASH';
 var PROP_SMART_KEY = 'SMART_ENDPOINT_KEY';
 var PROP_SMART_URL = 'SMART_ENDPOINT_URL';
+var PROP_SMART_BRIDGE = 'SMART_BRIDGE_TOKEN';
 var SMART_INVOKE_URL = 'https://smart.shopee.io/apis/smart/v1/workflow_orchestrator/deployments/invoke';
 
 function chatSmart(p, site) {
-  // Loi quyen/validate phai noi dung nguyen nhan; rieng loi goi Smart (HTTP/timeout/
-  // parse) hay bi nuot thanh 'thu lai sau' — tra HTTP code + body da che hash/key.
   checkPerm_('backlog', site);
   p = p || {};
   var name = String(p.productName || '').trim().slice(0, 200);
@@ -1851,86 +1880,155 @@ function chatSmart(p, site) {
   if (!name && !photo) return fail('Chụp ảnh hoặc nhập tên sản phẩm.');
   if (!at) return fail('Nhập thời gian nhập kho.');
   if (photo.length > 1500000) return fail('Ảnh quá lớn, vui lòng chụp lại.');
-  var props = PropertiesService.getScriptProperties();
-  var hash = String(props.getProperty(PROP_SMART_HASH) || '').trim();
-  var key = String(props.getProperty(PROP_SMART_KEY) || '').trim();
-  if (!hash || !key) return fail('Chưa cấu hình kết nối Smart (thiếu SMART_ENDPOINT_HASH/KEY trong Script Properties). Liên hệ ADMIN.');
-  var url = String(props.getProperty(PROP_SMART_URL) || '').trim() || SMART_INVOKE_URL;
-  function scrub(s) {
-    s = String(s == null ? '' : s);
-    try { if (hash) s = s.split(hash).join('[hash]'); if (key) s = s.split(key).join('[key]'); } catch (_) {}
-    return s.slice(0, 400);
-  }
+  // MVP (quyet dinh #4): webapp khong gui photo — cell Sheet <=50k, khong chua dataURL ~1.3MB.
+  if (photo) return fail('Photo qua webapp chưa hỗ trợ — dùng tên sản phẩm (P4a) hoặc bot SeaTalk/Live App.');
   try {
-    var resp = UrlFetchApp.fetch(url, {
-      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
-      payload: JSON.stringify({
-        endpoint_deployment_hash_id: hash, endpoint_deployment_key: key,
-        user_id: currentEmail_(),
-        start_user_variables: { product_name: name, inbound_time: at, photo: photo }
-      })
-    });
-    var code = resp.getResponseCode();
-    var text = resp.getContentText() || '';
-    if (code !== 200) { Logger.log('chatSmart HTTP ' + code + ' ' + scrub(text)); return fail('Smart lỗi HTTP ' + code + ': ' + scrub(text)); }
-    var body = null;
-    try { body = JSON.parse(text || ''); } catch (e2) { body = null; }
-    if (!body) { Logger.log('chatSmart non-JSON ' + scrub(text)); return fail('Smart trả về không phải JSON: ' + scrub(text)); }
-    // Smart boc ket qua trong nhieu tang (result/data/output, co the la chuoi JSON) —
-    // do deu cac tang truoc khi ket luan rong.
-    function pickList(o) {
-      if (!o) return null;
-      if (Object.prototype.toString.call(o) === '[object Array]') return o;
-      if (typeof o === 'string') { try { return pickList(JSON.parse(o)); } catch (_) { return null; } }
-      if (o.results) return o.results;
-      return pickList(o.result) || pickList(o.data) || pickList(o.output) || null;
-    }
-    var list = pickList(body) || [];
-    var out = list.slice(0, 5).map(function (r) {
-      return {
-        shipment_id: String(r.shipment_id || ''), product_name: String(r.product_name || ''),
-        aging_leadtime: String(r.aging_leadtime || ''), last_touch_at: String(r.last_touch_at || ''),
-        score: +r.score || 0, reason: String(r.reason || '')
-      };
-    }).filter(function (r) { return !!r.shipment_id; });
-    if (!out.length) {
-      var em = body.message || body.error || (body.data && body.data.message) || '';
-      if (em) { Logger.log('chatSmart msg ' + scrub(em)); return fail('Smart: ' + scrub(em)); }
-    }
-    return ok({ results: out });
-  } catch (e) {
-    Logger.log('chatSmart fail ' + scrub(e && e.message));
-    var em = String(e && e.message || '');
-    if (/DNS/i.test(em)) return fail('Không phân giải được host Smart (' + url + ') từ GAS — host nội bộ Shopee không truy cập được từ ngoài mạng; đặt SMART_ENDPOINT_URL trỏ tới URL public/proxy.');
-    return fail('Không gọi được Smart: ' + scrub(em));
-  }
+    return ok(withLock_(function () {
+      var sh = smartJobsSheet_(site);
+      var id = Utilities.getUuid();
+      sh.getRange(sh.getLastRow() + 1, 1, 1, SMARTJOBS_HEADER.length).setValues(
+        [[id, nowStr_(), currentEmail_(), name, "'" + at, 'pending', '', '', '', '', '']]);
+      return { pending: true, jobId: id, message: 'Đang tìm đơn tương đồng trong backlog… ~1 phút' };
+    }));
+  } catch (e) { Logger.log('chatSmart enqueue fail: ' + e); return fail('Không tạo được job: ' + (e.message || e)); }
 }
 
-// ===== Option 3 — Poll async Smart result (use khi Smart trigger/webhook da chay async) =====
-// Doc: POST /get_debug_tree voi channel=endpoint_deployment + endpoint_deployment_hash_id + endpoint_deployment_key + thread_id.
-// Goi tu may co quyen mang Smart (hoac qua SMART_ENDPOINT_URL proxy). Tu GAS truc tiep khong goi duoc vi host noi bo.
-function pollSmartAsync(hashId, endpointKey, threadId, site) {
+function chatSmartStatus(jobId, site) {
   try {
     checkPerm_('backlog', site);
-    var props = PropertiesService.getScriptProperties();
-    var url = String(props.getProperty('SMART_ENDPOINT_URL') || '').trim() || SMART_INVOKE_URL;
-    url = url.replace('/invoke', '/get_debug_tree');
-    var payload = {
-      endpoint_deployment_hash_id: hashId,
-      endpoint_deployment_key: endpointKey,
-      thread_id: threadId,
-      channel: 'endpoint_deployment'
-    };
-    var resp = UrlFetchApp.fetch(url, {
-      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
-      payload: JSON.stringify(payload)
-    });
-    var code = resp.getResponseCode();
-    if (code !== 200) return { ok: false, error: 'Smart poll HTTP ' + code, raw: resp.getContentText().slice(0, 200) };
-    var body = JSON.parse(resp.getContentText() || '{}');
-    var tree = (body && body.data && body.data.debug_tree) ? body.data.debug_tree : (body && body.debug_tree) ? body.debug_tree : null;
-    return { ok: true, status: (tree && tree.summary && tree.summary.status) || 'unknown', output: (tree && tree.output) ? tree.output : null, error_messages: (tree && tree.summary && tree.summary.error_messages) || [] };
-  } catch (e) {
-    return { ok: false, error: 'Poll Smart async fail: ' + (e.message || e) };
-  }
+    var id = String(jobId || '').trim();
+    if (!id) return fail('Thiếu jobId.');
+    var sh = smartJobsSheet_(site);
+    var last = sh.getLastRow();
+    if (last < 2) return fail('Job không tồn tại.');
+    var ids = sh.getRange(2, 1, last - 1, 1).getValues();
+    var row = -1;
+    for (var i = 0; i < ids.length; i++) {
+      if (String(ids[i][0] || '').trim() === id) { row = 2 + i; break; }
+    }
+    if (row < 0) return fail('Job không tồn tại.');
+    var vals = sh.getRange(row, 1, 1, SMARTJOBS_HEADER.length).getValues()[0];
+    var status = String(vals[5] || '').trim() || 'pending';
+    var resultRaw = vals[6];
+    var err = String(vals[7] || '').trim();
+    var out = { status: status };
+    if (status === 'done') {
+      var parsed = null;
+      try { parsed = (typeof resultRaw === 'string') ? JSON.parse(resultRaw) : resultRaw; } catch (_) { parsed = null; }
+      out.result = parsed;
+    }
+    if (status === 'error') out.error = err || 'Smart invoke failed';
+    return ok(out);
+  } catch (e) { Logger.log('chatSmartStatus fail: ' + e); return fail('Không đọc được job: ' + (e.message || e)); }
+}
+
+// ===== SmartJobs queue (E1 bridge) =====
+// Sheet SmartJobs: jobId · createdAt · userEmail · product_name · inbound_time ·
+// status(pending|claiming|done|error) · result(JSON) · error · claimedAt · finishedAt · thread_id
+function smartJobsSheet_(site) {
+  return getSheetFor_('SmartJobs', SMARTJOBS_HEADER, site);
+}
+
+function smartJobsList_(site) {
+  try {
+    checkPerm_('backlog', site);
+    var sh = smartJobsSheet_(site);
+    var last = sh.getLastRow();
+    if (last < 2) return ok({ jobs: [] });
+    var n = Math.min(last - 1, 200);
+    var firstRow = last - n + 1;
+    var rows = sh.getRange(firstRow, 1, n, SMARTJOBS_HEADER.length).getValues();
+    var out = [];
+    for (var i = 0; i < rows.length; i++) {
+      if (String(rows[i][5] || '').trim() !== 'pending') continue;
+      out.push({
+        jobId: cellText_(rows[i][0]),
+        productName: cellText_(rows[i][3]),
+        inboundTime: cellText_(rows[i][4])
+      });
+    }
+    return ok({ jobs: out });
+  } catch (e) { Logger.log('smartJobsList fail: ' + e); return fail('Không đọc được hàng đợi: ' + (e.message || e)); }
+}
+
+function smartClaimJob(jobId, bridgeId, site) {
+  try {
+    checkPerm_('backlog', site);
+    var id = String(jobId || '').trim();
+    var st = String(bridgeId || '').trim().slice(0, 60) || 'bridge';
+    if (!id) return fail('Thiếu jobId.');
+    return ok(withLock_(function () {
+      var sh = smartJobsSheet_(site);
+      var last = sh.getLastRow();
+      if (last < 2) throw new Error('Job không tồn tại.');
+      var ids = sh.getRange(2, 1, last - 1, 1).getValues();
+      var row = -1;
+      for (var i = 0; i < ids.length; i++) {
+        if (String(ids[i][0] || '').trim() === id) { row = 2 + i; break; }
+      }
+      if (row < 0) throw new Error('Job không tồn tại.');
+      var vals = sh.getRange(row, 1, 1, SMARTJOBS_HEADER.length).getValues()[0];
+      if (String(vals[5] || '').trim() !== 'pending') throw new Error('Đã có bridge nhận.');
+      sh.getRange(row, 6, 1, 1).setValues([['claiming']]);
+      sh.getRange(row, 9, 1, 1).setValues([[st + ' @ ' + nowStr_()]]);
+      return { jobId: id };
+    }));
+  } catch (e) { Logger.log('smartClaimJob fail: ' + e); return fail(e.message); }
+}
+
+function smartCompleteJob(jobId, okFlag, result, errMsg, threadId, site) {
+  try {
+    checkPerm_('backlog', site);
+    var id = String(jobId || '').trim();
+    if (!id) return fail('Thiếu jobId.');
+    var msg = String(errMsg || '').slice(0, 500);
+    var resStr = '';
+    try { resStr = (typeof result === 'string') ? result : JSON.stringify(result || null); } catch (_) { resStr = String(result || ''); }
+    return ok(withLock_(function () {
+      var sh = smartJobsSheet_(site);
+      var last = sh.getLastRow();
+      if (last < 2) throw new Error('Job không tồn tại.');
+      var ids = sh.getRange(2, 1, last - 1, 1).getValues();
+      var row = -1;
+      for (var i = 0; i < ids.length; i++) {
+        if (String(ids[i][0] || '').trim() === id) { row = 2 + i; break; }
+      }
+      if (row < 0) throw new Error('Job không tồn tại.');
+      var status = okFlag ? 'done' : 'error';
+      sh.getRange(row, 6, 1, 1).setValues([[status]]);
+      sh.getRange(row, 7, 1, 1).setValues([[resStr]]);
+      sh.getRange(row, 8, 1, 1).setValues([[msg]]);
+      sh.getRange(row, 10, 1, 1).setValues([["'" + nowStr_()]]);
+      if (threadId) sh.getRange(row, 11, 1, 1).setValues([[String(threadId)]]);
+      return { jobId: id, status: status };
+    }));
+  } catch (e) { Logger.log('smartCompleteJob fail: ' + e); return fail(e.message); }
+}
+
+function smartBridgeToken_() {
+  return String(PropertiesService.getScriptProperties().getProperty(PROP_SMART_BRIDGE) || '').trim();
+}
+
+function bridgeAuth_(token) {
+  var t = String(token || '').trim();
+  var expected = smartBridgeToken_();
+  return !!t && !!expected && t === expected;
+}
+
+// ===== Route cho bridge (doGet/doPost) =====
+// Bridge goi GAS /exec voi query/body action=... + token=SMART_BRIDGE_TOKEN.
+// Token sai -> 403; khong log token. Khong cho phep goi truc tiep invoke Smart tu GAS.
+
+// Helper parse Smart nested envelopes (giu cho tests + debug; bridge tra result da parse).
+function scrub(s) {
+  s = String(s == null ? '' : s);
+  return s.slice(0, 400);
+}
+
+function pickList(o) {
+  if (!o) return null;
+  if (Object.prototype.toString.call(o) === '[object Array]') return o;
+  if (typeof o === 'string') { try { return pickList(JSON.parse(o)); } catch (_) { return null; } }
+  if (o.results) return o.results;
+  return pickList(o.result) || pickList(o.data) || pickList(o.output) || null;
 }

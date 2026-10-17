@@ -2833,21 +2833,54 @@ function chatDownscale(file){return new Promise(function(res,rej){
   img.onload=function(){try{var s=Math.min(1,1024/Math.max(img.naturalWidth,img.naturalHeight));var c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*s));c.height=Math.max(1,Math.round(img.naturalHeight*s));c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',0.8));}catch(e){rej(e);}};
   img.onerror=function(){rej(new Error('bad image'));};img.src=url;});
 }
+function chatPickList(o){
+  if(!o)return null;
+  if(Object.prototype.toString.call(o)==='[object Array]')return o;
+  if(typeof o==='string'){try{return chatPickList(JSON.parse(o));}catch(_){return null;}}
+  if(o.results)return o.results;
+  return chatPickList(o.result)||chatPickList(o.data)||chatPickList(o.output)||null;
+}
 async function sendChat(){
   var nm=document.getElementById('chatName'),tm=document.getElementById('chatTime'),qk=document.getElementById('chatQuick');
   var name=((nm&&nm.value)||'').trim()||((qk&&qk.value)||'').trim();
   var at=((tm&&tm.value)||'').trim();
   if(!name&&!chatPhotoB64){msg('msgChat','Chụp ảnh hoặc nhập tên sản phẩm.');return;}
   if(!at){msg('msgChat','Nhập thời gian nhập kho.');return;}
+  if(chatPhotoB64){msg('msgChat','Photo qua webapp chưa hỗ trợ — dùng tên sản phẩm (P4a) hoặc bot SeaTalk/Live App.');return;}
   msg('msgChat','Đang tìm…',true);
   try{
-    var r=await gs('chatSmart',[{productName:name,inboundTime:at,photo:chatPhotoB64},siteCur]);
+    var r=await gs('chatSmart',[{productName:name,inboundTime:at},siteCur]);
     if(!r||!r.ok)throw new Error((r&&r.error)||'Tìm thất bại');
-    var list=(r.data&&r.data.results)||[];
+    var jobId=(r.data&&r.data.jobId)||'';
+    if(!jobId)throw new Error('Không nhận được jobId.');
     var h=chatBubble('B','<b>'+esc(name||'(chỉ ảnh)')+'</b><div class="fbtm">Nhập kho: '+esc(at)+'</div>');
-    h+=list.length?chatBubble('🤖','Tìm thấy <b>'+list.length+' đơn</b> tương đồng nhất:'+list.map(chatCardHtml).join(''))
-      :chatBubble('🤖','Không tìm thấy đơn phù hợp — thử tên hoặc ảnh khác.');
-    chatThreadHtml(h);msg('msgChat','',true);
+    h+=chatBubble('🤖','Đang tìm đơn tương đồng trong backlog… (job '+esc(jobId.slice(0,8))+'…)');
+    chatThreadHtml(h);
+    var tries=0,maxTries=60,done=false,finalList=null;
+    while(!done&&tries<maxTries){
+      await new Promise(function(res){setTimeout(res,3000);});
+      tries++;
+      var st=await gs('chatSmartStatus',[jobId,siteCur]);
+      if(!st||!st.ok){msg('msgChat',(st&&st.error)||'Lỗi đọc trạng thái.');done=true;break;}
+      var s=st.data&&st.data.status;
+      if(s==='done'){
+        finalList=chatPickList(st.data&&st.data.result)||[];
+        done=true;
+      } else if(s==='error'){
+        msg('msgChat',(st.data&&st.data.error)||'Tìm thất bại.');done=true;
+      }
+    }
+    if(!done){msg('msgChat','Hết thời gian chờ kết quả (job vẫn chạy nền).');return;}
+    if(finalList!==null){
+      var list=finalList.slice(0,5).map(function(rr){
+        return {shipment_id:String(rr.shipment_id||''),product_name:String(rr.product_name||''),aging_leadtime:String(rr.aging_leadtime||''),last_touch_at:String(rr.last_touch_at||''),score:+rr.score||0,reason:String(rr.reason||'')};
+      }).filter(function(rr){return !!rr.shipment_id;});
+      var h2=chatBubble('B','<b>'+esc(name||'(chỉ ảnh)')+'</b><div class="fbtm">Nhập kho: '+esc(at)+'</div>');
+      h2+=list.length?chatBubble('🤖','Tìm thấy <b>'+list.length+' đơn</b> tương đồng nhất:'+list.map(chatCardHtml).join(''))
+        :chatBubble('🤖','Không tìm thấy đơn phù hợp — thử tên hoặc ảnh khác.');
+      chatThreadHtml(h2);
+    }
+    msg('msgChat','',true);
     chatPhotoB64='';var ci=document.getElementById('chatPhoto');if(ci)ci.value='';
     if(nm)nm.value='';if(tm)tm.value='';if(qk)qk.value='';
   }catch(e){msg('msgChat',e.message||'Lỗi tìm đơn.');}

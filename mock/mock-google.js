@@ -319,10 +319,13 @@
       var q = String((p && (p.productName || '')) || '').trim();
       if (!q && !(p && p.photo)) return { ok: false, error: 'Chụp ảnh hoặc nhập tên sản phẩm.' };
       if (!(p && String(p.inboundTime || '').trim())) return { ok: false, error: 'Nhập thời gian nhập kho.' };
-      return { ok: true, data: { results: [
+      return { ok: true, data: { pending: true, jobId: 'demo-job-' + Date.now(), message: 'Đang tìm đơn tương đồng trong backlog… ~1 phút' } };
+    },
+    chatSmartStatus: function (jobId) {
+      return { ok: true, data: { status: 'done', result: { results: [
         { shipment_id: 'SPXVN06000101979A', product_name: 'Tổng Hợp Các Loại Bột Tảo', aging_leadtime: '05. 10-24 hours', last_touch_at: '2026-10-10 02:37:32', score: 74, reason: 'Demo: khớp tên sản phẩm.' },
         { shipment_id: 'SPXVN0600101165A', product_name: '1 x SỮI 220V', aging_leadtime: '05. 10-24 hours', last_touch_at: '2026-10-10 04:05:28', score: 55, reason: 'Demo: aging tương đương.' }
-      ] } };
+      ] } } };
     },
     addFeedback: function (text) {
       var t = String(text || '').trim();
