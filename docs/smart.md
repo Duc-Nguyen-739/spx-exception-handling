@@ -15,6 +15,7 @@
 | Mạng: cloudshell agent → `openapi.seatalk.io` | ✅ OK (`invalid app id (Ref:…)` cho dummy creds) — lỗi non-JSON dạng text + `Ref:` |
 | Contract input `photo` (File type) | ⏳ Chưa rõ (đợi invoke chạy được mới test: dataUrl? URL? raw base64?) |
 | Sync hay async invoke | ⏳ Chưa rõ — nếu async sẽ có `thread_id` để poll |
+| Kênh Agent (E2) | ✅ docs đọc 2026-10-17 (`docs/smart-agents.md`) — **chọn: Agent 2.0 + kênh SeaTalk Bot của Smart, KHÔNG cần engine luôn bật** |
 
 ## Kết quả test thật (đã verify từ Windows PowerShell máy văn phòng)
 
@@ -80,12 +81,12 @@ POST https://openapi.seatalk.io/auth/app_access_token  (Content-Type: applicatio
 - [x] Docs: Integrate → **Workflow as API** — ✅ paste 2026-10-17 (mục *Contract*; gồm trang con "Run a workflow through the API")
 - [x] Docs: Integrate → Operate — ✅ (Session History + Export CSV)
 - [x] Docs: Integrate → Trigger — ✅ (chỉ time-trigger; workflow không có kênh SeaTalk Bot — dùng Agent)
-- [ ] Docs: Agents (kênh SeaTalk) — để đánh giá phương án "Agent thay bot tự dựng"
+- [x] Docs: Agents 2.0 + Classic (kênh SeaTalk) — ✅ paste 2026-10-17 → distill ở `docs/smart-agents.md` + mục *Kênh Agent*; kết luận: kênh SeaTalk Bot sẵn của Agent **thay được bot tự dựng cho E2**
 - [x] Docs: Release — ✅ paste 2026-10-17 (mục *Docs: Release* bên dưới)
 - [x] Docs: Canvas workflows — ✅ (trang chính; phần node chi tiết chưa cần)
 - [x] Docs: Troubleshooting — ✅ (`failed to invoke graph`, endpoint draft, credential Tool node)
 - [x] Docs: Code workflows (Build with Beaver / Inspect and update / Preview and test) — ✅ (đối chiếu Canvas vs Code; workflow của ta loại Canvas)
-- [ ] Docs: Plugins/Agent (kênh SeaTalk) — để đánh giá opción thay thì bot tự build
+- [x] Docs: Agents classic (đối chiếu callback + async/get_messages) — ✅ cùng đợt, hợp nhất vào `docs/smart-agents.md`
 
 ## Docs: Release (nguồn: paste markdown trang docs, 2026-10-17)
 
@@ -171,7 +172,20 @@ POST https://smart.shopee.io/apis/smart/v1/workflow_orchestrator/deployments/inv
 - Sample sync chờ tối đa `timeout=300`s → giữ timeout GAS 6 phút, đủ.
 - Live App channel: `smart.shopee.io/apps/w/<id>/live`, Access Mode mặc định Restricted + Authorized Users and Groups; tắt = gạt App Status (không confirm).
 - Operate: **Session History** ghi MỌI run mọi channel (Smart Platform/Preview, API, Live App) có Input/Output/Debug Details/Tree View + **Export Data** CSV — công cụ debug khi end-to-end.
-- **Trigger tab = chỉ lịch trình thời gian** (Minutely→Monthly, có Timezone). **Workflows KHÔNG có kênh SeaTalk Bot** — docs: *"To reach people in SeaTalk, use an agent instead"* → với cầu SeaTalk cho user, cân nhắc Smart **Agent** (có thể gửi nhận SeaTalk) gọi được workflow như 1 capability, thay vì tự dựng bot REST hoàn toàn — đánh giá sau khi E2 chạy được bản tự dựng.
+- **Trigger tab = chỉ lịch trình thời gian** (Minutely→Monthly, có Timezone). **Workflows KHÔNG có kênh SeaTalk Bot** — docs: *"To reach people in SeaTalk, use an agent instead"* → **ĐÃ QUYẾT (2026-10-17): dùng kênh SeaTalk Bot của Smart Agent cho E2** — chi tiết ở mục *Kênh Agent* dưới đây; Smart host phần nhận callback (in-network), ta chỉ tạo bot Open Platform + dán creds.
+
+## Kênh Agent — quyết định E2 mới (2026-10-17)
+
+> Distill đầy đủ: `docs/smart-agents.md` (Agent 2.0 + classic). Dưới đây chỉ chốt kiến trúc.
+
+- **Kênh SeaTalk Bot có sẵn trên Agent**: ta tạo bot trên Open Platform (bước cũ giữ nguyên) → dán **SeaTalk ID/App ID/Secret/Signing Secret** vào Agent → Integrate → SeaTalk Bot → Confirm. Docs classic ghi rõ: Smart hiện **callback URL** → dán vào Event Callback của bot trên Open Platform → tick test. SeaTalk push event tới **host Smart (in-network)** → agent chạy → trả lời cùng thread.
+- **→ E2 KHÔNG CẦN engine Python luôn bật, KHÔNG cần WebSocket SDK, máy không phải luôn mở.**
+- Agent gọi workflow: **Config → Smart Apps → + Apps → Select Workflow** → bind "SPX Tìm đơn tương đồng" (chỉ bind được app Released).
+- Bật trên Open Platform: **Combined Message Delivery API** (ảnh + text gộp 1 event — bắt buộc cho usecase photo) · scope *Get Thread by Thread ID in Group Chat* (nếu cần đọc thread group).
+- Ảnh vào agent: Attachment pre-processing → Images **Send Original File** (giữ ảnh gốc).
+- SEATALT rows trong Agent Config (Private chat replies · Live status · Group replies without @): đổi xong phải **Save + Release lại**.
+- **Chưa chắc (test trước):** agent gọi Smart App có **truyền ảnh vào workflow input** được không — Preview test; thất bại → fallback bot tự dựng (bot.py WebSocket, giữ trong plan).
+- **Agent as API** vẫn trên `smart.shopee.io` (orchestrator/...) → **GAS vẫn không gọi trực tiếp được** → E1 (webapp) vẫn cần bridge in-network; khi đó bridge có thể chọn gọi Workflow-as-API (đã có hash/key) hoặc Agent-as-API.
 
 ## Quy ước nắm giữ secret trong kiến trúc bridge
 
